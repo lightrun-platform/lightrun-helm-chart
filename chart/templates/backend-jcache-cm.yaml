@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lightrun-be.name" . }}-jcache-config
+data:
+  redisson-jcache-single.yaml: |
+    singleServerConfig:
+      idleConnectionTimeout: 10000
+      connectTimeout: 10000
+      timeout: 10000
+      retryAttempts: 3
+      retryInterval: 1500
+      password: ${SPRING_REDIS_PASSWORD:-null}
+      subscriptionsPerConnection: 5
+      clientName: null
+      address: "{{ include "lightrun-redis.protocol" . }}://{{ include "lightrun-redis.endpoint" . }}:${SPRING_REDIS_PORT:-6379}"
+      sslEnableEndpointIdentification: false # Should be configurable to support known certificates
+      subscriptionConnectionMinimumIdleSize: 1
+      subscriptionConnectionPoolSize: 50
+      connectionMinimumIdleSize: 10
+      connectionPoolSize: 64
+      database: 0
+      dnsMonitoringInterval: 5000
+    threads: 0
+    nettyThreads: 0
+    codec: !<org.redisson.codec.JsonJacksonCodec> {}
+    transportMode: "NIO"
+  redisson-jcache-replicated.yaml: |
+    replicatedServersConfig:
+      idleConnectionTimeout: 10000
+      connectTimeout: 10000
+      timeout: 10000
+      retryAttempts: 3
+      retryInterval: 1500
+      failedSlaveReconnectionInterval: 3000
+      failedSlaveCheckInterval: 60000
+      password: ${SPRING_REDIS_PASSWORD:-null}
+      subscriptionsPerConnection: 5
+      clientName: null
+      loadBalancer: !<org.redisson.connection.balancer.RoundRobinLoadBalancer> {}
+      subscriptionConnectionMinimumIdleSize: 1
+      subscriptionConnectionPoolSize: 50
+      slaveConnectionMinimumIdleSize: 24
+      slaveConnectionPoolSize: 64
+      masterConnectionMinimumIdleSize: 24
+      masterConnectionPoolSize: 64
+      readMode: "MASTER_SLAVE"
+      subscriptionMode: "SLAVE"
+      nodeAddresses:
+        {{- range .Values.deployments.redis.external.replicatedConfig.nodeAddresses }}
+        - "{{ include "lightrun-redis.protocol" $ }}://{{ . }}:${SPRING_REDIS_PORT:-6379}"
+        {{- end }}
+      sslEnableEndpointIdentification: false # Should be configurable to support known certificates
+      scanInterval: 1000
+      monitorIPChanges: false
+    threads: 16
+    nettyThreads: 32
+    codec: !<org.redisson.codec.JsonJacksonCodec> {}
+    transportMode: "NIO"

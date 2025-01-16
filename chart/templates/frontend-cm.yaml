@@ -1,0 +1,57 @@
+{{ if or (not .Values.general.openshift) .Values.general.router.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name:  {{ include "lightrun-fe.name" . }}-config
+data:
+  default.conf: |
+  {{ if .Values.deployments.frontend.useJsonLogFormat }}
+    log_format json '{"time": "$time_iso8601", "remote_addr": "$remote_addr", "x_request_id": "$http_x_request_id", "x_forwarded_for": "$http_x_forwarded_for", "bytes_sent": $bytes_sent, "request_time": $request_time, "status": $status, "path": "$uri", "request_query": "$args", "request_length": $request_length, "method": "$request_method", "http_referrer":"$http_referer", "http_user_agent": "$http_user_agent"}';
+  {{ end }}
+    server {
+      {{ if .Values.general.internal_tls.enabled }}
+      listen 8080 default_server ssl;
+      ssl_protocols       TLSv1.2 TLSv1.3;
+      ssl_certificate     /cert/tls.crt;
+      ssl_certificate_key /cert/tls.key;
+      {{ else }}
+      listen 8080 default_server;
+      {{ end }}
+      {{ if .Values.deployments.frontend.useJsonLogFormat }}
+      access_log /var/log/nginx/access.log json;
+      {{ end }}
+
+      server_name _;
+
+      root /usr/share/nginx/html;
+      index index.html index.htm;
+
+      location = /health {
+                access_log off;
+                return 200 'ok';
+        }
+      location / {
+        gzip  on;        # compressing on the fly
+        gzip_types    text/plain application/javascript application/x-javascript text/javascript text/xml text/css;
+
+        gzip_static on;  # Works only if you have already compressed .gz files
+
+        index index.html
+        try_files $uri $uri/ @index;
+        error_page 404 = @index;
+        log_not_found off;
+      }
+
+      location = /index.html {
+        add_header Cache-Control 'no-store, no-cache, max-age=0';
+      }
+
+      location @index {
+        add_header Cache-Control 'no-store, no-cache, max-age=0';
+        try_files /index.html =404;
+      }
+
+    }
+
+
+{{ end }}

@@ -1,0 +1,1105 @@
+general:
+  name: "client-name"
+  ## Client name. Will be used  to construct LIGHTRUN_HOSTNAME of backend
+
+  cluster_domain: "cluster.local"
+  ## Cluster domain for dns resolution. Default is cluster.local
+
+  lightrun_endpoint: "lightrun.example.com"
+  ## DNS record that will be used to access the platform
+  deployment_type: on-prem
+  ## on-prem, saas, single-tenant
+  deploy_secrets:
+    enabled: true
+    ## Will deploy secrets from values as part of the chart
+    ## Set to `false` if you want to deploy secrets separately
+    ## If set to false, chart will search for existing secrets with name {{ .Release.name }}-backend
+    ## If you want to use different name, please provide it in existing_secrets below
+    existing_secrets:
+      ## Only relevant if deploy_secrets: false
+      backend: ""
+      keycloak: ""
+      api_keys_encryption: ""
+
+  # Enable api keys encryption
+  api_keys_encryption:
+    enabled: false
+    key_mount_path: "/keys"
+    ## If set to true, will encrypt api keys in the database
+    ## Requires secrets.api_keys_encryption.aes_key to be set
+
+  ################
+  ## Openshift (tested with version 4.12.5)
+  ################
+  openshift: false
+
+  # If you want to use default openshift domain fo lightrun application, for example:
+  # https://lightrun.apps.test.o5mj.p1.openshiftapps.com/ set to true
+  # In this case you need to put appropriate name to `lightrun_endpoint`.
+  # Also need to provide correct, default certificate of openshift in the `certificate` section
+  # default certificate located here `kubectl get secrets -n openshift-config-managed router-certs -o yaml`. Require admin permissions
+  # more info https://docs.openshift.com/container-platform/4.14/security/certificate_types_descriptions/ingress-certificates.html
+  openshift_embeded_hostname: false
+
+  ################
+  ## DB deployment
+  ################
+  db_local: true
+  ## If you want to deploy a mysql pod as part of this chart. May be created as deployment or statefulset
+  db_require_secure_transport: false
+  ## If true, will pass require_secure_transport=ON to mysql pod when using local db
+  ## as well as configure backend and keycloak to use SSL to connect to the DB
+
+  statefulset:
+    ## Details of the database's stateful set, if any.
+    ## If `enabled: false`, a regular depolyment will be created.
+    ## if `db_local: false`, a stateful set will not be created.
+    enabled: true
+    pvc_name: ""
+    # If empty, "mysql" will be used
+    storageClassName: gp2
+    ## adjust to proper class
+    # AWS - `gp2`
+    # GCP - `standard`
+    # Azure - `default`
+    storageSize: 100Gi
+    persistentVolumeClaimRetentionPolicy:
+      {}
+      # whenDeleted: "Retain"
+      # whenScaled: "Retain"
+
+  db_endpoint: "mysql.example.com"
+  ## DB hostname which will be used by the Lightrun deployment
+  ## in case of `db_local: true` this will be set to `{{ .Release.Name }}-mysql`
+
+  db_database: lightrunserver
+  ## DB name
+
+  #################
+  ## Message Queue
+  #################
+  mq:
+    enabled: false
+    local: true
+    ## Changing the queue name results in a new queue (and dlq) being created
+    ## Old queues will not be deleted automatically
+    ## New messages will be pushed and consumed from the new queue
+    queue_name: "mixpanel-events"
+    ## RabbitMQ Policy configuration
+    ## Applies on all queues that match queue_regex_pattern
+    policy:
+      queue_regex_pattern: "^mixpanel-events.*"
+      # The following configuration supports a queue size of up to 2000 messages,
+      # where each message is 500 bytes, with a message TTL (time-to-live) of one week.
+      #
+      # - message_ttl: Sets the time-to-live for messages in the queue to approximately 7 days (600,000,000 ms).
+      # - max_length: Limits the queue to a maximum of 2000 messages. New messages will be rejected if this limit is reached.
+      # - overflow: Configures the queue to "reject-publish," meaning new messages are rejected when the queue hits max_length.
+      # - max_length_bytes: Restricts the total size of all messages in the queue to 1,000,000 bytes (500 bytes × 2000 messages).
+      #
+      # This configuration ensures the queue does not exceed its size or time limits and avoids overloading the system.
+      message_ttl: 600000000
+      max_length: 2000
+      overflow: "reject-publish"
+      max_length_bytes: 1000000
+    ## if `local: true`, a stateful set will be be created.
+    mq_endpoint: "rabbitmq.example.com"
+    ## if `local: true`, a mq_endpoint will be ignored.
+    port: "5672"
+
+    ##
+    ## if `local: false`, all properties below will be ignored
+    ##
+    persistentVolumeClaimRetentionPolicy:
+      {}
+      # whenDeleted: "Retain"
+      # whenScaled: "Retain"
+    storageClassName: "gp2"
+    ## adjust to proper class
+    # AWS - `gp2`
+    # GCP - `standard`
+    storage: "10Gi"
+    ## For testing purposes you can set "0"
+    ## 0 - no PVC created, data will be lost on pod restart
+    pvc_name: ""
+    ## If empty, will be set to default: {{ .Release.Name }}-mq-data
+    metrics: false
+    ## If true, will enable prometheus plugin of RabbitMQ
+    ## metrics will be served on mq service, port 15692
+
+  #####################
+  ## Data streamer
+  #####################
+  data_streamer:
+    enabled: false
+    ## If set to `true`, will deploy a data streamer pod for SIEM integration
+    authorization_header_name: Authorization
+    do_not_retry_on:
+      ## List of response status codes upon which the data streamer will not retry
+      - 403
+
+  ################################################
+  ## Enable TLS communication between pods
+  ################################################
+  internal_tls:
+    enabled: false
+    ## Note:
+    ## - backend pod will use existing certificate that is also used for cert pinning verification
+    ## - If ingress class is "ngnix", Ingress objects will have annotation:
+    ##     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    ##   For any other ingress controller you'll need to add appropriate annotations, see below
+    ## - For Keycloak deployments in cluster mode, intra-cluster communication supported only with `source: "existing_certificates"`
+
+    certificates:
+      ## Verification of certificates for traffic between pods
+      ## If you are using certificates signed by your own CA, you'll need to provide CA certificate in the secret in "existing_ca_secret_name" field
+      verification: true
+      ## Secret should contain ca.crt key with the CA certificate
+      existing_ca_secret_name: ""
+
+      source: "existing_certificates"
+      ## source of the certificates
+      ## possible values:
+      ##   generate_self_signed_certificates    # do not recommended for production
+      ##   existing_certificates
+
+      #### generate_self_signed_certificates
+      ## self-signed certificates that will be generated by helm during the installation
+      ## Each pod (except backend and mysql) will have its own certificate with name of the service in the SNI
+      ## Secrets with certificates will be created with helm hook "pre-install" so that they will not be changed on helm upgrades
+      ## will work only with @Param certificates.verification: false
+
+      ## Note: Argocd will still rotate those secrets on the "full sync" operation. This is due to the way ArgoCD works with helm.
+      ## This is, however, not a problem, as pods will not be redeployed on the certificate change,
+      ## snd when you trigger recreation of the pods for whatever reason,
+      ## they'll get the new certificates on startup and continue to work as before.
+
+      #### existing_certificates
+      ## If you want to use your own certificates, created outside of this helm chart
+      ## Provide the secret name with the certificate per service
+      ## Please make sure to set @Param general.internal_tls.certificates.source to existing_certificates
+      ## Note that the Secrets have to be in the same namespace as the rest of the deployment
+      ## Secrets should contain the following keys: tls.crt, tls.key
+      ## If certificate's SAN has DNS name of all services, it can be reused in all fields
+      existing_certificates:
+        frontend: ""
+        keycloak: ""
+        ## keycloak_cluster certificate have to contain tls.key, tls.crt and ca.crt keys
+        keycloak_cluster: ""
+        redis: ""
+        rabbitmq: ""
+        data_streamer: ""
+
+  ############
+  ## Router ##
+  ############
+  router:
+    ## general.router.enabled - boolean flag, indicates whether to enable a Router (single entrypoint for Lightrun deployment).
+    ##
+    enabled: true
+    tls:
+      # If enabled router will expose HTTPS traffic
+      # If internal_tls.enabled is set to true, SSL termination will be enabled regardless of this value
+      # Has to be enabled when exposed by the host_port
+      enabled: false
+
+    ingress:
+      enabled: true
+      ingress_class_name: "nginx"
+      # If your ingress limiting the body size, you can override it with annotation
+      # example for nginx-ingress: "nginx.ingress.kubernetes.io/proxy-body-size": "10m"
+      annotations: {}
+      labels: {}
+
+    service:
+      enabled: true
+      ## Supported types: ClusterIP, LoadBalancer, NodePort, Headless
+      type: "ClusterIP"
+      annotations: {}
+      labels: {}
+      ports:
+        http: 8080
+        https: 8443
+
+    ## Only relevant for single-vm use case
+    host_port:
+      # Required to set general.router.tls.enabled to true
+      enabled: false
+      ports:
+        http: 80
+        https: 443
+
+    acl:
+      # IP access list configuration
+      # Expect list of CIDRs. For single ip, use /32
+      # If `deny_ips` empty, all IPs are allowed
+      global: # will affect all endpoints
+        allow_ips: []
+        deny_ips: []
+      agents:
+        allow_ips: []
+        deny_ips: []
+      auth_admin: #keycloak admin
+        allow_ips: []
+        deny_ips: ["all"]
+      metrics:
+        allow_ips: []
+        deny_ips: ["all"]
+
+    rate_limit:
+      # Global rate limit for all requests to the router
+      global:
+        enabled: false
+        rps_per_ip: 50
+        zone_size: 10m # size of the shared memory zone for rate limiting
+
+    server_snippets: ""
+    ## Example:
+    # server_snippets: |
+    #   proxy_connect_timeout   60s;
+    #   proxy_send_timeout      60s;
+    #   proxy_read_timeout      60s;
+    http_snippets: ""
+
+  ################
+  ## Ingress
+  ################
+  # Ingress deployment
+  ingress_controller: true
+  ## If set to `false`, will not create ingress objects and instead will create a deployment
+  ## of an Nginx pod with `LoadBalancer` as an entrypoint
+  ingress_class_name: "nginx"
+  ## Class name of the ingress-controller
+  ## previously was configured by annotation `kubernetes.io/ingress.class`, which is deprecated
+
+  nginx_svc:
+    ## details of nginx service deployment
+    type: LoadBalancer
+    ## `LoadBalancer`
+    ## In case of EKS or GKE, it will create a cloud load balancer.
+    ## For an on-prem k8s cluster, it should have some k8s-addon or external LB solution.
+    ## More explanation may be found here https://www.tkng.io/services/loadbalancer/
+    ## `ClusterIP` is supported only with local port 443 - `sudo kubectl port-forward service/<chart release name>-nginx 443:443`
+    ## `NodePort` is not supported due to complexity of redirect URLs with port
+    annotations: {}
+
+  ################
+  ## Node selection
+  ################
+  tolerations: []
+  ## If you want to set tolerations for Lightrun deployments, delete the `[]` in the line above
+  ## and uncomment this example block
+  # - key: "purpose"
+  #   operator: "Exists"
+  #   effect: "NoSchedule"
+
+  nodeSelector: {}
+  #   purpose: stage
+  ## If you want to set node selector for Lightrun deployments, delete the `{}` in the line above
+  ## and uncomment this example block
+  #  label-key1: "label-value1"
+  #  label-key2: "label-value2"
+
+  ################
+  ## Network Policy
+  ################
+  networkPolicy:
+    ## networkPolicy.enabled - boolean flag, indicates whether to create a network-policy object.
+    ##
+    enabled: false
+    ingress:
+      ## ingress.enabled - boolean flag, indicates whether to create the ingress direction, where:
+      ## If ingress.enabled && user provided values => add mandatory namespaces + provided values by user.
+      ## Else if ingress.enabled && user did not provide any value => unset ingress, meaning deny-all.
+      ## Else if not ingress.enabled  => remove any indication of ingress direction, meaning allow-all.
+      ##
+      enabled: false
+      ## ingress.namespacesSelector - list of namespaces to be allowed in the from direction
+      ## example:
+      ## namespacesSelector: ["example-namespace"]
+      ##
+      namespacesSelector: []
+      ## ingress.ipBlock - a string-keyed map of cidr/except to be allowed in the from direction.
+      ## At a minimum cidr is required; the "except" key can hold multiple slices.
+      ## example:
+      ##  ipBlock:
+      ##    - cidr: 1.1.1.0/24
+      ##      except:
+      ##        - 2.2.2.0/24
+      ##
+      ipBlock: {}
+      ## ingress.podSelector - a string-keyed map of podLabelsKeys,podLabelValues of pods to be allowed within the same namespace.
+      ## podLabelsValues must be a list of strings [] in order to allow a case where multiple pods share the same PodLabelKey with different values.
+      ## example:
+      ##  podSelector:
+      ##    app.kubernetes.io/component: ["nginx" , "backend"]
+      ##    role: ["db"]
+      ##
+      podSelector: {}
+      ## ingress.namespacePodSelector - a string-keyed map of [ namespace { podLabelsKeys,podLabelValues[]] }
+      ## of pods to be allowed within particular namespaces. podLabelsValues must be list of strings [] in order
+      ## to allow a case where multiple pods share the same PodLabelKey with different values.
+      ## example:
+      ##  namespacePodSelector:
+      ##    - example-namespace: [
+      ##      app.kubernetes.io/component: [ "example-app" ]
+      ##    ]
+      ##
+      namespacePodSelector: {}
+      ## ingress.ports - a string-keyed map of protocol, port, and optional endPort
+      ## (if network plugin supports it; see note: https://kubernetes.io/docs/concepts/services-networking/network-policies/#targeting-a-range-of-ports )
+      ## example:
+      ##  ports:
+      ##  - protocol: TCP
+      ##    port: 1024
+      ##    endPort: 65535
+      ports: {}
+    egress:
+      ## egress.enabled - boolean flag, indicates whether to create the egress direction where:
+      ## If egress.enabled && user provided values => add mandatory namespaces + provided values by user.
+      ## Else if egress.enabled && user did not provide any value => unset egress, meaning deny-all.
+      ## Else if not egress.enabled  => remove any indication of egress direction, meaning allow-all.
+      ##
+      enabled: false
+      ## egress.namespacesSelector - list of namespaces to be allowed in the to direction
+      ## example:
+      ## namespacesSelector: ["example-namespace"]
+      ##
+      namespacesSelector: []
+      ## egress.ipBlock - a string-keyed map of cidr/except to be allowed in the to direction.
+      ## At a minimum cidr is required; the "except" key can hold multiple slices.
+      ## example:
+      ##  ipBlock:
+      ##    - cidr: 1.1.1.0/24
+      ##      except:
+      ##        - 2.2.2.0/24
+      ##
+      ipBlock: {}
+      ## egress.podSelector - a string-keyed map of podLabelsKeys,podLabelValues of pods to be allowed within the same namespace.
+      ## podLabelsValues must be a list of strings [] in order to allow a case where multiple pods share the same PodLabelKey with different values.
+      ## example:
+      ##  podSelector:
+      ##    app.kubernetes.io/component: ["nginx" , "backend"]
+      ##    role: ["db"]
+      ##
+      podSelector: {}
+      ## egress.namespacePodSelector - a string-keyed map of [ namespace { podLabelsKeys,podLabelValues[]] }
+      ## of pods to be allowed within particular namespaces. podLabelsValues must be list strings [] in order
+      ## to allow a case where multiple pods share the same PodLabelKey with different values.
+      ## example:
+      ##  namespacePodSelector:
+      ##    - example-namespace: [
+      ##      app.kubernetes.io/component: [ "example-app" ]
+      ##    ]
+      ##
+      namespacePodSelector: {}
+      ## ingress.ports - a string-keyed map of protocol, port, and optional endPort
+      ## (if network plugin supports it see note : https://kubernetes.io/docs/concepts/services-networking/network-policies/#targeting-a-range-of-ports )
+      ## example:
+      ##  ports:
+      ##  - protocol: TCP
+      ##    port: 1024
+      ##    endPort: 65535
+      ports: {}
+
+  #############################
+  ## Read Only Root File System
+  #############################
+  # A control flag that determines whether to mount root file system as read only to frontend, backend, and keycloak containers.
+  # if set to true the aforementioned containers will not have write access except for mandatory directories
+  readOnlyRootFilesystem: false
+  # When readOnlyRootFilesystem is set to true, this value determines the size limit of the tmpfs volume mounted to /tmp across all affected deployments
+  readOnlyRootFilesystem_tmpfs_sizeLimit: 512Mi
+
+  #############################
+  ## Security Context Constraints
+  #############################
+  # For readOnlyRootFilesystem please use the values above.
+  # It will be merged with the values below.
+  # You can still overwrite the values for specific container in the `deployments` section
+  base_container_securityContext:
+    capabilities:
+      drop:
+        - ALL
+    runAsNonRoot: true
+    runAsUser: 1000000 # For pods, where default user is root
+    allowPrivilegeEscalation: false
+    seccompProfile:
+      type: RuntimeDefault
+
+################
+## Certificate
+################
+certificate:
+  ## This Certificate will be used in ingress/standalone nginx and in the backend service's communication with IDE plugin and agents
+  existing_cert: ""
+  ## To reuse an already deployed certificate
+  ## This secret has to be deployed in the same namespace as the rest of this chart
+
+  tls:
+    crt: ""
+    key: ""
+
+################
+## Service Account
+################
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the name template of each deployment/statefuleset
+  # name: ""
+  # Optional additional annotations to add to the ServiceAccount, applies to all deployments/statefulsets
+  # annotations: {}
+  # Optional additional labels to add to the ServiceAccount, applies to all deployments/statefulsets
+  # labels: {}
+  # Automount API credentials for a Service Account.
+  automountServiceAccountToken: false
+
+################
+## Secrets
+################
+# Fill in unique secrets
+secrets:
+  keycloak:
+    password: ""
+  db:
+    user: ""
+    password: ""
+  mq:
+    user: ""
+    password: ""
+  redis:
+    # redis authentication.
+    # requires to enable auth in deployments.redis.auth.enabled by set to true
+    password: ""
+  license:
+    content: ""
+    signature: ""
+  # Credentials used by Lightrun services
+  api_keys_encryption:
+    aes_key: "" # Optional | Depends on general.api_keys_encryption.enabled | If disabled, secret won't be used
+  defaults:
+    mail_password: ""
+    keystore_password: ""
+    google_sso:
+      client_id: "" # Optional | If empty, will not be used
+      client_secret: "" # Optional | If empty, will not be used
+    datadog_api_key: "" # Optional | If empty, will not be used
+    mixpanel_token: "" # Optional | If empty, will not be used
+    hubspot_token: "" # Optional | If empty, will not be used
+
+    dockerhub_config:
+      # This secret is used as imagePullSecrets for docker registry.
+      # It has 3 modes:
+      # 1. If existingSecret is set, it will use the existing secret.
+      # 2. If existingSecret is empty, it will create a new secret based on configContent.
+      # 3. For private registry. If dockerhub_config is set to `null`, chart will not use any imagePullSecrets.
+      existingSecret: ""
+      configContent: ""
+
+################
+## Deployments
+################
+## All resources are at minimum required values. Please do not reduce.
+## For production environment, Lightrun recommends providing more resources to backend and keycloak components
+
+deployments:
+  frontend:
+    useJsonLogFormat: false
+    hpa:
+      enabled: false
+      cpu: 70
+      maxReplicas: 5
+    replicas: 1
+    image:
+      repository: lightruncom/webapp
+      tag: ""
+      pullPolicy: IfNotPresent
+    resources:
+      cpu: 100m
+      memory: 128Mi
+    podLabels: {}
+    podAnnotations: {}
+    annotations: {} # deprecated in favor of podAnnotations
+    extraEnvs: []
+    podSecurityContext: {}
+    containerSecurityContext: {}
+    service:
+      annotations: {}
+      labels: {}
+    extraVolumes: []
+    extraVolumeMounts: []
+    podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
+    topologySpreadConstraints: []
+    affinity: {}
+    livenessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 20
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+
+  backend:
+    useJsonLogFormat: false
+    hpa:
+      enabled: false
+      cpu: 50
+      maxReplicas: 5
+    replicas: 1
+    rollout_strategy: "Recreate"
+    image:
+      repository: lightruncom/server
+      tag: ""
+      pullPolicy: IfNotPresent
+    resources:
+      cpu: 3000m
+      memory: 7Gi
+    podLabels: {}
+    podAnnotations: {}
+    annotations: {} # deprecated in favor of podAnnotations
+    appMetrics:
+      exposeToDatadog: false
+      includeMetrics: []
+      #example:
+      ## includeMetrics: ["connected_agents_per_runtime","connected_agents_total","actions_count_active_total","companies_count_total"]
+    jar_name: LightrunServer.jar
+    artifacts:
+      enable: true
+      s3_url: https://artifacts.lightrun.com/ #TODO: deprecated since 2.1.7
+      download_prerelease: false #TODO: deprecated since 2.1.7
+      repository_url: https://artifacts.lightrun.com/
+      supported_versions_url: https://artifacts.lightrun.com/supported-versions.json
+      resolution_mode: latest
+    extraEnvs: []
+    podSecurityContext: {}
+    containerSecurityContext: {}
+    service:
+      annotations: {}
+      labels: {}
+    extraVolumes: []
+    extraVolumeMounts: []
+    initContainers:
+      wait_for_keycloak:
+        image:
+          repository: lightruncom/chart-helper
+          tag: latest
+          pullPolicy: ""
+      p12_creator:
+        image:
+          repository: lightruncom/chart-helper
+          tag: latest
+          pullPolicy: ""
+      wait_for_rabbitmq:
+        image:
+          repository: lightruncom/chart-helper
+          tag: latest
+          pullPolicy: ""
+    podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
+    topologySpreadConstraints: []
+    affinity: {}
+    lifecycle:
+      preStop:
+        exec:
+          command: ["sh", "-c", "sleep 10"]
+    terminationGracePeriodSeconds: 45
+    startupProbe:
+      path: /management/health/readiness
+      failureThreshold: 60
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+    livenessProbe:
+      initialDelaySeconds: 200
+      periodSeconds: 50
+      timeoutSeconds: 30
+      successThreshold: 1
+      failureThreshold: 3
+      path: /version
+    readinessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+      path: /management/health/readiness
+    dbConnector: "mariadb" # either mysql for versions < .1.31 or mariadb (default) for versions > 1.31
+    dumpsEmptyDirSizeLimit: 5Gi
+    asyncProfiler:
+      # deployments.backend.asyncProfiler.enabled -- Run async-profiler on every backend pod
+      ## ref: https://github.com/async-profiler/async-profiler
+      enabled: false
+      # deployments.backend.asyncProfiler.version -- Specify the async-profiler version to use. Set exact version or "nightly".
+      ## ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
+      version: "v3.0"
+      # deployments.backend.asyncProfiler.architecture -- Specify the async-profiler architecture, valid values are: x64 or arm64
+      architecture: "x64"
+      # deployments.backend.asyncProfiler.arguments -- Configure the async profiler arguments
+      ## ref: https://github.com/async-profiler/async-profiler/blob/v3.0/src/arguments.cpp#L44
+      arguments: "start,event=ctimer,loop=10m,chunksize=1m,file=/async-profiler-tmp/profile-%t.jfr,log=/tmp/asyncprofiler.log"
+      # deployments.backend.asyncProfiler.persistence -- Configure persistence for the async profiler output files
+      persistence:
+        # deployments.backend.asyncProfiler.persistence.enabled -- If **true**, use existing PersistentVolumeClaim.
+        enabled: false
+        # deployments.backend.asyncProfiler.persistence.existingClaim -- Name of an existing PersistentVolumeClaim to use.
+        existingClaim: ""
+
+  keycloak:
+    useJsonLogFormat: false
+    # For clusters with more than 3 pods, consider changing the number of "owner nodes" as described in
+    # https://www.keycloak.org/server/caching#_configuring_caches -> Configuring caches for availability
+    clusterMode: true
+    replicas: 1
+    rollout_strategy: "Recreate"
+    image:
+      repository: lightruncom/keycloak
+      tag: ""
+      pullPolicy: IfNotPresent
+    resources:
+      cpu: 1000m
+      memory: 2Gi
+    podLabels: {}
+    podAnnotations: {}
+    annotations: {} # deprecated in favor of podAnnotations
+    extraEnvs: []
+    podSecurityContext:
+      {}
+      # runAsUser: 1000
+    containerSecurityContext: {}
+    service:
+      annotations: {}
+      labels: {}
+    extraVolumes: []
+    extraVolumeMounts: []
+    podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
+    initContainers:
+      cluster_cert:
+        image:
+          repository: lightruncom/chart-helper
+          tag: latest
+          pullPolicy: ""
+    topologySpreadConstraints: []
+    affinity: {}
+    startupProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 1
+      successThreshold: 1
+      failureThreshold: 30
+    livenessProbe:
+      initialDelaySeconds: 200
+      periodSeconds: 50
+      timeoutSeconds: 30
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+    dbConnector: "mariadb" # either mysql for versions < .1.30 or mariadb (default) for versions > 1.30
+    asyncProfiler:
+      # deployments.keycloak.asyncProfiler.enabled -- Run async-profiler on every keycloak pod
+      ## ref: https://github.com/async-profiler/async-profiler
+      enabled: false
+      # deployments.keycloak.asyncProfiler.version -- Specify the async-profiler version to use. Set exact version or "nightly".
+      ## ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
+      version: "v3.0"
+      # deployments.keycloak.asyncProfiler.architecture -- Specify the async-profiler architecture, valid values are: x64 or arm64
+      architecture: "x64"
+      # deployments.keycloak.asyncProfiler.arguments -- Configure the async profiler arguments
+      ## ref: https://github.com/async-profiler/async-profiler/blob/v3.0/src/arguments.cpp#L44
+      arguments: "start,event=ctimer,loop=10m,chunksize=1m,file=/async-profiler-tmp/profile-%t.jfr,log=/tmp/asyncprofiler.log"
+      # deployments.keycloak.asyncProfiler.persistence -- Configure persistence for the async profiler output files
+      persistence:
+        # deployments.keycloak.asyncProfiler.persistence.enabled -- If **true**, use existing PersistentVolumeClaim.
+        enabled: false
+        # deployments.keycloak.asyncProfiler.persistence.existingClaim -- Name of an existing PersistentVolumeClaim to use.
+        existingClaim: ""
+
+  redis:
+    architecture: single # (single|replicated) control the jcache profile passed to backend
+    external:
+      # use external redis instead of local. requires a valid endpoint for redis. compatible with
+      # AWS Elasticache and Azure cache for redis.
+      # based on redis.architecture value , one of redis.external.endpoint or redis.external.replicatedConfig.nodeAddresses should be configured
+      enabled: false
+
+      # endpoint is used with architecture=single. Irrelevant in other cases
+      endpoint: "redis.example.com"
+      # replicatedConfig is used with architecture=replicated. Irrelevant in other cases
+      replicatedConfig:
+        nodeAddresses: ["redis-1.example.com", "redis-2.example.com"] # MUST have a value if architecture=replicated. otherwise backend won't work. value of FQDNs of reachable nodes
+    encryption:
+      # whether to use SSL protocol for transport
+      enabled: false
+    # redis port , useful where using external redis and the provider requires different port. for instance
+    # Azure cache for redis requires port 6380
+    port: "6379"
+    auth:
+      # enable redis authentication .
+      # requires secrets.redis.password to not be empty or either provide from external secret
+      # requires lightrun version >= 1.19
+      enabled: false
+    image:
+      repository: lightruncom/redis
+      tag: alpine-7.2.5-r1
+      pullPolicy: IfNotPresent
+    resources:
+      cpu: 2000m
+      memory: 6500Mi
+    podLabels: {}
+    podAnnotations: {}
+    annotations: {}
+    podSecurityContext: {}
+    containerSecurityContext: {}
+    service:
+      annotations: {}
+      labels: {}
+    # EmptyDir is used for redis data persistence
+    emptyDir:
+      sizeLimit: 5Gi
+    affinity: {}
+    livenessProbe:
+      initialDelaySeconds: 50
+      periodSeconds: 30
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+
+  mysql:
+    nodeSelector: {}
+    podSecurityContext:
+      # when using PVC , it is necessarily to set fsGroup so pod will have write permission to the mounted volume
+      # fsGroup should be aligned with runAsUser of the container
+      fsGroup: 1000000
+    containerSecurityContext: {}
+    image:
+      repository: mysql
+      tag: 8.0.38
+      pullPolicy: IfNotPresent
+    resources:
+      cpu: 2000m
+      memory: 8Gi
+    podLabels: {}
+    podAnnotations: {}
+    annotations: {} # deprecated in favor of podAnnotations
+    service:
+      annotations: {}
+      labels: {}
+    # In case of db_local=true and statefulset.enabled=false
+    # non-persistent emptyDir is used for mysql data
+    emptyDir:
+      sizeLimit: 5Gi
+    affinity: {}
+    livenessProbe:
+      initialDelaySeconds: 200
+      periodSeconds: 30
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      initialDelaySeconds: 5
+      periodSeconds: 2
+      timeoutSeconds: 1
+      successThreshold: 1
+      failureThreshold: 3
+
+  rabbitmq:
+    loglevel: info
+    useJsonLogFormat: false
+    image:
+      repository: lightruncom/rabbitmq
+      tag: 3.12.12-alpine
+      pullPolicy: IfNotPresent
+    resources:
+      cpu: 500m
+      memory: 1Gi
+    podLabels: {}
+    podAnnotations: {}
+    service:
+      annotations: {}
+      labels: {}
+      ## prometheus autodiscovery annotations could be added to the service
+    nodeSelector: {}
+    podSecurityContext:
+      # when using PVC , it is necessarily to set fsGroup so pod will have write permission to the mounted volume
+      # fsGroup should be aligned with runAsUser of the container
+      fsGroup: 1000000
+    containerSecurityContext: {}
+    initContainers:
+      rabbitmq_config:
+        resources:
+          cpu: 100m
+          memory: 128Mi
+        image:
+          repository: lightruncom/chart-helper
+          tag: latest
+          pullPolicy: ""
+    # EmptyDir is used for rabbitmq data when mq.storage is set to 0
+    emptyDir:
+      sizeLimit: 5Gi
+    affinity: {}
+    lifecycle:
+      postStart:
+        exec:
+          command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              rabbitmqctl wait --pid 1 --timeout 60 && \
+              rabbitmqctl list_users | grep -q $RABBITMQ_DEFAULT_USER || \
+              (rabbitmqctl add_user $RABBITMQ_DEFAULT_USER $RABBITMQ_DEFAULT_PASS && \
+              rabbitmqctl set_user_tags $RABBITMQ_DEFAULT_USER administrator && \
+              rabbitmqctl set_permissions -p / $RABBITMQ_DEFAULT_USER ".*" ".*" ".*")
+    livenessProbe:
+      initialDelaySeconds: 60
+      periodSeconds: 45
+      timeoutSeconds: 15
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      initialDelaySeconds: 20
+      periodSeconds: 45
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+
+  data_streamer:
+    loglevel: INFO
+    useJsonLogFormat: false
+    replicas: 2
+    rollout_strategy: "RollingUpdate"
+    image:
+      repository: lightruncom/data-streamer
+      tag: "rpk-4.37.0"
+      pullPolicy: IfNotPresent
+    resources:
+      cpu: 100m
+      memory: 128Mi
+    podLabels: {}
+    podAnnotations: {}
+    annotations: {} # deployment annotations
+    extraEnvs: []
+    podSecurityContext: {}
+    containerSecurityContext: {}
+    service:
+      annotations: {}
+      labels: {}
+    extraVolumes: []
+    extraVolumeMounts: []
+    podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
+    topologySpreadConstraints: []
+    affinity: {}
+    livenessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 20
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+      path: /ping
+    readinessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+      path: /ready
+
+  standalone_nginx:
+    replicas: 1
+    image:
+      repository: nginxinc/nginx-unprivileged
+      tag: stable-alpine-slim
+      pullPolicy: IfNotPresent
+    podSecurityContext: {}
+    containerSecurityContext: {}
+    resources:
+      cpu: 300m
+      memory: 256Mi
+    podLabels: {}
+    ports:
+      ## in case there is a need to use privileged ports such as 80/443. to make it work the image.repository should be
+      ## replaced to nginx , also podSecurityContext/containerSecurityContext should be set to null
+      http: 8080
+      https: 8443
+    topologySpreadConstraints: []
+    affinity: {}
+    livenessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 20
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+
+  router:
+    useJsonLogFormat: false
+    replicas: 1 # It's always 1 if general.router.host_port.enabled is true
+    hpa:
+      enabled: false
+      cpu: 70
+      memory: 70
+      maxReplicas: 5
+    image:
+      repository: lightruncom/router
+      tag: "alpine-3.20.0-r1"
+      pullPolicy: IfNotPresent
+    podSecurityContext: {}
+    containerSecurityContext: {}
+    podAnnotations: {}
+    podLabels: {}
+    resources:
+      cpu: 300m
+      memory: 256Mi
+    ports:
+      ## in case there is a need to use privileged ports such as 80/443. to make it work the deployments.router.image.repository should be
+      ## replaced to nginx, also podSecurityContext/containerSecurityContext should be set to null
+      http: 8080
+      https: 8443
+    podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
+    topologySpreadConstraints: []
+    affinity: {}
+    livenessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 20
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+    workers_configuration:
+      worker_processes: auto
+      worker_connections: 10240
+      worker_rlimit_nofile: 20480 # hast to be less than ulimits of the system
+
+######################
+## Ingress annotations
+######################
+## Examples below are for an ingress-nginx controller
+## https://kubernetes.github.io/ingress-nginx/deploy/
+## for any other ingress controller this section will need to be adapted - please work with your Lightrun Solution Engineer
+ingress_clients:
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "1m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    # nginx.ingress.kubernetes.io/configuration-snippet: |
+    #   allow   1.2.3.4/32; # Allowed IP
+    #   # drop rest of the world
+    #   # deny    all;
+
+    ## If cluster has no access to the internet - comment out the section below
+    nginx.ingress.kubernetes.io/server-snippet: |
+      location @custom_403 {
+        return 403 "<html xmlns='http://www.w3.org/1999/xhtml'> <head> <meta charset='utf-8'> <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/> <meta name='robots' content='noindex, nofollow'> <title>Not allowed</title> <link href='https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/css/errors-page.css' rel='stylesheet'/> </head> <body> <div class='login-content' style=\"background-image: url('https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/img/background.svg');\"> <div class='box'> <div class='form-container'> <img src='https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/img/logo.svg' alt='Logo' style='width: 97px; height: 50px; object-fit: contain;'> </div><div class='form-container'> <span class='message-text'>You're not allowed to get this page</span> </div></div></div></body></html>";
+      }
+      location @custom_503 {
+        return 503 "<html xmlns='http://www.w3.org/1999/xhtml'> <head> <meta charset='utf-8'> <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/> <meta name='robots' content='noindex, nofollow'> <title>Service Unavailable</title> <link href='https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/css/errors-page.css' rel='stylesheet'/> </head> <body> <div class='login-content' style=\"background-image: url('https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/img/background.svg');\"> <div class='box'> <div class='form-container'> <img src='https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/img/logo.svg' alt='Logo' style='width: 97px; height: 50px; object-fit: contain;'> </div><div class='form-container'> <span class='message-text'>Oops... Something went wrong - please try again later.</span> </div></div></div></body></html>";
+      }
+      location @custom_429 {
+        return 429 "<html xmlns='http://www.w3.org/1999/xhtml'> <head> <meta charset='utf-8'> <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/> <meta name='robots' content='noindex, nofollow'> <title>Too Many Requests</title> <link href='https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/css/errors-page.css' rel='stylesheet'/> </head> <body> <div class='login-content' style=\"background-image: url('https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/img/background.svg');\"> <div class='box'> <div class='form-container'> <img src='https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/img/logo.svg' alt='Logo' style='width: 97px; height: 50px; object-fit: contain;'> </div><div class='form-container'> <span class='message-text'>Sorry, but you're sending too many requests - please slow down</span> </div></div></div></body></html>";
+      }
+      error_page 503 @custom_503;
+      error_page 403 @custom_403;
+      error_page 429 @custom_429;
+      limit_req_status 429;
+      limit_conn_status 429;
+    # Optional load throttling configuration options
+    # The limit is based on the formula: period * rps + burst-window, e.g. 1 second * 150 rps + 150 = 300 rps in practice
+    # nginx.ingress.kubernetes.io/limit-rps: "150" # Number of requests per second from any given IP;
+    # nginx.ingress.kubernetes.io/limit-connections: "30" # Concurent connections from any given IP
+    # nginx.ingress.kubernetes.io/limit-burst-multiplier: "1" # for 5 rps, burst window = rps * 1 = 5
+
+ingress_agents:
+  annotations:
+    ## As above, for any other ingress controller this section will need to be adapted - please work with your Lightrun Solution Engineer
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "1m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    # nginx.ingress.kubernetes.io/configuration-snippet: |
+    #   allow   1.2.3.4/32; # Allowed IP
+    #   # drop rest of the world
+    #   deny    all;
+    # nginx.ingress.kubernetes.io/server-snippet: |
+    #   limit_req_status 429;
+    #   limit_conn_status 429;
+    # Optional load throttling configuration options
+    # The limit is based on the formula: period * rps + burst-window, e.g. 1 second * 150 rps + 150 = 300 rps in practice
+    # nginx.ingress.kubernetes.io/limit-rps: "150" # Number of requests per second from any given IP;
+    # nginx.ingress.kubernetes.io/limit-connections: "30" # Concurent connections from any given IP
+    # nginx.ingress.kubernetes.io/limit-burst-multiplier: "1" # for 5 rps, burst window = rps * 1 = 5
+
+ingress_keycloak_admin:
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "1m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    # nginx.ingress.kubernetes.io/configuration-snippet: |
+    #   allow   1.2.3.4/32; # Allowed IP
+    #   #drop rest of the world
+    #   #deny    all;
+    # nginx.ingress.kubernetes.io/server-snippet: |
+    #   limit_req_status 429;
+    #   limit_conn_status 429;
+    # Optional load throttling configuration options
+    # The limit is based on the formula: period * rps + burst-window, e.g. 1 second * 150 rps + 150 = 300 rps in practice
+    # nginx.ingress.kubernetes.io/limit-rps: "150" # Number of requests per second from any given IP;
+    # nginx.ingress.kubernetes.io/limit-connections: "30" # Concurent connections from any given IP
+    # nginx.ingress.kubernetes.io/limit-burst-multiplier: "1" # for 5 rps, burst window = rps * 1 = 5
+ingress_metrics:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "1m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    #    nginx.ingress.kubernetes.io/configuration-snippet: |
+    #      #allow   1.2.3.4/32; # Allowed IP
+    #      #drop rest of the world
+    #      #deny    all;
+    nginx.ingress.kubernetes.io/limit-rps: "150" # Number of requests per second from givven ip; formula = period * rps + burst-window = 1 second * 150 rps + 150 = 300 rps in practice
+    nginx.ingress.kubernetes.io/limit-connections: "30" # Concurent connections from given ip
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "1" # It means that for 5 rps, burst window = rps * 1 = 5

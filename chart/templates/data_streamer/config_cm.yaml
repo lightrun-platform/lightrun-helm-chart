@@ -1,0 +1,64 @@
+{{ if .Values.general.data_streamer.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "data_streamer.name" . }}-config
+data:
+  config.yaml: |
+    http:
+      address: 0.0.0.0:8080
+      {{- if .Values.general.internal_tls.enabled }}
+      cert_file: /tmp/certs/tls.crt
+      key_file: /tmp/certs/tls.key
+      {{- end }}
+      enabled: true
+      root_path: /
+      debug_endpoints: false
+    input:
+      type: http_server
+      http_server:
+        path: /events/post
+        timeout: 5s
+
+    pipeline:
+      processors:
+        - mapping: |
+            meta url = this.destination
+            meta auth_token = this.authentication_token
+            root = this.payload
+        - log:
+            # Set global logger level to Debug to see the logs of the events being sent
+            level: DEBUG 
+            message: 'Sending event to ${! meta("url") } with body: ${! content() }'
+
+    output:
+      type: http_client
+      http_client:
+        backoff_on:
+          - 429
+        {{- with .Values.general.data_streamer.do_not_retry_on }}
+        drop_on:
+          {{ toYaml . | nindent 10 }}
+        {{- end }}
+        retries: 2
+        timeout: 5s
+        retry_period: 2s
+        url: ${! meta("url") }
+        verb: POST
+        headers:
+          {{ .Values.general.data_streamer.authorization_header_name }}: ${! meta("auth_token") }
+
+    metrics:
+      prometheus: {}
+
+    logger:
+      level: {{ .Values.deployments.data_streamer.loglevel }}
+      format: {{ if .Values.deployments.data_streamer.useJsonLogFormat }}json{{ else }}logfmt{{ end }}
+      add_timestamp: true
+      static_fields:
+        '@service': lightrun-data-streamer
+
+    shutdown_delay: 10s
+
+
+{{ end }}

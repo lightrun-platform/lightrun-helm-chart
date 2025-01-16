@@ -1,0 +1,76 @@
+bin: git
+style: ""
+template: .chglog/CHANGELOG.tpl.md
+info:
+  title: CHANGELOG
+  repository_url: https://github.com/lightrun-platform/lightrun-helm-chart
+
+options:
+  tag_filter_pattern: ""
+  sort: "semver"
+
+  commits:
+    filters: 
+      Type:
+        - added
+        - versions
+        - changed
+        - deprecated
+        - removed
+        - fixed
+        - security
+        - docs
+        - other
+    sort_by: Title
+
+  commit_groups:
+    group_by: Type
+    sort_by: Title
+    title_order: []
+    title_maps:
+      added: "Added"
+      versions: "Versions"
+      changed: "Changed"
+      deprecated: "Deprecated"
+      removed: "Removed"
+      fixed: "Fixed"
+      security: "Security"
+      docs: "Documentation"
+      other: "Other"
+
+  header:
+    pattern: "^(?:([A-Z]+-\\d+)-)?([^-]+)-(.+)$"
+    pattern_maps:
+      - Sope
+      - Type
+      - Subject
+
+  issues:
+    prefix:
+      - #
+
+  refs:
+    actions:
+      - Closes
+      - Fixes
+
+  merges:
+    pattern: "^Merge branch '(\\w+)'$"
+    pattern_maps:
+      - Source
+
+  reverts:
+    pattern: "^Revert \"([\\s\\S]*)\"$"
+    pattern_maps:
+      - Header
+
+  notes:
+    keywords:
+      - BREAKING CHANGES
+
+  jira:
+    user_name: ""
+    url: ""
+    token: ""
+    type_maps: {}
+    issue_description_pattern: ""

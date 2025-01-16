@@ -1,0 +1,105 @@
+{{ if and .Values.general.mq.enabled .Values.general.mq.local -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lightrun-mq.name" . }}-config
+data:
+  enabled_plugins: |
+    [rabbitmq_management{{ if .Values.general.mq.metrics }}, rabbitmq_prometheus{{ end }}].
+  definitions.json: |
+    {
+      "vhosts":[
+        {"name": "/"}
+      ], 
+      "policies": [
+        {
+          "vhost": "/",
+          "name": "bi-queue-limiter-policy",
+          "pattern": {{ .Values.general.mq.policy.queue_regex_pattern | quote }},
+          "apply-to": "queues",
+          "definition": {
+            "max-length": {{ .Values.general.mq.policy.max_length }},
+            "overflow": {{ .Values.general.mq.policy.overflow | quote }}
+          },
+          "priority": 2
+        },    
+        {
+          "vhost": "/",
+          "name": "total-memory-consumed-by-messages-in-queue-policy",
+          "pattern": {{ .Values.general.mq.policy.queue_regex_pattern | quote }},
+          "apply-to": "queues",
+          "definition": {
+            "max-length-bytes": {{ .Values.general.mq.policy.max_length_bytes | int }}
+          },
+          "priority": 1
+        },
+        {
+          "vhost": "/",
+          "name": "maximum-time-message-stay-in-queue-policy",
+          "pattern": {{ .Values.general.mq.policy.queue_regex_pattern | quote }},
+          "apply-to": "queues",
+          "definition": {
+            "message-ttl": {{ .Values.general.mq.policy.message_ttl | int }}
+          },
+          "priority": 0
+        }    
+      ],
+      "queues": [
+        {
+          "name": "{{ .Values.general.mq.queue_name }}.dlq",
+          "vhost": "/",
+          "durable": true,
+          "auto_delete": false,
+          "arguments": {
+            "x-queue-type": "quorum",
+            "x-created-by": "lightrun-onprem-server-chart"
+          }
+        },    
+         {
+          "name": {{ .Values.general.mq.queue_name | quote }},
+          "vhost": "/",
+          "durable": true,
+          "auto_delete": false,
+          "arguments": {
+            "x-dead-letter-exchange": "",
+            "x-dead-letter-routing-key": "{{ .Values.general.mq.queue_name }}.dlq",
+            "x-queue-type": "quorum",
+            "x-created-by": "lightrun-onprem-server-chart"
+          }
+        }
+      ]
+    }
+
+  rabbitmq.conf: |
+    queue_master_locator=min-masters
+    vm_memory_high_watermark.relative=0.4
+    total_memory_available_override_value = {{ include "lightrun-mq.toBytes" .Values.deployments.rabbitmq.resources.memory }}
+    definitions.skip_if_unchanged = false
+    definitions.import_backend = local_filesystem
+    definitions.local.path = /etc/rabbitmq/conf.d/definitions.json
+    
+    log.default.level = {{ .Values.deployments.rabbitmq.loglevel }}
+    log.console.level = {{ .Values.deployments.rabbitmq.loglevel }}
+    log.console = true
+    log.file = false
+    {{ if .Values.deployments.rabbitmq.useJsonLogFormat }}
+    log.console.formatter = json
+    {{ end -}}
+    
+    {{ if .Values.general.internal_tls.enabled -}}
+    listeners.tcp = none
+
+    listeners.ssl.default = {{ .Values.general.mq.port }}
+
+    # ssl_options.cacertfile = /tmp/certs/ca.crt
+    ssl_options.certfile   = /tmp/certs/tls.crt
+    ssl_options.keyfile    = /tmp/certs/tls.key
+    ssl_options.verify     = verify_none
+    ssl_options.fail_if_no_peer_cert = false
+
+    management.ssl.port       = 15672
+    # management.ssl.cacertfile = /path/to/ca_certificate.pem
+    management.ssl.certfile   = /tmp/certs/tls.crt
+    management.ssl.keyfile    = /tmp/certs/tls.key
+    {{ end -}}
+{{ end }}

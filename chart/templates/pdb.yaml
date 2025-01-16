@@ -1,0 +1,59 @@
+{{- if .Values.deployments.backend.podDisruptionBudget}}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "lightrun-be.name" . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "lightrun-be.name" . }}
+  {{- toYaml .Values.deployments.backend.podDisruptionBudget | nindent 2 }}
+{{- end }}
+---
+{{- if .Values.deployments.frontend.podDisruptionBudget}}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "lightrun-fe.name" . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "lightrun-fe.name" . }}
+  {{- toYaml .Values.deployments.frontend.podDisruptionBudget | nindent 2 }}
+{{- end }}
+---
+{{- if .Values.deployments.keycloak.podDisruptionBudget}}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "lightrun-keycloak.name" . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "lightrun-keycloak.name" . }}
+  {{- toYaml .Values.deployments.keycloak.podDisruptionBudget | nindent 2 }}
+{{- end }}
+---
+{{- if (and .Values.deployments.data_streamer.podDisruptionBudget .Values.general.data_streamer.enabled) }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "data_streamer.name" . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "data_streamer.name" . }}
+  {{- toYaml .Values.deployments.data_streamer.podDisruptionBudget | nindent 2 }}
+{{- end }}
+---
+{{- if (and .Values.deployments.router.podDisruptionBudget .Values.general.router.enabled) }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "router.name" . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "router.name" . }}
+  {{- toYaml .Values.deployments.router.podDisruptionBudget | nindent 2 }}
+{{- end }}

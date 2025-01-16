@@ -1,0 +1,60 @@
+{{ if and .Values.general.router.enabled .Values.general.router.ingress.enabled  }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "router.name" . }}
+  {{ with .Values.general.router.ingress.labels }}
+  labels:
+    {{ toYaml . | nindent 4 }}
+  {{ end }}
+  {{- if or
+    (.Values.general.router.ingress.annotations)
+    (contains "nginx" $.Values.general.router.ingress.ingress_class_name)
+    (.Values.general.openshift)
+  }}
+  annotations:
+    {{- with .Values.general.router.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- if contains "nginx" $.Values.general.router.ingress.ingress_class_name }}
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
+    {{- if eq (include "router.use-tls" .) "true" }}
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    {{- end }}
+    {{- if .Values.general.openshift }}
+    haproxy.router.openshift.io/timeout: "90s"
+    {{- end }}
+    {{- end }}
+  {{- end }}
+spec:
+  {{- if not .Values.general.openshift }}
+  ingressClassName: {{ .Values.general.router.ingress.ingress_class_name }}
+  {{- end }}
+  tls:
+    {{- /*
+     If you want to use default openshift domain for lightrun application, for example: 
+     https://lightrun.apps.test.o5mj.p1.openshiftapps.com/
+    */ -}}
+    {{- if .Values.general.openshift_embeded_hostname }}
+    - {}
+    {{- else }}
+    - hosts:
+      - {{ .Values.general.lightrun_endpoint }}
+      secretName: {{ include "secrets.certificate.name" . }}
+    {{- end }}
+  rules:
+    - host: {{ .Values.general.lightrun_endpoint }}
+      http:
+        paths:
+        - backend:
+            service:
+              name: {{ include "router.name" . }}
+              port:
+                {{- if eq (include "router.use-tls" .) "true"}}
+                name: https
+                {{- else }}
+                name: http
+                {{- end }}
+          path: /
+          pathType: Prefix
+{{- end }}

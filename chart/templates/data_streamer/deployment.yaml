@@ -1,0 +1,111 @@
+{{ if .Values.general.data_streamer.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "data_streamer.name" . }}
+  {{- with .Values.deployments.data_streamer.annotations }}
+  annotations:
+    {{ toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.deployments.data_streamer.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "data_streamer.name" . }}
+  template:
+    metadata:
+      {{- with .Values.deployments.data_streamer.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ include "data_streamer.name" . }}
+        {{- with .Values.deployments.data_streamer.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ template "data_streamer.serviceAccountName" . }}
+        {{- if .Values.deployments.data_streamer.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.deployments.data_streamer.podSecurityContext | nindent 8 }}
+        {{- end }}
+      {{- if .Values.secrets.defaults.dockerhub_config }}
+      imagePullSecrets:
+      {{- if .Values.secrets.defaults.dockerhub_config.existingSecret }}
+        - name: {{ .Values.secrets.defaults.dockerhub_config.existingSecret }}
+      {{- else }}
+        - name: {{ include "secrets.dockerhub.name" . }}
+      {{- end -}}
+      {{- end }}
+      containers:
+        - name: {{ include "data_streamer.name" . }}
+          securityContext: {{- include "data_streamer.containerSecurityContext" . | indent 12 }}
+          resources:  
+            requests:
+              cpu: {{ .Values.deployments.data_streamer.resources.cpu }}
+              memory: {{ .Values.deployments.data_streamer.resources.memory }}
+            limits:
+              cpu: {{ .Values.deployments.data_streamer.resources.cpu }}
+              memory: {{ .Values.deployments.data_streamer.resources.memory }}
+          image: {{ .Values.deployments.data_streamer.image.repository }}:{{ .Values.deployments.data_streamer.image.tag }}
+          imagePullPolicy: {{ .Values.deployments.data_streamer.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.deployments.data_streamer.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.deployments.data_streamer.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.deployments.data_streamer.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.deployments.data_streamer.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.data_streamer.livenessProbe.failureThreshold }}
+            httpGet:
+              scheme: {{ include "http.scheme" . | upper }}
+              path: {{ .Values.deployments.data_streamer.livenessProbe.path }}
+              port: http
+          readinessProbe:
+            initialDelaySeconds: {{ .Values.deployments.data_streamer.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.deployments.data_streamer.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.deployments.data_streamer.readinessProbe.periodSeconds }}
+            successThreshold: {{ .Values.deployments.data_streamer.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.data_streamer.readinessProbe.failureThreshold }}
+            httpGet:
+              scheme: {{ include "http.scheme" . | upper }}
+              path: {{ .Values.deployments.data_streamer.readinessProbe.path }}
+              port: http
+          args: ["-c", "/config/config.yaml"]
+          volumeMounts:
+          - name: config
+            mountPath: /config
+            readOnly: true
+          {{- if .Values.general.internal_tls.enabled }}
+          - name: internal-cert
+            mountPath: /tmp/certs/
+            readOnly: true
+          {{- end }}
+      {{- if .Values.general.tolerations }}
+      tolerations:
+        {{ toYaml .Values.general.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.general.nodeSelector }}
+      nodeSelector:
+        {{ toYaml .Values.general.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.deployments.data_streamer.affinity }}
+      affinity:
+        {{ toYaml .Values.deployments.data_streamer.affinity | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "data_streamer.name" . }}-config
+      {{- if .Values.general.internal_tls.enabled }}
+      - name: internal-cert
+        secret:
+          {{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" }}
+          secretName: {{ include "data_streamer.name" . }}-cert
+          {{- else if eq .Values.general.internal_tls.certificates.source "existing_certificates" }}
+          secretName: {{ .Values.general.internal_tls.certificates.existing_certificates.data_streamer }}
+          {{- end }}
+      {{- end }}
+{{ end }}
