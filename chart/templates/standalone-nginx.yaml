@@ -1,0 +1,109 @@
+{{ if and (not .Values.general.ingress_controller) (not .Values.general.router.enabled) }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nginx.name" . }}
+  labels:
+    app: {{ include "nginx.name" . }}
+spec:
+  replicas: {{ .Values.deployments.standalone_nginx.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "nginx.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "nginx.name" . }}
+        {{- with .Values.deployments.standalone_nginx.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if .Values.deployments.standalone_nginx.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{ toYaml .Values.deployments.standalone_nginx.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
+      {{- if .Values.deployments.standalone_nginx.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.deployments.standalone_nginx.podSecurityContext | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ template "nginx.serviceAccountName" . }}
+      containers:
+        - name: {{ include "nginx.name" . }}
+          securityContext: {{- include "nginx.containerSecurityContext" . | indent 12 }}
+          image: "{{ .Values.deployments.standalone_nginx.image.repository }}:{{ .Values.deployments.standalone_nginx.image.tag }}"
+          imagePullPolicy: {{ .Values.deployments.standalone_nginx.image.pullPolicy }}
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/templates/default.conf.template
+              subPath: default.conf.template
+              readOnly: true
+            - name: certificates
+              mountPath: /cert
+          {{- if .Values.general.readOnlyRootFilesystem }}
+            - name: tmpfs
+              mountPath: /tmp
+          {{- end }}
+          resources:
+            requests:
+              cpu: {{ .Values.deployments.standalone_nginx.resources.cpu }}
+              memory: {{ .Values.deployments.standalone_nginx.resources.memory }}
+            limits:
+              cpu: {{ .Values.deployments.standalone_nginx.resources.cpu }}
+              memory: {{ .Values.deployments.standalone_nginx.resources.memory }}
+          ports:
+          - containerPort: {{ .Values.deployments.standalone_nginx.ports.https }}
+            name: https
+            protocol: TCP
+          - containerPort: {{ .Values.deployments.standalone_nginx.ports.http }}
+            name: http
+            protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.deployments.standalone_nginx.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.deployments.standalone_nginx.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.deployments.standalone_nginx.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.deployments.standalone_nginx.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.standalone_nginx.livenessProbe.failureThreshold }}
+            httpGet:
+              scheme: HTTPS
+              path: /
+              port: {{ .Values.deployments.standalone_nginx.ports.https }}
+          readinessProbe:
+            initialDelaySeconds: {{ .Values.deployments.standalone_nginx.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.deployments.standalone_nginx.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.deployments.standalone_nginx.readinessProbe.periodSeconds }}
+            successThreshold: {{ .Values.deployments.standalone_nginx.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.standalone_nginx.readinessProbe.failureThreshold }}
+            httpGet:
+              scheme: HTTPS
+              path: /
+              port: {{ .Values.deployments.standalone_nginx.ports.https }}
+      {{- if .Values.general.tolerations }}
+      tolerations:
+        {{ toYaml .Values.general.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.general.nodeSelector }}
+      nodeSelector:
+        {{ toYaml .Values.general.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.deployments.standalone_nginx.affinity }}
+      affinity:
+        {{ toYaml .Values.deployments.standalone_nginx.affinity | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: nginx-conf
+        configMap:
+          name: {{ include "nginx.conf-cm.name" . }}
+          items:
+            - key: default.conf
+              path: default.conf.template
+      - name: certificates
+        secret:
+          secretName: {{ include "secrets.certificate.name" . }}
+      {{- if .Values.general.readOnlyRootFilesystem }}
+      - name: tmpfs
+        emptyDir:
+          sizeLimit: {{ .Values.general.readOnlyRootFilesystem_tmpfs_sizeLimit }}
+      {{- end -}}
+{{end}}

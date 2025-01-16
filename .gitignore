@@ -1,0 +1,13 @@
+# Ignore Helm release files
+*.tgz
+
+# Ignore Helm chart dependencies
+charts/*.tgz
+
+# Ignore Apple system files
+.DS_Store
+# Ignore IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo

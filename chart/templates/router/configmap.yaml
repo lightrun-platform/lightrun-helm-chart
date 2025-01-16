@@ -1,0 +1,293 @@
+{{ if .Values.general.router.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "router.conf.name" . }}
+data:
+  nginx.conf: |
+    worker_processes {{.Values.deployments.router.workers_configuration.worker_processes }};
+    worker_rlimit_nofile {{ .Values.deployments.router.workers_configuration.worker_rlimit_nofile }};
+    events {
+        worker_connections  {{ .Values.deployments.router.workers_configuration.worker_connections }};
+    }
+    
+    error_log  /var/log/nginx/error.log notice;
+    pid        /tmp/nginx.pid;
+    http {
+        proxy_temp_path /tmp/proxy_temp;
+        client_body_temp_path /tmp/client_temp;
+        fastcgi_temp_path /tmp/fastcgi_temp;
+        uwsgi_temp_path /tmp/uwsgi_temp;
+        scgi_temp_path /tmp/scgi_temp;
+
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for" "$req_id" '
+                          '"$upstream_status" "$upstream_response_time"';
+
+        access_log  /var/log/nginx/access.log  main;
+        sendfile        on;
+        keepalive_timeout  65;
+        include /etc/nginx/conf.d/*.conf;
+
+        # Map return $remote_addr if x-forwarded-for is empty
+        map $http_x_forwarded_for $xff {   
+            "" $remote_addr;
+            default $http_x_forwarded_for;
+        }
+
+        # Map return $scheme if x-forwarded-proto is empty
+        map $http_x_forwarded_proto $xf_proto {
+            "" $scheme;
+            default $http_x_forwarded_proto;
+        }
+
+        # Map set generated request_id if header not exists
+        map $http_x_request_id $req_id {
+            ""        $request_id;
+            default   $http_x_request_id;
+        } 
+    }
+  default.conf: |
+      ##########
+      ## http ##
+      ##########
+      ### Http Snippets start
+      {{ with .Values.general.router.http_snippets }}
+      {{- toString . | nindent 6 }}
+      {{ end }}
+      ### Http Snippets end
+
+      {{ if .Values.deployments.router.useJsonLogFormat }}
+      log_format json '{"time": "$time_iso8601", "remote_addr": "$remote_addr", "x_request_id": "$req_id",
+                        "x_forwarded_for": "$http_x_forwarded_for", "bytes_sent": $bytes_sent,
+                        "request_time": $request_time, "status": $status, "path": "$uri", "request_query": "$args",
+                        "request_length": $request_length, "method": "$request_method", "http_referrer":"$http_referer",
+                        "http_user_agent": "$http_user_agent", "upstream_status": "$upstream_status",
+                        "upstream_response_time": "$upstream_response_time"}';
+      {{ end }}
+
+      {{- if .Values.general.router.rate_limit.global.enabled }}
+      # Rate limiting
+      limit_req_zone $binary_remote_addr zone=limit_by_ip:{{ .Values.general.router.rate_limit.global.zone_size }} rate={{ .Values.general.router.rate_limit.global.rps_per_ip }}r/s;
+      limit_req zone=limit_by_ip burst=5 nodelay;
+      limit_req_status 429;
+      limit_conn_status 429;
+      {{- end }}
+
+
+      upstream {{ include "lightrun-be.name" . }} {
+        # 2nd server is for a retry to k8s service
+        server {{ include "lightrun-be.name" . }}:8080 max_fails=0;
+        server {{ include "lightrun-be.name" . }}:8080 max_fails=0;
+      }
+
+      upstream {{ include "lightrun-keycloak.name" . }} {
+        server {{ include "lightrun-keycloak.name" . }}:8080 max_fails=0;
+      }
+      
+      upstream {{ include "lightrun-fe.name" . }} {
+        server {{ include "lightrun-fe.name" . }}:8080 max_fails=0;
+      }
+
+      proxy_request_buffering   on;
+      large_client_header_buffers 4 16k;
+      client_max_body_size      25m;
+      proxy_http_version        1.1;
+      proxy_buffering           off;
+      proxy_buffer_size         8k;
+
+      # Timeouts
+      proxy_connect_timeout 5s;
+
+
+      {{ if eq (include "router.use-tls" .) "true" }}
+      server {
+        server_name {{ .Values.general.lightrun_endpoint }};
+        listen {{ .Values.deployments.router.ports.http }};
+        return 301 https://$host$request_uri;
+      }
+      {{ end }}
+
+
+      ############
+      ## Server ##
+      ############
+      server {
+        server_name {{ .Values.general.lightrun_endpoint }};
+        
+        default_type text/html;
+
+        {{- if .Values.deployments.router.useJsonLogFormat }}
+        access_log /var/log/nginx/access.log json;
+        {{- end }}
+
+        ### Server Snippets start
+        {{ with .Values.general.router.server_snippets }}
+        {{- toString . | nindent 8 }}
+        {{ end }}
+        ### Server Snippets end
+
+
+        ### TLS settings
+        {{ if eq (include "router.use-tls" .) "true" }}
+        listen {{ .Values.deployments.router.ports.https }} ssl;
+        ssl_protocols       TLSv1.2 TLSv1.3;
+        ssl_certificate     /cert/tls.crt;
+        ssl_certificate_key /cert/tls.key;
+        {{ else }}
+        listen {{ .Values.deployments.router.ports.http }} default_server;
+        {{ end }}
+        
+        {{- if .Values.general.internal_tls.enabled }}
+        proxy_ssl_session_reuse on;
+        proxy_ssl_protocols TLSv1.2 TLSv1.3;
+        {{- end }}
+
+        ### Headers
+        proxy_set_header Host              $host;
+        proxy_set_header X-Forwarded-For   $xff;
+        proxy_set_header X-Forwarded-Proto $xf_proto;
+        proxy_set_header X-Request-ID      $req_id;
+        
+        set_real_ip_from 0.0.0.0/0;
+        real_ip_header    X-Forwarded-For;
+        real_ip_recursive on;
+        
+
+        # Global access list
+        {{- range .Values.general.router.acl.global.allow_ips }}
+        allow {{ . }};
+        {{- end }}
+        {{- range .Values.general.router.acl.global.deny_ips }}
+        deny {{ . }};
+        {{- end }}
+
+
+        location = /health {
+                  access_log off;
+                  return 200 'ok';
+          }
+
+        # Custom errors
+        root /usr/share/nginx/html;
+        proxy_intercept_errors on;
+        error_page 500 502 503 504 =503 /50x.html;
+        error_page 403 /403.html;
+        error_page 429 /429.html;
+        location = /403.html {
+          internal;
+        }
+        location = /429.html {
+          internal;
+        }
+        location = /50x.html {
+          internal;
+        }
+
+
+        location /auth/admin {
+        {{- range .Values.general.router.acl.auth_admin.allow_ips }}
+          allow {{ . }};
+        {{- end }}
+        {{- range .Values.general.router.acl.auth_admin.deny_ips }}
+          deny {{ . }};
+        {{- end }}
+          {{ include "router.internal_tls_use_ca_cert" . | nindent 10 }}
+          proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-keycloak.name" . }};
+        }
+
+        location /auth {
+          {{ include "router.internal_tls_use_ca_cert" . | nindent 10 }}
+          proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-keycloak.name" . }};
+        }
+        
+        location /device {
+          {{ include "router.internal_tls_use_ca_cert" . | nindent 10 }}
+          proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-fe.name" . }};
+        }
+
+        location /app {
+          {{ include "router.internal_tls_use_ca_cert" . | nindent 10 }}
+          proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-fe.name" . }};
+        }
+
+        location /company {
+          {{ include "router.internal_tls_use_ca_cert" . | nindent 10 }}
+          proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-fe.name" . }};
+        }
+
+        location /content {
+          {{ include "router.internal_tls_use_ca_cert" . | nindent 10 }}
+          proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-fe.name" . }};
+        }
+
+        location = / {
+          {{ include "router.internal_tls_use_ca_cert" . | nindent 10 }}
+          proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-fe.name" . }};
+        }
+
+        # Location for the snapshots upload
+        location ~ ^/debuggees/[\w-]+/breakpoints {
+        {{- range .Values.general.router.acl.agents.allow_ips }}
+          allow {{ . }};
+        {{- end }}
+        {{- range .Values.general.router.acl.agents.deny_ips }}
+          deny {{ . }};
+        {{- end }}
+        {{ if .Values.general.internal_tls.enabled }}
+          proxy_ssl_name $host;
+        {{- end }}
+          # Big buffer size to support large snapshots
+          # It is important to note that the buffer size is per request, so if you have 10 requests with 1MB each, you will need 10MB of memory.
+          client_body_buffer_size 2m;
+          proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-be.name" . }};
+        }
+
+        location /debuggees {
+        {{- range .Values.general.router.acl.agents.allow_ips }}
+          allow {{ . }};
+        {{- end }}
+        {{- range .Values.general.router.acl.agents.deny_ips }}
+          deny {{ . }};
+        {{- end }}
+        {{ if .Values.general.internal_tls.enabled }}
+          proxy_ssl_name $host;
+        {{- end }}
+          proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-be.name" . }};
+        }
+
+        location /socket {
+        {{ if .Values.general.internal_tls.enabled }}
+          proxy_ssl_name $host;
+        {{- end }}
+          # WebSocket support
+          proxy_set_header Upgrade      $http_upgrade;
+          proxy_set_header Connection   "upgrade";
+          proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-be.name" . }};
+        }
+
+        location /management/prometheus {
+        {{- range .Values.general.router.acl.metrics.allow_ips }}
+          allow {{ . }};
+        {{- end }}
+        {{- range .Values.general.router.acl.metrics.deny_ips }}
+          deny {{ . }};
+        {{- end }}
+        {{ if .Values.general.internal_tls.enabled }}
+          proxy_ssl_name $host;
+        {{- end }}
+          proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-be.name" . }};
+        }
+
+        location / {
+        {{ if .Values.general.internal_tls.enabled }}
+          proxy_ssl_name $host;
+        {{- end }}
+          proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-be.name" . }};
+        }
+      }
+{{ end }}

@@ -1,0 +1,353 @@
+{{- $version := include "lightrun-keycloak.getSemanticVersion" .Values.deployments.keycloak.image.tag -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lightrun-keycloak.name" . }}
+  labels:
+    app: {{ include "lightrun-keycloak.name" . }}
+  {{- with .Values.deployments.keycloak.annotations }}
+  annotations:
+    {{ toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  strategy:
+    type: {{ .Values.deployments.keycloak.rollout_strategy }}
+  # For clusters with more than 3 pods, consider changing the number of "owner nodes" as described in
+  # https://www.keycloak.org/server/caching#_configuring_caches -> Configuring caches for availability
+  replicas: {{ .Values.deployments.keycloak.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "lightrun-keycloak.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "lightrun-keycloak.name" . }}
+        {{- with .Values.deployments.keycloak.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- if or .Values.deployments.keycloak.annotations .Values.deployments.keycloak.podAnnotations }}
+      annotations:
+      {{- end }}
+        {{- with .Values.deployments.keycloak.annotations }}
+        {{/* deprecated if favor of podAnnotations */}}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.deployments.keycloak.podAnnotations }}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if .Values.deployments.keycloak.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{ toYaml .Values.deployments.keycloak.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ template "lightrun-keycloak.serviceAccountName" . }}
+      {{- if .Values.secrets.defaults.dockerhub_config }}
+      imagePullSecrets:
+      {{- if .Values.secrets.defaults.dockerhub_config.existingSecret }}
+        - name: {{ .Values.secrets.defaults.dockerhub_config.existingSecret }}
+      {{- else }}
+        - name: {{ include "secrets.dockerhub.name" . }}
+      {{- end -}}
+      {{- end }}
+      {{- if .Values.deployments.keycloak.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.deployments.keycloak.podSecurityContext | nindent 8 }}
+      {{- end }}
+      containers:
+
+      {{- include "lightrun-keycloak.container.persist-async-profiler-output-files" . | indent 8 }}
+        - name: {{ include "lightrun-keycloak.name" . }}
+          securityContext: {{- include "lightrun-keycloak.containerSecurityContext" . | indent 12 }}
+          resources:
+            requests:
+              cpu: {{ .Values.deployments.keycloak.resources.cpu }}
+              memory: {{ .Values.deployments.keycloak.resources.memory }}
+            limits:
+              cpu: {{ .Values.deployments.keycloak.resources.cpu }}
+              memory: {{ .Values.deployments.keycloak.resources.memory }}
+          image: "{{ .Values.deployments.keycloak.image.repository }}:{{ .Values.deployments.keycloak.image.tag }}"
+          imagePullPolicy: {{ .Values.deployments.keycloak.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 9080
+              protocol: TCP
+          {{- if .Values.deployments.keycloak.clusterMode }}
+            - name: kc-cluster
+              containerPort: 7800
+              protocol: TCP
+          {{- end }}
+          args:
+            - 'start'
+            - '--optimized'
+            - '--{{ include "http.scheme" . }}-port'
+            - '9080'
+          {{- if .Values.deployments.keycloak.useJsonLogFormat }}
+            - '--log-console-output=json'
+          {{- end }}
+          {{- if or .Values.general.readOnlyRootFilesystem
+                    .Values.general.internal_tls.enabled
+                    .Values.deployments.keycloak.extraVolumeMounts
+                    .Values.deployments.keycloak.asyncProfiler.enabled
+          }}
+          volumeMounts:
+          {{- include "lightrun-keycloak.volumeMounts.asyncProfiler" . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.deployments.keycloak.extraVolumeMounts }}
+            {{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.general.readOnlyRootFilesystem }}
+            - name: tmpfs
+              mountPath: /tmp
+              subPath: tmp
+            - name: tmpfs
+              mountPath: /opt
+              subPath: opt
+          {{- end }}
+          {{- if .Values.general.internal_tls.enabled }}
+            - name: internal-cert
+              mountPath: /etc/x509/https/
+              readOnly: true
+            {{- if and .Values.deployments.keycloak.clusterMode (eq .Values.general.internal_tls.certificates.source "existing_certificates") }}
+            - name: p12
+              mountPath: /p12
+              readOnly: true
+            {{- end }}
+          {{- end }}
+          {{- if semverCompare ">=1.42.0" $version }}
+          startupProbe:
+            initialDelaySeconds: {{ .Values.deployments.keycloak.startupProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.deployments.keycloak.startupProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.deployments.keycloak.startupProbe.periodSeconds }}
+            successThreshold: {{ .Values.deployments.keycloak.startupProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.keycloak.startupProbe.failureThreshold }}
+            httpGet:
+              scheme: {{ include "http.scheme" . | upper }}
+              path: /auth/health/started
+              port: 9000
+          readinessProbe:
+            initialDelaySeconds: {{ .Values.deployments.keycloak.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.deployments.keycloak.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.deployments.keycloak.readinessProbe.periodSeconds }}
+            successThreshold: {{ .Values.deployments.keycloak.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.keycloak.readinessProbe.failureThreshold }}
+            httpGet:
+              scheme: {{ include "http.scheme" . | upper }}
+              path: /auth/health/ready
+              port: 9000
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.deployments.keycloak.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.deployments.keycloak.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.deployments.keycloak.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.deployments.keycloak.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.keycloak.livenessProbe.failureThreshold }}
+            httpGet:
+              scheme: {{ include "http.scheme" . | upper }}
+              path: /auth/health/live
+              port: 9000
+          {{- else }}
+          readinessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: {{ include "http.scheme" . | upper }}
+              path: /auth
+              port: 9080
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.deployments.keycloak.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.deployments.keycloak.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.deployments.keycloak.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.deployments.keycloak.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.keycloak.livenessProbe.failureThreshold }}
+            httpGet:
+              scheme: {{ include "http.scheme" . | upper }}
+              path: /auth
+              port: 9080
+          {{- end }}
+          env:
+            - name: INFO_DEPLOYMENT
+            {{ if eq .Values.general.deployment_type "saas" }}
+              value: "SaaS"
+            {{ else if eq .Values.general.deployment_type "single-tenant" }}
+              value: "single-tenant"
+            {{ else }}
+              value: "on-prem"
+            {{ end }}
+            - name: KC_PROXY_HEADERS
+              value: "xforwarded"
+            - name: KEYCLOAK_ADMIN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.keycloak.name" . }}
+                  key: KEYCLOAK_USER
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.keycloak.name" . }}
+                  key: KEYCLOAK_PASSWORD
+            {{ if .Values.general.internal_tls.enabled }}
+            - name: KC_HTTPS_CERTIFICATE_FILE
+              value: /etc/x509/https/tls.crt
+            - name: KC_HTTPS_CERTIFICATE_KEY_FILE
+              value: /etc/x509/https/tls.key
+            {{- if and .Values.deployments.keycloak.clusterMode (eq .Values.general.internal_tls.certificates.source "existing_certificates")  }}
+            - name: KC_CACHE_EMBEDDED_MTLS_ENABLED
+              value: "true"
+            - name: KC_CACHE_EMBEDDED_MTLS_KEY_STORE_FILE
+              value: /p12/cluster.p12
+            - name: KC_CACHE_EMBEDDED_MTLS_KEY_STORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.backend.name" . }}
+                  key: KEYSTORE_PASSWORD
+            - name: KC_CACHE_EMBEDDED_MTLS_TRUST_STORE_FILE
+              value: /p12/cluster-ca.p12
+            - name: KC_CACHE_EMBEDDED_MTLS_TRUST_STORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.backend.name" . }}
+                  key: KEYSTORE_PASSWORD
+            {{- end }}
+            {{ else }}
+            - name: KC_HTTPS_CERTIFICATE_FILE
+            - name: KC_HTTPS_CERTIFICATE_KEY_FILE
+            {{ end }}
+            - name: KC_DB
+              value: mysql
+            - name: KC_PROXY
+              value: edge
+            - name: KC_DB_URL
+              {{- if eq .Values.deployments.keycloak.dbConnector "mysql" }}
+              value: jdbc:mysql://{{ include "mysql.db_endpoint" . }}:3306/{{ .Values.general.db_database }}?useSSL={{ .Values.general.db_require_secure_transport }}&allowPublicKeyRetrieval=true&trustServerCertificate=true&serverTimezone=UTC
+              {{- else if eq .Values.deployments.keycloak.dbConnector "mariadb" }}
+              value: jdbc:mariadb://{{ include "mysql.db_endpoint" . }}:3306/{{ .Values.general.db_database }}?useSSL={{ .Values.general.db_require_secure_transport }}&allowPublicKeyRetrieval=true&trustServerCertificate=true&serverTimezone=UTC
+              {{- end }}
+            - name: KC_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.keycloak.name" . }}
+                  key: DB_USER
+            - name: KC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.keycloak.name" . }}
+                  key: DB_PASSWORD
+            - name: DB_ADDR
+              value: {{ include "mysql.db_endpoint" . }}
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_DATABASE
+              value: {{ .Values.general.db_database }}
+            - name: JDBC_PARAMS
+              value: "useSSL={{ .Values.general.db_require_secure_transport }}&allowPublicKeyRetrieval=true"
+            - name: KEYCLOAK_STATISTICS
+              value: "db,{{ include "http.scheme" . }}"
+            {{- if .Values.deployments.keycloak.clusterMode }}
+            - name: KC_CACHE
+              value: ispn
+            - name: KC_CACHE_STACK
+              value: kubernetes  
+            - name: JAVA_OPTS_APPEND
+              value: "-Djgroups.dns.query={{ include "lightrun-keycloak.name" . }}-headless {{ include "lightrun-keycloak.java.argument.asyncProfiler" . }}"
+            {{- else }}
+            - name: JAVA_OPTS_APPEND
+              value: "{{- include "lightrun-keycloak.java.argument.asyncProfiler" . -}}"
+            {{- end }}
+            - name: JAVASCRIPT_FILES
+              value: js/keycloak.js
+            {{- if .Values.deployments.keycloak.extraEnvs }}
+              {{- toYaml .Values.deployments.keycloak.extraEnvs | nindent 12 }}
+              {{- if not (include "list-of-maps-contains" (list .Values.deployments.keycloak.extraEnvs "_JAVA_OPTIONS") ) }}
+            - name: "_JAVA_OPTIONS"
+              value: {{- toYaml (include "calculate-heap-size" .Values.deployments.keycloak) | nindent 21  }}
+              {{- end }}
+              {{- if not (include "list-of-maps-contains" (list .Values.deployments.keycloak.extraEnvs "KC_HOSTNAME") ) }}
+                {{- if semverCompare ">=1.38.0" $version }}
+            - name: KC_HOSTNAME
+              value: 'https://{{ .Values.general.lightrun_endpoint }}/auth'
+                {{- else }}
+            - name: KC_HOSTNAME_URL
+              value: 'https://{{ .Values.general.lightrun_endpoint }}/auth'
+                {{- end }}
+              {{- end }}
+            {{- else }}
+            - name: "_JAVA_OPTIONS"
+              value: {{- toYaml (include "calculate-heap-size" .Values.deployments.keycloak) | nindent 21  }}
+              {{- if semverCompare ">=1.38.0" $version }}
+            - name: KC_HOSTNAME
+              value: 'https://{{ .Values.general.lightrun_endpoint }}/auth'
+              {{- else }}
+            - name: KC_HOSTNAME_URL
+              value: 'https://{{ .Values.general.lightrun_endpoint }}/auth'
+              {{- end }}
+            {{- end }}
+    {{- if or .Values.general.readOnlyRootFilesystem
+              .Values.general.db_local
+              .Values.general.internal_tls.enabled
+              .Values.deployments.keycloak.asyncProfiler.enabled
+    }}
+      initContainers:
+      {{- include "lightrun-keycloak.initContainer.download-async-profiler" . | nindent 6 }}
+    {{- end -}}
+    {{- if .Values.general.readOnlyRootFilesystem }}
+        {{- include "lightrun-keycloak.initContainer.read-only-rootfs" . }}
+    {{- end }}
+    {{- if .Values.general.db_local }}
+        {{- include "lightrun-keycloak.initContainer.wait-for-db" . }}
+    {{- end }}
+    {{- if and .Values.general.internal_tls.enabled .Values.deployments.keycloak.clusterMode (eq .Values.general.internal_tls.certificates.source "existing_certificates") }}
+        {{- include "lightrun-keycloak.initContainer.cluster-certs" . }}
+    {{- end }}
+      {{- if .Values.general.tolerations }}
+      tolerations:
+        {{ toYaml .Values.general.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.general.nodeSelector }}
+      nodeSelector:
+        {{ toYaml .Values.general.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.deployments.keycloak.affinity }}
+      affinity:
+        {{ toYaml .Values.deployments.keycloak.affinity | nindent 8 }}
+      {{- end }}
+      {{- if or .Values.general.readOnlyRootFilesystem
+                .Values.general.internal_tls.enabled
+                .Values.deployments.keycloak.extraVolumes
+                .Values.deployments.keycloak.asyncProfiler.enabled
+      }}
+      volumes:
+      {{- include "lightrun-keycloak.volumes.asyncProfiler" . | nindent 8 }}
+      {{- end }}
+        {{- with .Values.deployments.keycloak.extraVolumes }}
+          {{ toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.general.readOnlyRootFilesystem }}
+        - name: tmpfs
+          emptyDir:
+            sizeLimit: {{ .Values.general.readOnlyRootFilesystem_tmpfs_sizeLimit  }}
+        {{ end }}
+        {{- if .Values.general.internal_tls.enabled }}
+        - name: internal-cert
+          secret:
+            defaultMode: 444
+            {{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" }}
+            secretName: {{ include "lightrun-keycloak.name" . }}-cert
+            {{- else if eq .Values.general.internal_tls.certificates.source "existing_certificates" }}
+            secretName: {{ .Values.general.internal_tls.certificates.existing_certificates.keycloak }}
+            {{- end }}
+            {{- if and  .Values.deployments.keycloak.clusterMode (eq .Values.general.internal_tls.certificates.source "existing_certificates") }}
+        - name: cluster-cert
+          secret:
+            defaultMode: 444
+            # Secret should create the following files: ca.crt, tls.key, tls.crt
+            secretName: {{ .Values.general.internal_tls.certificates.existing_certificates.keycloak_cluster }}
+        - name: p12
+          emptyDir: {}
+            {{- end }}
+        {{- end }}
+        {{- if .Values.deployments.keycloak.extraVolumes }}
+          {{- range .Values.deployments.keycloak.extraVolumes }}
+        {{- end }}
+        {{- end }}

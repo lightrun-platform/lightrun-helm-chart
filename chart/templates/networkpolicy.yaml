@@ -1,0 +1,160 @@
+{{ if .Values.general.networkPolicy.enabled }}
+apiVersion: "networking.k8s.io/v1"
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-network-policy
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector: {}
+  policyTypes:
+  {{- if .Values.general.networkPolicy.ingress.enabled }}
+    - Ingress
+  {{- end }}
+  {{- if .Values.general.networkPolicy.egress.enabled }}
+    - Egress
+  {{- end }}
+  {{- if .Values.general.networkPolicy.ingress.enabled }}
+  {{- /*
+  If ingress.enabled && user provided values => add mandatory namespaces + provided values by user.
+  Elif ingress.enabled && user did not provide any value => unset ingress , means deny-all.
+  Elif not ingress.enabled  => remove any indication of ingress direction , means allow-all.
+  */}}
+  {{- with .Values.general.networkPolicy.ingress -}}
+  {{- if or .ipBlock .namespacesSelector .podSelector .ports .namespacePodSelector }}
+  ingress:
+    - from:
+  {{- $allowedMandatoryNamespaces := list $.Release.Namespace "kube-system" }}
+  {{- range $namespace := $allowedMandatoryNamespaces }}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ $namespace }}
+  {{- end -}}
+  {{- if .ipBlock }}
+  {{- range $index := .ipBlock }}
+        - ipBlock:
+  {{- range $key, $value := $index }}
+  {{- if ( eq $key "cidr" ) }}
+            cidr: {{ $value -}}
+  {{- end }}
+  {{- if ( eq $key "except" ) }}
+            except:
+  {{- range $cidr := $value }}
+              {{ toYaml $cidr | nindent 14 }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- if .namespacesSelector }}
+  {{- range $namespace := .namespacesSelector }}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ $namespace }}
+  {{- end }}
+  {{- end }}
+  {{- if .podSelector }}
+  {{- range $key, $values := .podSelector }}
+  {{- range $value := $values }}
+        - podSelector:
+            matchLabels:
+              {{ $key }}: {{ $value }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- if .namespacePodSelector }}
+  {{- range $namespaces := .namespacePodSelector }}
+  {{- range $namespace, $podLabels := $namespaces }}
+  {{- range $podLabelKeys := $podLabels }}
+  {{- range $podLabelKey, $podLabelValues := $podLabelKeys }}
+  {{- range $podLabelValue := $podLabelValues }}
+        - podSelector:
+            matchLabels:
+              {{ $podLabelKey }}: {{ $podLabelValue }}
+          namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ $namespace }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- if .ports }}
+      ports:{{ toYaml .ports | nindent 8 }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.general.networkPolicy.egress.enabled }}
+  {{- /*
+  If egress.enabled && user provided values => add mandatory namespaces + provided values by user.
+  Elif egress.enabled && user did not provide any value => unset egress , means deny-all.
+  Elif not egress.enabled  => remove any indication of egress direction , means allow-all.
+  */}}
+  {{- with .Values.general.networkPolicy.egress }}
+  {{- if or .ipBlock .namespacesSelector .podSelector .ports .namespacePodSelector }}
+  egress:
+    - to:
+  {{- $allowedMandatoryNamespaces := list $.Release.Namespace "kube-system" }}
+  {{- range $namespace := $allowedMandatoryNamespaces }}
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: {{ $namespace }}
+  {{- end -}}
+  {{- if .ipBlock }}
+  {{- range $index := .ipBlock }}
+      - ipBlock:
+  {{- range $key, $value := $index }}
+  {{- if ( eq $key "cidr" ) }}
+          cidr: {{ $value -}}
+  {{- end }}
+  {{- if ( eq $key "except" ) }}
+          except:
+  {{- range $cidr := $value }}
+            {{ toYaml $cidr | nindent 12 }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- if .namespacesSelector }}
+  {{- range $namespace := .namespacesSelector }}
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: {{ $namespace }}
+  {{- end }}
+  {{- end }}
+  {{- if .podSelector }}
+  {{- range $key, $values := .podSelector }}
+  {{- range $value := $values }}
+      - podSelector:
+          matchLabels:
+            {{ $key }}: {{ $value }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- if .namespacePodSelector }}
+  {{- range $namespaces := .namespacePodSelector }}
+  {{- range $namespace, $podLabels := $namespaces }}
+  {{- range $podLabelKeys := $podLabels }}
+  {{- range $podLabelKey, $podLabelValues := $podLabelKeys }}
+  {{- range $podLabelValue := $podLabelValues }}
+      - podSelector:
+          matchLabels:
+            {{ $podLabelKey }}: {{ $podLabelValue }}
+        namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: {{ $namespace }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- if .ports }}
+      ports:{{ toYaml .ports | nindent 8 }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+{{ end }}

@@ -1,0 +1,24 @@
+{{ if not .Values.deployments.redis.external.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "lightrun-redis.name" . }}
+  {{ with .Values.deployments.redis.service.annotations }}
+  annotations:
+    {{ toYaml . | nindent 4 }}
+  {{ end }}
+  {{ with .Values.deployments.redis.service.labels }}
+  labels:
+    {{ toYaml . | nindent 4 }}
+  {{ end }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: redis
+      port: {{ .Values.deployments.redis.port }}
+      protocol: TCP
+      targetPort: {{ .Values.deployments.redis.port }}
+  selector:
+    app: {{ include "lightrun-redis.name" . }}
+{{ end }}
