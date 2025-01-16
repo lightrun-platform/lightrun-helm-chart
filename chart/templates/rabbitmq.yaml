@@ -1,0 +1,219 @@
+{{ if and .Values.general.mq.enabled .Values.general.mq.local -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "lightrun-mq.name" . }}
+  labels:
+    app: {{ include "lightrun-mq.name" . }}
+spec:
+  {{- with .Values.general.mq.persistentVolumeClaimRetentionPolicy }}
+  persistentVolumeClaimRetentionPolicy:
+    {{ . | toYaml | nindent 4 }}
+  {{- end }}
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: {{ include "lightrun-mq.name" . }}
+  serviceName: {{ include "lightrun-mq.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "lightrun-mq.name" . }}
+        {{- with .Values.deployments.rabbitmq.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{ with .Values.deployments.rabbitmq.podAnnotations }}
+      annotations:
+        {{ toYaml . | nindent 8 }}
+      {{ end }}
+    spec:
+      terminationGracePeriodSeconds: 10
+      securityContext: {{- include "rabbitmq.podBaseSecurityContext" . | indent 8 }}
+      serviceAccountName: {{ template "lightrun-mq.serviceAccountName" . }}
+      {{- if .Values.secrets.defaults.dockerhub_config }}
+      imagePullSecrets:
+      {{- if .Values.secrets.defaults.dockerhub_config.existingSecret }}
+        - name: {{ .Values.secrets.defaults.dockerhub_config.existingSecret }}
+      {{- else }}
+        - name: {{ include "secrets.dockerhub.name" . }}
+      {{- end -}}
+      {{- end }}
+      initContainers:
+      # Since config maps mount read-only volumes and rabbitmq also writes to the config file,
+      # the file must be mounted as read-write. We use init containers to copy from the config map read-only
+      # path, to a read-write path
+      - name: "rabbitmq-config"
+        securityContext: {{- include "rabbitmq.containerSecurityContext" . | indent 10 }}
+        image: "{{ .Values.deployments.rabbitmq.initContainers.rabbitmq_config.image.repository }}:{{ .Values.deployments.rabbitmq.initContainers.rabbitmq_config.image.tag }}"
+        imagePullPolicy: {{ .Values.deployments.rabbitmq.initContainers.rabbitmq_config.image.pullPolicy }}
+        resources:
+          requests:
+            cpu: {{ .Values.deployments.rabbitmq.initContainers.rabbitmq_config.resources.cpu }}
+            memory: {{ .Values.deployments.rabbitmq.initContainers.rabbitmq_config.resources.memory }}
+          limits:
+            cpu: {{ .Values.deployments.rabbitmq.initContainers.rabbitmq_config.resources.cpu }}
+            memory: {{ .Values.deployments.rabbitmq.initContainers.rabbitmq_config.resources.memory }}
+        volumeMounts:
+        - name: {{ include "lightrun-mq.name" . }}-config
+          mountPath: /tmp/rabbitmq
+        - name: {{ include "lightrun-mq.name" . }}-config-rw
+          mountPath: /etc/rabbitmq
+        - name: {{ include "lightrun-mq.name" . }}-config-plugins
+          mountPath: /var/lib/rabbitmq
+        command:
+        - sh
+        - -c
+        # the newline is needed since the Docker image entrypoint scripts appends to the config file
+        - cp /tmp/rabbitmq/rabbitmq.conf /etc/rabbitmq/rabbitmq.conf && echo '' >> /etc/rabbitmq/rabbitmq.conf;
+          cp /tmp/rabbitmq/enabled_plugins /var/lib/rabbitmq/enabled_plugins;
+          cp /tmp/rabbitmq/definitions.json /etc/rabbitmq/definitions.json >> /etc/rabbitmq/definitions.json
+      containers:
+        - name: {{ include "lightrun-mq.name" . }}
+          securityContext: {{- include "rabbitmq.containerSecurityContext" . | indent 12 }}
+          image: "{{ .Values.deployments.rabbitmq.image.repository }}:{{ .Values.deployments.rabbitmq.image.tag }}"
+          imagePullPolicy: {{ .Values.deployments.rabbitmq.image.pullPolicy }}
+          # Learn more at https://www.rabbitmq.com/monitoring.html#health-checks.
+          livenessProbe:
+            exec:
+              command: ["rabbitmq-diagnostics", "status"]
+            initialDelaySeconds: {{ .Values.deployments.rabbitmq.livenessProbe.initialDelaySeconds }}
+            # See https://www.rabbitmq.com/monitoring.html for monitoring frequency recommendations.
+            periodSeconds: {{ .Values.deployments.rabbitmq.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.deployments.rabbitmq.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.deployments.rabbitmq.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.rabbitmq.livenessProbe.failureThreshold }}
+          readinessProbe: # probe to know when RMQ is ready to accept traffic
+            exec:
+              command: ["rabbitmq-diagnostics", "ping"]
+            initialDelaySeconds: {{ .Values.deployments.rabbitmq.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.deployments.rabbitmq.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.deployments.rabbitmq.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.deployments.rabbitmq.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.rabbitmq.readinessProbe.failureThreshold }}
+          {{- with .Values.deployments.rabbitmq.lifecycle }}
+          lifecycle:
+            {{ toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            requests:
+              cpu: {{ .Values.deployments.rabbitmq.resources.cpu }}
+              memory: {{ .Values.deployments.rabbitmq.resources.memory }}
+            limits:
+              cpu: {{ .Values.deployments.rabbitmq.resources.cpu }}
+              memory: {{ .Values.deployments.rabbitmq.resources.memory }}        
+          env:
+          - name: RABBITMQ_DEFAULT_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "secrets.backend.name" . }}
+                key: SPRING_RABBITMQ_USERNAME
+          - name: RABBITMQ_DEFAULT_PASS
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "secrets.backend.name" . }}
+                key: SPRING_RABBITMQ_PASSWORD
+          - name: MY_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: MY_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: RABBITMQ_ENABLED_PLUGINS_FILE
+            value: /etc/rabbitmq/enabled_plugins
+          - name: K8S_SERVICE_NAME
+            value: {{ include "lightrun-mq.name" . }}
+          - name: RABBITMQ_USE_LONGNAME
+            value: 'true'
+          - name: RABBITMQ_NODENAME
+            value: rabbit@$(MY_POD_NAME).$(K8S_SERVICE_NAME).$(MY_POD_NAMESPACE).svc.{{ .Values.general.cluster_domain }}
+          ports:
+          - name: amqp
+            containerPort: {{ .Values.general.mq.port }}
+            protocol: TCP
+          - name: management
+            containerPort: 15672
+            protocol: TCP
+          - name: prometheus
+            containerPort: 15692
+            protocol: TCP
+          volumeMounts:
+            # rabbitmq.conf and enabled_plugins -> should have writeable access
+          - name: {{ include "lightrun-mq.name" . }}-config-rw
+            mountPath: /etc/rabbitmq/conf.d/rabbitmq.conf
+            subPath: rabbitmq.conf
+          - name: {{ include "lightrun-mq.name" . }}-config-plugins
+            mountPath: /etc/rabbitmq/enabled_plugins
+            subPath: enabled_plugins
+          - name: {{ include "lightrun-mq.name" . }}-config
+            mountPath: /etc/rabbitmq/conf.d/definitions.json
+            subPath: definitions.json
+          # rabbitmq data directory
+          - name: {{ include "lightrun-mq.storage.name" . }}
+            mountPath: "/var/lib/rabbitmq/mnesia"
+          {{ if .Values.general.internal_tls.enabled }}
+          - name: internal-cert
+            mountPath: /tmp/certs/
+            readOnly: true
+          {{- end }}
+      {{- if .Values.general.tolerations }}
+      tolerations:
+        {{ toYaml .Values.general.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.deployments.rabbitmq.nodeSelector }}
+      nodeSelector:
+        {{ toYaml .Values.deployments.rabbitmq.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.deployments.rabbitmq.affinity }}
+      affinity:
+        {{ toYaml .Values.deployments.rabbitmq.affinity | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: {{ include "lightrun-mq.name" . }}-config
+        configMap:
+          name: {{ include "lightrun-mq.name" . }}-config
+          items:
+          - key: enabled_plugins
+            path: "enabled_plugins"
+          - key: rabbitmq.conf
+            path: "rabbitmq.conf"
+          - key: definitions.json
+            path: "definitions.json"
+      # read-write volume into which to copy the rabbitmq.conf and enabled_plugins files
+      # this is needed since the docker image writes to the rabbitmq.conf file
+      # and Kubernetes Config Maps are mounted as read-only
+      - name: {{ include "lightrun-mq.name" . }}-config-rw
+        emptyDir:
+          sizeLimit: 50Mi
+      - name: {{ include "lightrun-mq.name" . }}-config-plugins
+        emptyDir:
+          sizeLimit: 50Mi
+      {{- if .Values.general.internal_tls.enabled }}
+      - name: internal-cert
+        secret:
+          {{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" }}
+          secretName: {{ include "lightrun-mq.name" . }}-cert
+          {{- else if eq .Values.general.internal_tls.certificates.source "existing_certificates" }}
+          secretName: {{ .Values.general.internal_tls.certificates.existing_certificates.rabbitmq }}
+          {{- end }}
+      {{- end }}
+{{- if eq (.Values.general.mq.storage | toString) "0" }}
+      - name: {{ include "lightrun-mq.storage.name" . }}
+        emptyDir:
+          sizeLimit: {{ .Values.deployments.rabbitmq.emptyDir.sizeLimit }}
+{{- else }}
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ include "lightrun-mq.storage.name" . }}
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: {{ .Values.general.mq.storageClassName }}
+      resources:
+        requests:
+          storage: {{ .Values.general.mq.storage }}
+{{- end }}
+
+{{ end }}

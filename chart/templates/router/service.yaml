@@ -1,0 +1,36 @@
+{{ if .Values.general.router.enabled }}
+
+{{ if .Values.general.router.service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "router.name" . }}
+  {{ with .Values.general.router.service.annotations }}
+  annotations:
+    {{ toYaml . | nindent 4 }}
+  {{ end }}
+  {{ with .Values.general.router.service.labels }}
+  labels:
+    {{ toYaml . | nindent 4 }}
+  {{ end }}
+spec:
+  ports:
+  - port: {{ .Values.general.router.service.ports.https }}
+    protocol: TCP
+    targetPort: https
+    name: https
+  - port: {{ .Values.general.router.service.ports.http }}
+    protocol: TCP
+    targetPort: http
+    name: http
+  selector:
+    app: {{ include "router.name" . }}
+  {{- if eq .Values.general.router.service.type "Headless" }}
+  type: ClusterIP
+  clusterIP: None
+  {{- else }}
+  type: {{ .Values.general.router.service.type }}
+  {{- end }}
+{{ end }}
+
+{{ end }}

@@ -1,0 +1,31 @@
+{{ if not .Values.deployments.redis.external.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lightrun-redis.name" . }}-config
+data:
+  redis.conf: |
+      dir /data
+      {{- if .Values.general.internal_tls.enabled }}
+      port 0
+      tls-port {{ .Values.deployments.redis.port }}
+
+      # Configure a X.509 certificate and private key to use for authenticating the
+      # server to connected clients, masters or cluster peers.  These files should be
+      # PEM formatted.
+      #
+      tls-cert-file /tmp/certs/tls.crt
+      tls-key-file /tmp/certs/tls.key
+      #
+      # tls-ca-cert-file /tmp/certs/ca.crt
+      tls-auth-clients no
+
+      {{- else }}
+      port {{ .Values.deployments.redis.port }}
+      {{- end }}
+
+      {{- if not .Values.deployments.redis.auth.enabled }}
+      protected-mode no
+      {{- end }}
+
+{{ end }}

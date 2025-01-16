@@ -1,0 +1,148 @@
+{{ if .Values.general.router.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "router.name" . }}
+  labels:
+    app: {{ include "router.name" . }}
+spec:
+  strategy:
+      type: {{ if .Values.general.router.host_port.enabled }}Recreate{{ else }}RollingUpdate{{ end }}
+  {{- if .Values.general.router.host_port.enabled }}
+  replicas: 1
+  {{- else if not .Values.deployments.router.hpa.enabled }}
+  replicas: {{ .Values.deployments.router.replicas }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ include "router.name" . }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/router/configmap.yaml") . | sha256sum }}
+        {{- with .Values.deployments.router.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        app: {{ include "router.name" . }}
+        {{- with .Values.deployments.router.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if .Values.deployments.router.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml .Values.deployments.router.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
+      {{- if .Values.secrets.defaults.dockerhub_config }}
+      imagePullSecrets:
+      {{- if .Values.secrets.defaults.dockerhub_config.existingSecret }}
+        - name: {{ .Values.secrets.defaults.dockerhub_config.existingSecret }}
+      {{- else }}
+        - name: {{ include "secrets.dockerhub.name" . }}
+      {{- end -}}
+      {{- end }}
+      {{- if .Values.deployments.router.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.deployments.router.podSecurityContext | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ template "router.serviceAccountName" . }}
+      containers:
+        - name: {{ include "router.name" . }}
+          securityContext: {{- include "router.containerSecurityContext" . | indent 12 }}
+          image: "{{ .Values.deployments.router.image.repository }}:{{ .Values.deployments.router.image.tag }}"
+          imagePullPolicy: {{ .Values.deployments.router.image.pullPolicy }}
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+              readOnly: true
+            - name: nginx-conf
+              mountPath: /etc/nginx/nginx.conf  
+              subPath: nginx.conf
+              readOnly: true
+          {{- if eq (include "router.use-tls" .) "true" }}
+            - name: certificates
+              mountPath: /cert
+              readOnly: true
+          {{- end }}
+          {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name  }}
+            - name: ca-cert
+              mountPath: /ca_cert
+              readOnly: true
+          {{- end }}
+          {{- if .Values.general.readOnlyRootFilesystem }}
+            - name: tmpfs
+              mountPath: /tmp
+          {{- end }}
+          resources:
+            requests:
+              cpu: {{ .Values.deployments.router.resources.cpu }}
+              memory: {{ .Values.deployments.router.resources.memory }}
+            limits:
+              cpu: {{ .Values.deployments.router.resources.cpu }}
+              memory: {{ .Values.deployments.router.resources.memory }}
+          ports:
+          - containerPort: {{ .Values.deployments.router.ports.http }}
+            name: http
+            {{ if .Values.general.router.host_port.enabled -}}
+            hostPort: {{ .Values.general.router.host_port.ports.http }}
+            {{ end }}
+          {{- if eq (include "router.use-tls" .) "true" }}
+          - containerPort: {{ .Values.deployments.router.ports.https }}
+            name: https
+            {{ if .Values.general.router.host_port.enabled -}}
+            hostPort: {{ .Values.general.router.host_port.ports.https }}
+            {{ end }}
+          {{- end }}
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.deployments.router.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.deployments.router.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.deployments.router.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.deployments.router.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.router.livenessProbe.failureThreshold }}
+            httpGet:
+              scheme: {{ include "router.http.scheme" . | upper }}
+              path: /health
+              port: {{ include "router.http.scheme" . }}
+          readinessProbe:
+            initialDelaySeconds: {{ .Values.deployments.router.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.deployments.router.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.deployments.router.readinessProbe.periodSeconds }}
+            successThreshold: {{ .Values.deployments.router.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.router.readinessProbe.failureThreshold }}
+            httpGet:
+              scheme: {{ include "router.http.scheme" . | upper }}
+              path: /health
+              port: {{ include "router.http.scheme" . }}
+      {{- if .Values.general.tolerations }}
+      tolerations:
+        {{ toYaml .Values.general.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.general.nodeSelector }}
+      nodeSelector:
+        {{ toYaml .Values.general.nodeSelector  | nindent 8 }}
+      {{- end }}
+      {{- if .Values.deployments.router.affinity }}
+      affinity:
+        {{ toYaml .Values.deployments.router.affinity  | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: nginx-conf
+        configMap:
+          name: {{ include "router.conf.name" . }}
+      {{- if eq (include "router.use-tls" .) "true" }}
+      - name: certificates
+        secret:
+          secretName: {{ include "secrets.certificate.name" . }}
+      {{- end }}
+      {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name  }}
+      - name: ca-cert
+        secret:
+          secretName: {{ .Values.general.internal_tls.certificates.existing_ca_secret_name }}
+      {{- end }}
+      {{- if .Values.general.readOnlyRootFilesystem }}
+      - name: tmpfs
+        emptyDir:
+          sizeLimit: {{ .Values.general.readOnlyRootFilesystem_tmpfs_sizeLimit }}
+      {{- end -}}
+{{end}}

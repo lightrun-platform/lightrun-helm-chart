@@ -1,0 +1,25 @@
+{{ if and .Values.general.mq.enabled .Values.general.mq.local -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "lightrun-mq.name" . }}
+  {{- with .Values.deployments.rabbitmq.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+   - name: http
+     protocol: TCP
+     port: 15672
+   - name: prometheus
+     protocol: TCP
+     port: 15692
+   - name: amqp
+     protocol: TCP
+     port: {{ .Values.general.mq.port }}
+  selector:
+    app: {{ include "lightrun-mq.name" . }}
+{{ end }}
