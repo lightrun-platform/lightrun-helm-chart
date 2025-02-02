@@ -64,6 +64,11 @@ spec:
             - name: certificates
               mountPath: /cert
               readOnly: true
+          {{- if .Values.secrets.defaults.keystore_password }}
+            - name: keystore-vol
+              mountPath: /keystore
+              readOnly: true
+          {{- end }}
           {{- end }}
           {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name  }}
             - name: ca-cert
@@ -134,6 +139,14 @@ spec:
       - name: certificates
         secret:
           secretName: {{ include "secrets.certificate.name" . }}
+      {{- if .Values.secrets.defaults.keystore_password }}
+      - name: keystore-vol
+        secret:
+          secretName: {{ include "secrets.backend.name" . }}
+          items:
+            - key: KEYSTORE_PASSWORD
+              path: KEYSTORE_PASSWORD
+      {{- end }}
       {{- end }}
       {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name  }}
       - name: ca-cert
