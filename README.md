@@ -263,32 +263,6 @@ deployments:
       enable: false
 ```
 
-### System API keys encryption
-In order to encrypt API keys backend require 2 things:
-- file with aes key
-- env var `SYSTEM_API_AES_KEY_PATH` with path to that key
-
-We are controlling both parameters with a true/false switch:
-```yaml
-general:
-  api_keys_encryption:
-    enabled: false
-```
-When `enabled: true` chart will take the value of 
-```yaml
-secrets:
-  api_keys_encryption:
-    aes_key: ""
-```
-and put it into the secret, that will be mounted to backend. `SYSTEM_API_AES_KEY_PATH` will be set to that file  
-
-#### aes key generation
-key should be of 128 bit (16 byte) len and hex encoded
-can be generated with a simple command:
-```bash
-openssl rand -hex 16
-```
-
 ### Keycloak 
 - Allow SHA1 algorithm. Since keycloak image is based on RHEL9 where SHA1 has been deprecated. we provided the ability to allow it. a particular case is when using Azure database for MySQL where the certificate sent by azure contain SHA1 algorithm and Keycloak complains about it. the bellow flag control it and by default set to false:
 ```yaml
