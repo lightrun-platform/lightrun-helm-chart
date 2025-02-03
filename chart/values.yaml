@@ -875,7 +875,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/data-streamer
-      tag: "rpk-4.37.0"
+      tag: "rpk-4.45.1"
       pullPolicy: IfNotPresent
     resources:
       cpu: 100m

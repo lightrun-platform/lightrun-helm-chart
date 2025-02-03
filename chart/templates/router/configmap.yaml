@@ -138,6 +138,9 @@ data:
         ssl_protocols       TLSv1.2 TLSv1.3;
         ssl_certificate     /cert/tls.crt;
         ssl_certificate_key /cert/tls.key;
+        {{- if .Values.secrets.defaults.keystore_password }}
+        ssl_password_file /keystore/KEYSTORE_PASSWORD;
+        {{- end }}
         {{ else }}
         listen {{ .Values.deployments.router.ports.http }} default_server;
         {{ end }}
