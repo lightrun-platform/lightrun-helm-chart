@@ -496,21 +496,6 @@ Usage:
 {{- end -}}
 {{- end -}}
 
-{{- define "secrets.api_keys_encryption.name" -}}
-{{- if (kindIs "bool" .Values.general.deploy_secrets)  -}}
-{{ .Release.Name }}-aes
-{{- else -}}
-    {{- if .Values.general.deploy_secrets.enabled -}}
-{{ .Release.Name }}-aes
-    {{- else -}}
-        {{- if .Values.general.deploy_secrets.existing_secrets.api_keys_encryption -}}
-{{ .Values.general.deploy_secrets.existing_secrets.api_keys_encryption }}
-        {{- else -}}
-{{ .Release.Name }}-aes
-        {{- end -}}
-    {{- end -}}
-{{- end -}}
-{{- end -}}
 
 {{- define "secrets.dockerhub.name" -}}
 {{- if contains "lightrun" .Release.Name  -}}
