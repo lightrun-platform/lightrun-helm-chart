@@ -376,7 +376,7 @@ spec:
           - name: RABBITMQ_TCP_PORT
             value: "15672"
           - name: URL
-            value: {{ include "http.scheme" . }}://{{ include "lightrun-mq.endpoint" . }}:$(RABBITMQ_TCP_PORT)/api/overview
+            value: {{ include "http.scheme" . }}://{{ include "lightrun-mq.endpoint" . }}:$(RABBITMQ_TCP_PORT)/api/overview {{ if .Values.general.internal_tls.enabled }}-k{{ end }}
       {{- end }}
       - name: p12-creator
         image: "{{ .Values.deployments.backend.initContainers.p12_creator.image.repository }}:{{ .Values.deployments.backend.initContainers.p12_creator.image.tag }}"
