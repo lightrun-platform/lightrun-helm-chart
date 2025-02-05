@@ -500,21 +500,6 @@ Usage:
 {{- end -}}
 {{- end -}}
 
-{{- define "secrets.api_keys_encryption.name" -}}
-{{- if (kindIs "bool" .Values.general.deploy_secrets)  -}}
-{{ include "getReleaseNameOrOverride" . }}-aes
-{{- else -}}
-    {{- if .Values.general.deploy_secrets.enabled -}}
-{{ include "getReleaseNameOrOverride" . }}-aes
-    {{- else -}}
-        {{- if .Values.general.deploy_secrets.existing_secrets.api_keys_encryption -}}
-{{ .Values.general.deploy_secrets.existing_secrets.api_keys_encryption }}
-        {{- else -}}
-{{ include "getReleaseNameOrOverride" . }}-aes
-        {{- end -}}
-    {{- end -}}
-{{- end -}}
-{{- end -}}
 
 {{- define "secrets.dockerhub.name" -}}
 {{- if contains "lightrun" (include "getReleaseNameOrOverride" .)  -}}

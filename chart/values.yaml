@@ -22,14 +22,6 @@ general:
       ## Only relevant if deploy_secrets: false
       backend: ""
       keycloak: ""
-      api_keys_encryption: ""
-
-  # Enable api keys encryption
-  api_keys_encryption:
-    enabled: false
-    key_mount_path: "/keys"
-    ## If set to true, will encrypt api keys in the database
-    ## Requires secrets.api_keys_encryption.aes_key to be set
 
   ################
   ## Openshift (tested with version 4.12.5)
@@ -480,8 +472,6 @@ secrets:
     content: ""
     signature: ""
   # Credentials used by Lightrun services
-  api_keys_encryption:
-    aes_key: "" # Optional | Depends on general.api_keys_encryption.enabled | If disabled, secret won't be used
   defaults:
     mail_password: ""
     keystore_password: ""
@@ -888,7 +878,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/data-streamer
-      tag: "rpk-4.45.1"
+      tag: "rpk-4.45.1-alpine"
       pullPolicy: IfNotPresent
     resources:
       cpu: 100m
