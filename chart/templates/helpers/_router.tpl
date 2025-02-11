@@ -1,5 +1,5 @@
 {{- define "router.name" -}}
-{{ include "getReleaseNameOrOverride" . }}-router
+{{ .Release.Name }}-router
 {{- end -}}
 
 
@@ -15,7 +15,7 @@
 
 
 {{- define "router.conf.name" -}}
-{{ include "getReleaseNameOrOverride" . }}-router-conf
+{{ .Release.Name }}-router-conf
 {{- end -}}
 
 
