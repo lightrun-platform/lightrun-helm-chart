@@ -10,12 +10,8 @@ runAsUser will be added to each container separately, due to "hardcoded" values
 {{ $SecurityContext | toYaml -}}
 {{- end -}}
 
-{{/*
-Logic to get the release name or override it with a custom name, truncated to 63 characters and without trailing hyphens.
-*/}}
-{{- define "getReleaseNameOrOverride" -}}
-{{- default .Release.Name .Values.general.nameOverride | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
+
+
 
 {{/*
 ################
@@ -24,7 +20,7 @@ Logic to get the release name or override it with a custom name, truncated to 63
 */}}
 
 {{- define "lightrun-be.name" -}}
-{{ include "getReleaseNameOrOverride" . }}-backend
+{{ .Release.Name }}-backend
 {{- end -}}
 
 {{/*
@@ -67,7 +63,7 @@ Container SecurityContext of lightrun backend
 */}}
 
 {{- define "lightrun-fe.name" -}}
-{{ include "getReleaseNameOrOverride" . }}-frontend
+{{ .Release.Name }}-frontend
 {{- end -}}
 
 {{/*
@@ -109,7 +105,7 @@ Container SecurityContext of lightrun frontend
 */}}
 
 {{- define "lightrun-keycloak.name" -}}
-{{ include "getReleaseNameOrOverride" . }}-keycloak
+{{ .Release.Name }}-keycloak
 {{- end -}}
 
 {{/*
@@ -185,12 +181,12 @@ Currently, here is what we do in file templates/keycloak-deployment.yaml:
 
 
 {{- define "lightrun-redis.name" -}}
-{{ include "getReleaseNameOrOverride" . }}-redis
+{{ .Release.Name }}-redis
 {{- end -}}
 
 {{- define "lightrun-redis.endpoint" -}}
 {{- if not .Values.deployments.redis.external.enabled -}}
-{{ include "getReleaseNameOrOverride" . }}-redis
+{{ $.Release.Name }}-redis
 {{- else -}}
 {{ .Values.deployments.redis.external.endpoint }}
 {{- end -}}
@@ -276,7 +272,7 @@ exec:
 */}}
 
 {{- define "mysql.name" -}}
-{{ include "getReleaseNameOrOverride" . }}-mysql
+{{ .Release.Name }}-mysql
 {{- end -}}
 
 {{- define "mysql.pvc.name" -}}
@@ -289,7 +285,7 @@ exec:
 
 {{- define "mysql.db_endpoint" -}}
     {{- if .Values.general.db_local -}}
-    {{ include "getReleaseNameOrOverride" . }}-mysql
+    {{ .Release.Name }}-mysql
     {{- else -}}
     {{ .Values.general.db_endpoint }}
     {{- end -}}
@@ -344,7 +340,7 @@ Pod SecurityContext of lightrun mysql
 */}}
 
 {{- define "lightrun-mq.name" -}}
-{{ include "getReleaseNameOrOverride" . }}-mq
+{{ .Release.Name }}-mq
 {{- end -}}
 
 {{- define "lightrun-mq.storage.name" -}}
@@ -464,21 +460,21 @@ Usage:
 {{- if .Values.certificate.existing_cert -}}
 {{ .Values.certificate.existing_cert }}
 {{- else -}}
-{{ include "getReleaseNameOrOverride" . }}-certificate
+{{ .Release.Name }}-certificate
 {{- end -}}
 {{- end -}}
 
 {{- define "secrets.keycloak.name" -}}
 {{- if (kindIs "bool" .Values.general.deploy_secrets)  -}}
-{{ include "getReleaseNameOrOverride" . }}-keycloak
+{{ .Release.Name }}-keycloak
 {{- else -}}
     {{- if .Values.general.deploy_secrets.enabled -}}
-{{ include "getReleaseNameOrOverride" . }}-keycloak
+{{ .Release.Name }}-keycloak
     {{- else -}}
         {{- if .Values.general.deploy_secrets.existing_secrets.keycloak -}}
 {{ .Values.general.deploy_secrets.existing_secrets.keycloak }}
         {{- else -}}
-{{ include "getReleaseNameOrOverride" . }}-keycloak
+{{ .Release.Name }}-keycloak
         {{- end -}}
     {{- end -}}
 {{- end -}}
@@ -486,15 +482,15 @@ Usage:
 
 {{- define "secrets.backend.name" -}}
 {{- if (kindIs "bool" .Values.general.deploy_secrets)  -}}
-{{ include "getReleaseNameOrOverride" . }}-backend
+{{ .Release.Name }}-backend
 {{- else -}}
     {{- if .Values.general.deploy_secrets.enabled -}}
-{{ include "getReleaseNameOrOverride" . }}-backend
+{{ .Release.Name }}-backend
     {{- else -}}
         {{- if .Values.general.deploy_secrets.existing_secrets.backend -}}
 {{ .Values.general.deploy_secrets.existing_secrets.backend }}
         {{- else -}}
-{{ include "getReleaseNameOrOverride" . }}-backend
+{{ .Release.Name }}-backend
         {{- end -}}
     {{- end -}}
 {{- end -}}
@@ -502,10 +498,10 @@ Usage:
 
 
 {{- define "secrets.dockerhub.name" -}}
-{{- if contains "lightrun" (include "getReleaseNameOrOverride" .)  -}}
-{{ include "getReleaseNameOrOverride" . }}-dockerhub
+{{- if contains "lightrun" .Release.Name  -}}
+{{ .Release.Name }}-dockerhub
 {{- else -}}
-{{ include "getReleaseNameOrOverride" . }}-lightrun-dockerhub
+{{ .Release.Name }}-lightrun-dockerhub
 {{- end -}}
 {{- end -}}
 
@@ -518,7 +514,7 @@ Usage:
 */}}
 
 {{- define "nginx.name" -}}
-{{ include "getReleaseNameOrOverride" . }}-nginx
+{{ .Release.Name }}-nginx
 {{- end -}}
 
 {{/*
@@ -533,7 +529,7 @@ Create the name of the standalone nginx service account to use
 {{- end -}}
 
 {{- define "nginx.conf-cm.name" -}}
-{{ include "getReleaseNameOrOverride" . }}-nginx-conf
+{{ .Release.Name }}-nginx-conf
 {{- end -}}
 
 
@@ -591,23 +587,23 @@ Create the name of the standalone nginx service account to use
 */}}
 
 {{- define "ingress.keycloak.name" -}}
-{{ include "getReleaseNameOrOverride" . }}-keycloak-admin
+{{ .Release.Name }}-keycloak-admin
 {{- end -}}
 
 {{- define "ingress.agents.name" -}}
-{{ include "getReleaseNameOrOverride" . }}-agents
+{{ .Release.Name }}-agents
 {{- end -}}
 
 {{- define "ingress.clients.name" -}}
-{{ include "getReleaseNameOrOverride" . }}-clients
+{{ .Release.Name }}-clients
 {{- end -}}
 
 {{- define "ingress.metrics.name" -}}
-{{ include "getReleaseNameOrOverride" . }}-metrics
+{{ .Release.Name }}-metrics
 {{- end -}}
 
 {{- define "lightrun-ingress.name" -}}
-{{ include "getReleaseNameOrOverride" . }}-ingress
+{{ .Release.Name }}-ingress
 {{- end -}}
 
 
@@ -621,7 +617,7 @@ Create the name of the standalone nginx service account to use
 
 
 {{- define "data_streamer.name" -}}
-{{ include "getReleaseNameOrOverride" . }}-data-streamer
+{{ .Release.Name }}-data-streamer
 {{- end -}}
 
 
