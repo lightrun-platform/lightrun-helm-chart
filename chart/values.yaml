@@ -740,7 +740,7 @@ deployments:
       enabled: false
     image:
       repository: lightruncom/redis
-      tag: alpine-7.2.5-r1
+      tag: alpine-7.2.7-r0
       pullPolicy: IfNotPresent
     resources:
       cpu: 2000m
