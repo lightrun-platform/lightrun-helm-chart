@@ -5,9 +5,6 @@ general:
   cluster_domain: "cluster.local"
   ## Cluster domain for dns resolution. Default is cluster.local
 
-  nameOverride: ""
-  ## default -- `.Release.name`
-
   lightrun_endpoint: "lightrun.example.com"
   ## DNS record that will be used to access the platform
   deployment_type: on-prem
