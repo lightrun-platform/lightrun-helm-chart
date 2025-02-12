@@ -5,6 +5,9 @@ general:
   cluster_domain: "cluster.local"
   ## Cluster domain for dns resolution. Default is cluster.local
 
+  nameOverride: ""
+  ## default -- `.Release.Name`
+
   lightrun_endpoint: "lightrun.example.com"
   ## DNS record that will be used to access the platform
   deployment_type: on-prem
@@ -13,7 +16,7 @@ general:
     enabled: true
     ## Will deploy secrets from values as part of the chart
     ## Set to `false` if you want to deploy secrets separately
-    ## If set to false, chart will search for existing secrets with name {{ .Release.name }}-backend
+    ## If set to false, chart will search for existing secrets with name {{ .Release.Name }}-backend
     ## If you want to use different name, please provide it in existing_secrets below
     existing_secrets:
       ## Only relevant if deploy_secrets: false
