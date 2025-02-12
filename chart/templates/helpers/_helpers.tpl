@@ -501,25 +501,6 @@ Usage:
 {{- end -}}
 {{- end -}}
 
-<<<<<<< Updated upstream
-=======
-{{- define "secrets.api_keys_encryption.name" -}}
-{{- if (kindIs "bool" .Values.general.deploy_secrets)  -}}
-{{ include "lightrun.fullname" . }}-aes
-{{- else -}}
-    {{- if .Values.general.deploy_secrets.enabled -}}
-{{ include "lightrun.fullname" . }}-aes
-    {{- else -}}
-        {{- if .Values.general.deploy_secrets.existing_secrets.api_keys_encryption -}}
-{{ .Values.general.deploy_secrets.existing_secrets.api_keys_encryption }}
-        {{- else -}}
-{{ include "lightrun.fullname" . }}-aes
-        {{- end -}}
-    {{- end -}}
-{{- end -}}
-{{- end -}}
->>>>>>> Stashed changes
-
 {{- define "secrets.dockerhub.name" -}}
 {{- if contains "lightrun" (include "lightrun.fullname" .)  -}}
 {{ include "lightrun.fullname" . }}-dockerhub
