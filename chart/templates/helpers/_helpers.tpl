@@ -11,7 +11,8 @@ runAsUser will be added to each container separately, due to "hardcoded" values
 {{- end -}}
 
 {{/*
-Logic to get the release name or override it with a custom name, truncated to 63 characters and without trailing hyphens.
+Create a default fully qualified app name. If used, it overrides the release name embedded across all chart k8s related objects.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
 {{- define "lightrun.fullname" -}}
 {{- default .Release.Name .Values.general.nameOverride | trunc 63 | trimSuffix "-" -}}
