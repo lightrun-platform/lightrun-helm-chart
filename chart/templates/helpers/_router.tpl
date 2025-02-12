@@ -1,5 +1,5 @@
 {{- define "router.name" -}}
-{{ .Release.Name }}-router
+{{ include "lightrun.fullname" . }}-router
 {{- end -}}
 
 
@@ -15,7 +15,7 @@
 
 
 {{- define "router.conf.name" -}}
-{{ .Release.Name }}-router-conf
+{{ include "lightrun.fullname" . }}-router-conf
 {{- end -}}
 
 
