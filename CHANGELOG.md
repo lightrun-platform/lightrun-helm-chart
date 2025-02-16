@@ -1,4 +1,66 @@
 
+<a name="v3.11.0"></a>
+## [v3.11.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.10.1...v3.11.0) - 2025-02-16
+
+
+
+### Versions
+
+| Image            | Tag                       |
+|------------------|---------------------------|
+| backend          | 1.52.3-release.b3d4b46f02 |
+| data_streamer    | rpk-4.45.1-alpine         |
+| frontend         | 1.52.3-release.b3d4b46f02 |
+| keycloak         | 1.52.3-release.b3d4b46f02 |
+| mysql            | 8.0.38                    |
+| rabbitmq         | 3.12.12-alpine            |
+| redis            | alpine-7.2.5-r1           |
+| router           | alpine-3.20.0-r1          |
+| standalone_nginx | stable-alpine-slim        |
+ 
+ 
+
+
+### Added (2 changes)
+
+- [name-override-support-to-override-release-name (#15)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/7394aaf)
+ 
+
+- [keystore-password-when-enabling-tls-on-router-level (#6)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/a269810)
+ 
+ 
+ 
+
+
+### Changed (2 changes)
+
+- [bump-lightrun-redis-to-alpine-7-2-7-r-0 (#12)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/4e866eb)
+
+
+  Co-authored-by: eliranb <eliranb@lightrun.com>
+ 
+
+- [data streamer default tag to rpk-4.45.1-alpine (#7)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/026f022)
+ 
+ 
+ 
+
+
+### Deprecated (1 change)
+
+- [api-keys-encryption (#3)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/0afa21a)
+
+
+  Co-authored-by: Eliran Barooch <36511676+imeliran@users.noreply.github.com>
+  Co-authored-by: eliranb <eliranb@lightrun.com>
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.10.1"></a>
 ## [v3.10.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.10.0...v3.10.1) - 2025-01-28
 
