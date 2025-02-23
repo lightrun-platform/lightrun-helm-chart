@@ -1,7 +1,7 @@
 This section configures **MySQL** as the database. You can either:  
--  Deploy a [**Local MySQL (`general.db_local true`)**](#**Local%20MySQL%20(%60general.db_local%20true%60)**).
+-  Deploy a [**Local MySQL (`general.db_local true`)**](#local-mysql-generaldblocal-true).
 or  
-- Connect to an [**External MySQL (`general.db_local false`)**](#**External%20MySQL%20(%60general.db_local%20false%60)**).
+- Connect to an [**External MySQL (`general.db_local false`)**](#external-mysql-generaldblocal-false).
 
 > [!Note] 
 > **To enable SSL for both local and external MySQL instances, set `general.db_require_secure_transport: true`, which enforces secure connections by passing `require_secure_transport=ON` to the MySQL pod (for local deployments) and configuring backend services, including Keycloak, to use SSL when connecting to the database.**
@@ -32,10 +32,10 @@ general:
 - **Data is retained** across restarts
 ```yaml
 general:
-	statefulset:
-	  enabled: true
-	  storageClassName: "gp2"
-	  storageSize: 100Gi
+  statefulset:
+    enabled: true
+    storageClassName: "gp2"
+    storageSize: 100Gi
 ```
 
 |Property|Description|
@@ -52,8 +52,8 @@ general:
 - **Data is lost** if the pod restarts
 ```yaml
 general:
-	statefulset:
-	  enabled: false
+  statefulset:
+    enabled: false
 deployments:
   mysql:
     emptyDir:
@@ -124,9 +124,11 @@ To ensure compatibility, the **external MySQL instance** must have the following
 | [`lower_case_table_names`](https://dev.mysql.com/doc/refman/8.4/en/server-system-variables.html#sysvar_lower_case_table_names)                         | `1`                                            | Must be **ON** to ensure table name consistency.                                |
 | [`max_connections`](https://dev.mysql.com/doc/refman/8.4/en/server-system-variables.html#sysvar_max_connections)                                       | `100 * (# of backends) + 10 * (# of Keycloak)` | Must be set according to the number of backend services and Keycloak instances. |
 | [`character_set_server`](https://dev.mysql.com/doc/refman/8.4/en/server-system-variables.html#sysvar_character_set_server)                             | `utf8mb4`                                      | Must be set to `utf8mb4` for full Unicode support.                              |
+
 **Pre-created Database Requirement:**  
 The target MySQL database **must be created in advance** and should match the value of `general.db_database`. The application will not create the database automatically.
 **Example command to create the database:**
+
 ```sql
 CREATE DATABASE lightrunserver;
 ```
