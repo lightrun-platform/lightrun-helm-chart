@@ -31,23 +31,23 @@ Defines which external sources can access the pods.
     - **`ports`** → Allow traffic only on specific protocols and ports.
 ```yaml
 general:
-	networkPolicy:
-		ingress:
-		  enabled: true  # Default: false (allow-all)
-		  namespacesSelector: ["example-namespace"]  # Allow traffic from these namespaces
-		  ipBlock:
-		    - cidr: 192.168.1.0/24  # Allow this CIDR range
-		      except:
-		        - 192.168.1.100/32  # Deny this specific IP
-		  podSelector:
-		    app.kubernetes.io/component: ["nginx", "backend"]  # Allow traffic from these pods in the same namespace
-		  namespacePodSelector:
-		    example-namespace:
-		      app.kubernetes.io/component: ["example-app"]  # Allow traffic from specific pods in selected namespaces
-		  ports:
-		    - protocol: TCP
-		      port: 80
-		      endPort: 8080  # Allow traffic to this port range (if supported)
+  networkPolicy:
+    ingress:
+      enabled: true  # Default: false (allow-all)
+      namespacesSelector: ["example-namespace"]  # Allow traffic from these namespaces
+      ipBlock:
+      - cidr: 192.168.1.0/24  # Allow this CIDR range
+        except:
+        - 192.168.1.100/32  # Deny this specific IP
+      podSelector:
+        app.kubernetes.io/component: ["nginx", "backend"]  # Allow traffic from these pods in the same namespace
+      namespacePodSelector:
+        example-namespace:
+          app.kubernetes.io/component: ["example-app"]  # Allow traffic from specific pods in selected namespaces
+      ports:
+      - protocol: TCP
+        port: 80
+        endPort: 8080  # Allow traffic to this port range (if supported)
 ```
 
 ## Egress Rules (Outgoing Traffic)
@@ -63,18 +63,18 @@ Defines where pods can send outbound traffic.
     - **`ports`** → Allow traffic only on specific protocols and ports.
 ```yaml
 general:
-	networkPolicy:
-		egress:
-		  enabled: true  # Default: false (allow-all)
-		  namespacesSelector: ["example-namespace"]  # Allow traffic to these namespaces
-		  ipBlock:
-		    - cidr: 10.0.0.0/16  # Allow traffic to this IP range
-		  podSelector:
-		    role: ["db"]  # Allow traffic only to database pods
-		  namespacePodSelector:
-		    example-namespace:
-		      app.kubernetes.io/component: ["example-app"]  # Allow traffic to specific pods in selected namespaces
-		  ports:
-		    - protocol: TCP
-		      port: 443  # Allow HTTPS traffic
+  networkPolicy:
+    egress:
+      enabled: true  # Default: false (allow-all)
+      namespacesSelector: ["example-namespace"]  # Allow traffic to these namespaces
+      ipBlock:
+      - cidr: 10.0.0.0/16  # Allow traffic to this IP range
+      podSelector:
+        role: ["db"]  # Allow traffic only to database pods
+      namespacePodSelector:
+        example-namespace:
+          app.kubernetes.io/component: ["example-app"]  # Allow traffic to specific pods in selected namespaces
+      ports:
+      - protocol: TCP
+        port: 443  # Allow HTTPS traffic
 ```

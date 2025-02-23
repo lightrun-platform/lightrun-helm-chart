@@ -2,7 +2,7 @@
 
 By default, internal communication between pods within the cluster is not encrypted, as SSL operations can be computationally expensive. Typically, SSL termination occurs at the client-facing load balancer. However, certain security policies may require SSL encryption for all internal communications. While service mesh proxies often handle this requirement, there are cases where encryption must be enforced at the pod level.
 
-> [!WARNING] Attention
+> [!WARNING]
 > Enabling internal TLS increases resource consumption, as additional computational power is required for SSL operations.
 
 ### Enabling Internal TLS
@@ -11,8 +11,8 @@ To activate internal TLS, set the `enabled` flag to `true`:
 
 ```yaml
 general:
-	internal_tls:
-	  enabled: true
+  internal_tls:
+    enabled: true
 ```
 
 ### Providing TLS Certificates
@@ -21,9 +21,9 @@ There are two ways to supply certificates to pods:
 
 ```yaml
 general:
-	internal_tls:
-		certificates:
-		  source: "choose one of the two options below"
+  internal_tls:
+    certificates:
+      source: "choose one of the two options below"
 ```
 
 #### Option 1: `generate_self_signed_certificates` (Default)
@@ -39,7 +39,7 @@ The Helm chart applies the following hooks to these secrets:
 
 This prevents secrets from being recreated during `helm upgrade` operations.
 
-> [!NOTE] Note for ArgoCD Users
+> [!NOTE]
 > ArgoCD will replace these secrets during a "full sync" operation, but this does not disrupt existing deployments. Since pods are not redeployed upon certificate updates, they continue functioning as usual. If pods are restarted, they will retrieve the new certificates automatically.
 
 #### Option 2: `existing_certificates`
@@ -50,14 +50,14 @@ If a certificate’s Subject Alternative Name (SAN) includes all necessary servi
 
 ```yaml
 general:
-	internal_tls:
-		certificates:
-			existing_certificates:
-			  frontend: ""
-			  keycloak: ""
-			  redis: ""
-			  rabbitmq: ""
-			  data_streamer: ""
+  internal_tls:
+    certificates:
+      existing_certificates:
+        frontend: ""
+        keycloak: ""
+        redis: ""
+        rabbitmq: ""
+        data_streamer: ""
 ```
 
 > [!NOTE] 
@@ -69,18 +69,18 @@ By default, pods verify remote SSL certificates. This behavior can be modified u
 
 ```yaml
 general:
-	internal_tls:
-		certificates:
-		  verification: true
+  internal_tls:
+    certificates:
+      verification: true
 ```
 
 If you use a private Certificate Authority (CA), specify a Kubernetes secret containing the CA certificate used to sign all internal certificates. This secret must contain a `ca.crt` key:
 
 ```yaml
 general:
-	internal_tls:
-		certificates:
-		  existing_ca_secret_name: some-ca-secret
+  internal_tls:
+    certificates:
+      existing_ca_secret_name: some-ca-secret
 ```
 
 > [!NOTE] 

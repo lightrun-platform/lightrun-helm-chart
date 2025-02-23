@@ -5,13 +5,13 @@ Lightrun requires a **mandatory TLS certificate** for securing:
 1. **Backend Service** – This is crucial for **certificate pinning**, ensuring secure communication between the Lightrun server and IDE plugins or agents.
 2. **Lightrun Router** – If **SSL termination** happens at the router level, this certificate is required.
 
-> [!NOTE] Certificate requirements
+> [!NOTE] 
+> Certificate requirements:
 > - **Encoding:** PEM
 > - **Format:** PKCS#1 or PKCS#8
 
->[!IMPORTANT] Important
-> 
->Unlike Internal TLS (`internal_tls`),  which is an optional feature that encrypts internal communication between Lightrun services. **This TLS certificate is mandatory** for backend security and router-level SSL termination.
+> [!IMPORTANT]
+> Unlike Internal TLS (`internal_tls`),  which is an optional feature that encrypts internal communication between Lightrun services. **This TLS certificate is mandatory** for backend security and router-level SSL termination.
 
 ## **Providing Certificate**
 

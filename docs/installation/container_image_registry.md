@@ -54,7 +54,7 @@ deployments:
   backend:
     image:
       repository: myregistry.com/lightrun/server
-	...      
+...      
 ```
 
 ## Configuring ImagePullSecrets for registry
@@ -70,9 +70,9 @@ secrets:
 
 ### Available Configuration Modes:
 
-1. [Creating a New Secret for Private Registry(`configContent`)](#1.%20Creating%20a%20New%20Secret%20for%20Private%20Registry(%60configContent%60)) _(Default for Lightrun private registry)_
-2. [Using an Existing ImagePullSecret(`existingSecret`)](#2.%20Using%20an%20Existing%20ImagePullSecret(%60existingSecret%60))
-3. [Disabling ImagePullSecrets](#3.%20Disabling%20ImagePullSecrets) _(Commonly used to allow anonymous calls)_
+1. [Creating a New Secret for Private Registry(`configContent`)](#1-creating-a-new-secret-for-private-registryconfigcontent)) _(Default for Lightrun private registry)_
+2. [Using an Existing ImagePullSecret(`existingSecret`)](#2-using-an-existing-imagepullsecretexistingsecret))
+3. [Disabling ImagePullSecrets](#3-disabling-imagepullsecrets) _(Commonly used to allow anonymous calls)_
 
 ---
 #### 1. Creating a New Secret for Private Registry(`configContent`)
@@ -83,7 +83,7 @@ secrets:
     dockerhub_config:
       configContent: "BASE64_ENCODED_AUTH_CONFIG"
 ```
-> [!NOTE] _Default behavior for Lightrun private registry._
+> [!NOTE]
 > By default, the chart is configured to use `lightruncom` as a private registry, and the value for `configContent` is provided by the Lightrun persona.
 
 However, if you are **not** using the default Lightrun private registry and instead need to use your own private registry that requires authentication, you will need to manually follow these steps to create the image pull secret as part of the chart:

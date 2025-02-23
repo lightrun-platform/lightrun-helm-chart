@@ -8,18 +8,18 @@ The **Data Streamer** is an optional component that enables integration with **S
 ### **Global Settings (`general.data_streamer`)**
 ```yaml
 general:
-	data_streamer:
-	  enabled: false  # Enables or disables the Data Streamer deployment
-	  authorization_header_name: Authorization  # Header used for authentication
-	  do_not_retry_on:
-	    - 403  # HTTP status codes upon which retries will not be attempted
+  data_streamer:
+    enabled: false  # Enables or disables the Data Streamer deployment
+    authorization_header_name: Authorization  # Header used for authentication
+    do_not_retry_on:
+      - 403  # HTTP status codes upon which retries will not be attempted
 ```
 
 ### **Deployment Settings (`deployments.data_streamer`)**
 #### Logging Configuration
 ```yaml
-	loglevel: INFO  # Logging level
-	useJsonLogFormat: false  # Enables structured JSON logging
+loglevel: INFO  # Logging level
+useJsonLogFormat: false  # Enables structured JSON logging
 
 ```
 #### Horizontal Pod Autoscaling (HPA) And Replicas

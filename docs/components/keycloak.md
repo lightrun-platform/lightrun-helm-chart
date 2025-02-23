@@ -82,11 +82,11 @@ extraEnvs: []
 #### Init Containers
 ```yaml
 initContainers:
-	cluster_cert:
-		image:
-			repository: lightruncom/chart-helper
-			tag: latest
-			pullPolicy: ""
+  cluster_cert:
+    image:
+      repository: lightruncom/chart-helper
+      tag: latest
+      pullPolicy: ""
 ```
 #### Pod Disruption Budget & Scheduling
 
@@ -100,21 +100,21 @@ initContainers:
 
 ```yaml
 startupProbe:
-	initialDelaySeconds: 10
-	periodSeconds: 10
-	timeoutSeconds: 1
-	successThreshold: 1
-	failureThreshold: 30
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 1
+  successThreshold: 1
+  failureThreshold: 30
 livenessProbe:
-	initialDelaySeconds: 200
-	periodSeconds: 50
-	timeoutSeconds: 30
-	successThreshold: 1
-	failureThreshold: 3
+  initialDelaySeconds: 200
+  periodSeconds: 50
+  timeoutSeconds: 30
+  successThreshold: 1
+  failureThreshold: 3
 readinessProbe:
-	initialDelaySeconds: 0
-	periodSeconds: 10
-	timeoutSeconds: 5
-	successThreshold: 1
-	failureThreshold: 3
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
 ```

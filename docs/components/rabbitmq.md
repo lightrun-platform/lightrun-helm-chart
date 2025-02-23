@@ -54,12 +54,12 @@ This configuration **prevents queue overload** and ensures messages are retained
 ```yaml
 general:
   mq:
-		persistentVolumeClaimRetentionPolicy:
-		  whenDeleted: "Retain"
-		  whenScaled: "Retain"
-		storageClassName: "gp2"
-		storage: "10Gi"
-		pvc_name: ""
+    persistentVolumeClaimRetentionPolicy:
+      whenDeleted: "Retain"
+      whenScaled: "Retain"
+    storageClassName: "gp2"
+    storage: "10Gi"
+    pvc_name: ""
 ```
 
 |Property|Description|
@@ -95,20 +95,20 @@ deployments:
 #### **1️) Deploy a Local RabbitMQ Instance with 10Gi Storage**
 ```yaml
 general:
-	mq:
-	  enabled: true
-	  local: true
-	  storageClassName: "gp2"
-	  storage: "10Gi"
-	  metrics: true
+  mq:
+    enabled: true
+    local: true
+    storageClassName: "gp2"
+    storage: "10Gi"
+    metrics: true
 ```
 #### **2️) Connect to an External RabbitMQ Instance**
 
 ```yaml
 general:
-	mq:
-	  enabled: true
-	  local: false
-	  mq_endpoint: "rabbitmq.external.example.com"
-	  port: 5672
+  mq:
+    enabled: true
+    local: false
+    mq_endpoint: "rabbitmq.external.example.com"
+    port: 5672
 ```

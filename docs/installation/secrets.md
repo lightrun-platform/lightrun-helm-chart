@@ -18,7 +18,7 @@ general:
 ```
 - _(This is relevant only when `deploy_secrets: false`.)_
 > [!WARNING]
-> If managing secrets externally, ensure all required fields are present. See the [secrets template](chart/templates/secrets.yaml#L31) for reference.
+> If managing secrets externally, ensure all required fields are present. See the [secrets template](https://github.com/lightrun-platform/lightrun-helm-chart/blob/main/chart/templates/secrets.yaml#L31) for reference.
 
 ## **Secrets Configuration**
 ### **Authentication and Access Secrets**

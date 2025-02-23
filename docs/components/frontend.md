@@ -84,16 +84,16 @@ extraEnvs: []
 
 ```yaml
 livenessProbe:
-	initialDelaySeconds: 10
-	periodSeconds: 20
-	timeoutSeconds: 10
-	successThreshold: 1
-	failureThreshold: 3
+  initialDelaySeconds: 10
+  periodSeconds: 20
+  timeoutSeconds: 10
+  successThreshold: 1
+  failureThreshold: 3
 	
 readinessProbe:
-	initialDelaySeconds: 10
-	periodSeconds: 10
-	timeoutSeconds: 5
-	successThreshold: 1
-	failureThreshold: 3
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
 ```

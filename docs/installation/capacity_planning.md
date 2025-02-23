@@ -1,7 +1,7 @@
 This document provides capacity planning guidelines for deploying and scaling infrastructure based on the number of agents in a system. It includes details on required resources, instance types, and configurations for different cloud providers (AWS, Azure, and GCP). The goal is to ensure optimal performance and resource utilization while maintaining high availability.
 
 
-> [!NOTE] **For Local deployment only**
+> [!NOTE]
 > If you intend to deploy all services, including MySQL and Redis, within the cluster (not recommended for production), keep in mind that each service will run with **a single replica** (no high availability). To fit all services, you must allocate at least **9 vCPUs** and **25 GiB of memory**.
 
 
