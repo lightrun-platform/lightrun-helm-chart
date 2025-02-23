@@ -83,14 +83,6 @@ spec:
         - name: dumps
           emptyDir:
             sizeLimit: {{ .Values.deployments.backend.dumpsEmptyDirSizeLimit }}
-      {{- if .Values.general.api_keys_encryption.enabled }}
-        - name: api-keys-encryption
-          secret:
-            secretName: {{ include "secrets.api_keys_encryption.name" . }}
-            items:
-              - key: aes.key
-                path: aes.key
-      {{- end }}
       {{- with .Values.deployments.backend.extraVolumes }}
         {{ toYaml . | nindent 8 }}
       {{- end }}
@@ -140,11 +132,6 @@ spec:
               mountPath: /p12
             - name: dumps
               mountPath: /dumps
-          {{- if .Values.general.api_keys_encryption.enabled }}
-            - name: api-keys-encryption
-              mountPath: {{ .Values.general.api_keys_encryption.key_mount_path }}
-              readOnly: true
-          {{- end }} 
           {{- with .Values.deployments.backend.extraVolumeMounts }}
             {{ toYaml . | nindent 12 }}
           {{- end }}
@@ -294,10 +281,6 @@ spec:
                 secretKeyRef:
                   name: {{ include "secrets.backend.name" . }}
                   key: SPRING_SECURITY_KEYCLOAK_CLI_PASSWORD
-            {{- if .Values.general.api_keys_encryption.enabled }}
-            - name: SYSTEM_API_AES_KEY_PATH
-              value: file:{{ .Values.general.api_keys_encryption.key_mount_path }}/aes.key
-            {{- end }}
             - name: ARTIFACTS_ENABLE_S3_FEATURE #TODO: deprecated in favor of ARTIFACTS_ENABLE in 2.1.7
               value: {{ .Values.deployments.backend.artifacts.enable | quote }}
             - name: ARTIFACTS_ENABLE
@@ -393,7 +376,7 @@ spec:
           - name: RABBITMQ_TCP_PORT
             value: "15672"
           - name: URL
-            value: {{ include "http.scheme" . }}://{{ include "lightrun-mq.endpoint" . }}:$(RABBITMQ_TCP_PORT)/api/overview
+            value: {{ include "http.scheme" . }}://{{ include "lightrun-mq.endpoint" . }}:$(RABBITMQ_TCP_PORT)/api/overview {{ if .Values.general.internal_tls.enabled }}-k{{ end }}
       {{- end }}
       - name: p12-creator
         image: "{{ .Values.deployments.backend.initContainers.p12_creator.image.repository }}:{{ .Values.deployments.backend.initContainers.p12_creator.image.tag }}"

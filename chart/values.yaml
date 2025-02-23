@@ -5,6 +5,9 @@ general:
   cluster_domain: "cluster.local"
   ## Cluster domain for dns resolution. Default is cluster.local
 
+  nameOverride: ""
+  ## default -- `.Release.Name`
+
   lightrun_endpoint: "lightrun.example.com"
   ## DNS record that will be used to access the platform
   deployment_type: on-prem
@@ -13,20 +16,12 @@ general:
     enabled: true
     ## Will deploy secrets from values as part of the chart
     ## Set to `false` if you want to deploy secrets separately
-    ## If set to false, chart will search for existing secrets with name {{ .Release.name }}-backend
+    ## If set to false, chart will search for existing secrets with name {{ .Release.Name }}-backend
     ## If you want to use different name, please provide it in existing_secrets below
     existing_secrets:
       ## Only relevant if deploy_secrets: false
       backend: ""
       keycloak: ""
-      api_keys_encryption: ""
-
-  # Enable api keys encryption
-  api_keys_encryption:
-    enabled: false
-    key_mount_path: "/keys"
-    ## If set to true, will encrypt api keys in the database
-    ## Requires secrets.api_keys_encryption.aes_key to be set
 
   ################
   ## Openshift (tested with version 4.12.5)
@@ -477,8 +472,6 @@ secrets:
     content: ""
     signature: ""
   # Credentials used by Lightrun services
-  api_keys_encryption:
-    aes_key: "" # Optional | Depends on general.api_keys_encryption.enabled | If disabled, secret won't be used
   defaults:
     mail_password: ""
     keystore_password: ""
@@ -750,7 +743,7 @@ deployments:
       enabled: false
     image:
       repository: lightruncom/redis
-      tag: alpine-7.2.5-r1
+      tag: alpine-7.2.7-r0
       pullPolicy: IfNotPresent
     resources:
       cpu: 2000m
@@ -823,7 +816,7 @@ deployments:
     useJsonLogFormat: false
     image:
       repository: lightruncom/rabbitmq
-      tag: 3.12.12-alpine
+      tag: 3.12.14-alpine
       pullPolicy: IfNotPresent
     resources:
       cpu: 500m
@@ -885,7 +878,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/data-streamer
-      tag: "rpk-4.45.1"
+      tag: "rpk-4.47.1-alpine"
       pullPolicy: IfNotPresent
     resources:
       cpu: 100m
