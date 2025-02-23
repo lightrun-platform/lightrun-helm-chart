@@ -1,7 +1,7 @@
 This section configures **MySQL** as the database. You can either:  
--  Deploy a [**Local MySQL (`general.db_local true`)**](#local-mysql-generaldblocal-true).
+-  Deploy a [**Local MySQL (`general.db_local true`)**](#local-mysql-generaldb_local-true).
 or  
-- Connect to an [**External MySQL (`general.db_local false`)**](#external-mysql-generaldblocal-false).
+- Connect to an [**External MySQL (`general.db_local false`)**](#external-mysql-generaldb_local-false).
 
 > [!Note] 
 > **To enable SSL for both local and external MySQL instances, set `general.db_require_secure_transport: true`, which enforces secure connections by passing `require_secure_transport=ON` to the MySQL pod (for local deployments) and configuring backend services, including Keycloak, to use SSL when connecting to the database.**

@@ -24,11 +24,11 @@ useJsonLogFormat: false  # Enables structured JSON logging
 ```
 #### Horizontal Pod Autoscaling (HPA) And Replicas
 ```yaml
-	replicas: 2
+replicas: 2
 ```
 #### Deployment Strategy
 ```yaml
-	rollout_strategy: "RollingUpdate"
+rollout_strategy: "RollingUpdate"
 ```
 #### Image Configuration
 ```yaml

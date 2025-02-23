@@ -74,7 +74,7 @@ router:
   
   tls:
     enabled: true
-		
+
   ingress:  
     enabled: false  
     ingress_class_name: ""  
@@ -177,7 +177,7 @@ router:
   
   tls:
     enabled: false
-		
+
   ingress:  
     enabled: false  
     ingress_class_name: ""  

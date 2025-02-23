@@ -54,7 +54,7 @@ router:
   
   tls:
     enabled: false
-		
+
   ingress:  
     enabled: true  
     ingress_class_name: "openshift-default"  
@@ -122,7 +122,7 @@ router:
   
   tls:
     enabled: true
-		
+
   ingress:  
     enabled: false  
     ingress_class_name: ""  

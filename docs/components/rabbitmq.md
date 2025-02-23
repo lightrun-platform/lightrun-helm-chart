@@ -69,7 +69,7 @@ general:
 |**`pvc_name: ""`**|PVC name (default: `{{ .Release.Name }}-mq-data`).|
 |**`persistentVolumeClaimRetentionPolicy`**|Controls PVC retention when the StatefulSet is deleted or scaled down.|
 
-> [!WARNING] Testing Mode
+> [!WARNING]
 > To **disable persistent storage**, set `storage: "0"` (all data will be lost on pod restart). creates deployment instead of statefulset.
 
 ### **Metrics Configuration**

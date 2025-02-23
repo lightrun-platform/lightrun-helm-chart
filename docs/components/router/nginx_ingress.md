@@ -32,7 +32,7 @@ router:
   
   tls:
     enabled: true
-		
+
   ingress:  
     enabled: true  
     ingress_class_name: "nginx"  
@@ -86,7 +86,7 @@ router:
   
   tls:
     enabled: false
-		
+
   ingress:  
     enabled: true  
     ingress_class_name: "nginx"  

@@ -53,7 +53,7 @@ general:
 The router supports injecting custom Nginx configuration snippets for advanced tuning. By default, no additional configuration is applied.
 ```yaml
 general:
-	router:
+  router:
     server_snippets: ""
     http_snippets: ""
 ```

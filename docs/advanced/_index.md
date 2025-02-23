@@ -1,4 +1,4 @@
 This advanced guide covers in-depth configuration options for deploying Lightrun using the Helm chart
 
-- [Internal TLS](docs/advanced/internal_tls)
-- [Network Policy](docs/advanced/network_policy)
+- [Internal TLS](internal_tls.md)
+- [Network Policy](network_policy.md)

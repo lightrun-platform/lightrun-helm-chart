@@ -77,4 +77,4 @@ Some secrets are used for integrating with external services.
     existingSecret: ""  # Use an existing secret if provided
     configContent: ""   # Create a new secret if `existingSecret` is empty
 ```
-Refer to [Container Image Registry Overview](docs/installation/container_image_registry.md) for a detailed explanation how to configure dockerhub_config.
+Refer to [Container Image Registry Overview](container_image_registry.md) for a detailed explanation how to configure dockerhub_config.
