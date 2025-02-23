@@ -93,7 +93,7 @@ Select your preferred cloud provider for deployment:
 - **[Azure Kubernetes Service (AKS)](docs/installation/cloud/aks.md)**
 - **[Amazon EKS](docs/installation/cloud/eks.md)**
 - **[Google Kubernetes Engine (GKE)](docs/installation/cloud/gke.md)**
-- **[OpenShift](cloud/openshift.md)**
+- **[OpenShift](docs/installation/cloud/openshift.md)**
 ## Known Issues and Limitations
 
 Review the [Known Limitations](docs/limitations.md) before deployment.
@@ -101,5 +101,5 @@ Review the [Known Limitations](docs/limitations.md) before deployment.
 ## Release Notes
 
 Check the [versions mapping documentation](docs/installation/versions_mapping.md) for version compatibility.  
-Check the [release strategy](docs/release_strategy) for the meaning of major minor patch.
+Check the [release strategy](docs/release_strategy.md) for the meaning of major minor patch.
 See the [changelog](CHANGELOG.md) for a detailed history of changes and improvements in each release.
