@@ -46,7 +46,7 @@ To ensure a smooth and secure production deployment of Lightrun, follow these ke
     [More info on Certificate](docs/installation/certificate.md)
 #### **4. Database**
 
-> [!TIP] Lightrun's Recommendation
+> [!TIP]
 > Use external database
 
 - Choose between a local or external database.
@@ -63,7 +63,7 @@ To ensure a smooth and secure production deployment of Lightrun, follow these ke
     [More info on Container Image Registry](docs/installation/container_image_registry.md)
 
 #### **7. Redis**
-> [!TIP] Lightrun's Recommendation
+> [!TIP] 
 > Use external redis
 - Determine if Redis will be local or external.
     [More info on Redis Setup](docs/components/redis.md)
