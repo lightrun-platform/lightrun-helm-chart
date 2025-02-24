@@ -7,8 +7,11 @@ Kubernetes [Service resources](https://kubernetes.io/docs/concepts/services-net
 2. Ability to create a DNS A record that points to the AWS load balancer record.
 3. [AWS load balancer controller installed](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/deploy/installation/#load-balancer-controller-installation) in the cluster.
 # Setup AWS Load Balancer Controller
-## Import Certificate To ACM 
-> This section is relevant in case SSL is enabled for the AWS load balancer.
+## Import Certificate To ACM
+
+> [!IMPORTANT]
+> Import certificate to ACM is relevant if SSL is enabled for the AWS load balancer.
+ 
 ### Using AWS Console
 
 1. Navigate to AWS Certificate Manager > Certificates > Import certificate and fill in the fields:

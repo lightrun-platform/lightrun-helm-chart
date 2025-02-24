@@ -12,7 +12,7 @@ or
 | **`general.mq.mq_endpoint: "rabbitmq.example.com"`** | The **fully qualified domain name (FQDN)** of an external RabbitMQ instance. **Ignored** if `local: true` |
 | **`general.mq.port: "5672"`**                        | The **RabbitMQ connection port** (default: `5672`).                                                       |
 
-> [!NOTE] Notes
+> [!NOTE]
 >   - If `general.mq.local: false`, all other RabbitMQ properties (such as storage and policies) **will be ignored** because the external RabbitMQ is expected to be pre-configured.
 >   - If `general.mq.local: true`, only 1 replica of rabbitmq will be deployed.
 
@@ -88,6 +88,71 @@ deployments:
         prometheus.io/path: '/metrics'
         prometheus.io/port: '15692'
 
+```
+### **Pod Configuration**
+Below is the **default RabbitMQ pod configuration**.
+configuration is defined under **`deployments.rabbitmq`** in the **`values.yaml`**
+```yaml
+deployments:
+  rabbitmq:
+    loglevel: info
+    useJsonLogFormat: false
+    image:
+      repository: lightruncom/rabbitmq
+      tag: 3.12.14-alpine
+      pullPolicy: IfNotPresent
+    resources:
+      cpu: 500m
+      memory: 1Gi
+    podLabels: {}
+    podAnnotations: {}
+    service:
+      annotations: {}
+      labels: {}
+      ## prometheus autodiscovery annotations could be added to the service
+    nodeSelector: {}
+    podSecurityContext:
+      # when using PVC , it is necessarily to set fsGroup so pod will have write permission to the mounted volume
+      # fsGroup should be aligned with runAsUser of the container
+      fsGroup: 1000000
+    containerSecurityContext: {}
+    initContainers:
+      rabbitmq_config:
+        resources:
+          cpu: 100m
+          memory: 128Mi
+        image:
+          repository: lightruncom/chart-helper
+          tag: latest
+          pullPolicy: ""
+    # EmptyDir is used for rabbitmq data when mq.storage is set to 0
+    emptyDir:
+      sizeLimit: 5Gi
+    affinity: {}
+    lifecycle:
+      postStart:
+        exec:
+          command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              rabbitmqctl wait --pid 1 --timeout 60 && \
+              rabbitmqctl list_users | grep -q $RABBITMQ_DEFAULT_USER || \
+              (rabbitmqctl add_user $RABBITMQ_DEFAULT_USER $RABBITMQ_DEFAULT_PASS && \
+              rabbitmqctl set_user_tags $RABBITMQ_DEFAULT_USER administrator && \
+              rabbitmqctl set_permissions -p / $RABBITMQ_DEFAULT_USER ".*" ".*" ".*")
+    livenessProbe:
+      initialDelaySeconds: 60
+      periodSeconds: 45
+      timeoutSeconds: 15
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      initialDelaySeconds: 20
+      periodSeconds: 45
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
 ```
 
 ### **Example Configurations**

@@ -1,13 +1,12 @@
 ### Overview
 
 The keycloak service provides the authentication. It is deployed as a Kubernetes pod and can be configured for scaling, resource allocation, and health monitoring.
-
+configuration is defined under **`deployments.keycloak`** in the **`values.yaml`**
 ### Configuration Options
 
 #### General Settings
 
 ```yaml
-keycloak:
   useJsonLogFormat: false  # Enables structured JSON logging
   clusterMode: true 
 ```

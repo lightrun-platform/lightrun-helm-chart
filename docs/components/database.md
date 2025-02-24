@@ -69,6 +69,7 @@ deployments:
 
 ### **Pod Configuration**
 Below is the **default MySQL pod configuration**.
+configuration is defined under **`deployments.mysql`** in the **`values.yaml`**
 ```yaml
 deployments:
   mysql:

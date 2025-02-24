@@ -34,6 +34,7 @@ When using a local Redis deployment (i.e., `deployments.redis.external.enabled: 
 - **Single Replica Only**: The local deployment always uses one replica.
 - All deployment settings (image, resources, persistence, and health probes) apply.
 
+configuration is defined under **`deployments.redis`** in the **`values.yaml`**
 ```yaml
 deployments:
   redis:
@@ -85,7 +86,7 @@ deployments:
       enabled: true
       endpoint: "redis.example.com"  # External Redis endpoint (FQDN)
 ```
-* ***Replicated Architecture (commonly used with AWS ElastiCache):**:
+* **Replicated Architecture (commonly used with AWS ElastiCache):**
 ```yaml
 deployments:
   redis:

@@ -1,6 +1,7 @@
 ### Overview
 
 The backend component is responsible for handling core application logic and interactions with the database, message queues, and other services. This document outlines the configurable parameters available for backend deployment.
+configuration is defined under **`deployments.backend`** in the **`values.yaml`**
 ### Configuration Options
 
 #### General Settings
