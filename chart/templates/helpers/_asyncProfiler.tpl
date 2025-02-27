@@ -97,7 +97,7 @@
 - name: async-profiler-tmp
   mountPath: /async-profiler-tmp
 - name: async-profiler-download
-  mountPath: "/async-profiler"
+  mountPath: /async-profiler
 {{- end -}}
 
 
