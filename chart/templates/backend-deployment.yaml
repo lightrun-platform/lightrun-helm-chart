@@ -341,7 +341,7 @@ spec:
             cpu: "100m"
         env:
           - name: URL
-            value: {{ include "http.scheme" . }}://{{ include "lightrun-keycloak.name" . }}:8080/auth/ {{ if .Values.general.internal_tls.enabled }}-k{{ end }}
+            value: {{ include "http.scheme" . }}://{{ include "lightrun-keycloak.name" . }}:9000/auth/health/started {{ if .Values.general.internal_tls.enabled }}--no-check-certificate{{ end }}
 
       {{ if .Values.general.mq.enabled }}
       - name: wait-for-rabbitmq
@@ -363,12 +363,12 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          - name: CURL_USER
+          - name: WGET_USER
             valueFrom:
               secretKeyRef:
                 name: {{ include "secrets.backend.name" . }}
                 key: SPRING_RABBITMQ_USERNAME
-          - name: CURL_PASSWORD
+          - name: WGET_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: {{ include "secrets.backend.name" . }}
@@ -376,7 +376,7 @@ spec:
           - name: RABBITMQ_TCP_PORT
             value: "15672"
           - name: URL
-            value: {{ include "http.scheme" . }}://{{ include "lightrun-mq.endpoint" . }}:$(RABBITMQ_TCP_PORT)/api/overview {{ if .Values.general.internal_tls.enabled }}-k{{ end }}
+            value: {{ include "http.scheme" . }}://$(WGET_USER):$(WGET_PASSWORD)@{{ include "lightrun-mq.endpoint" . }}:$(RABBITMQ_TCP_PORT)/api/overview {{ if .Values.general.internal_tls.enabled }}--no-check-certificate{{ end }}
       {{- end }}
       - name: p12-creator
         image: "{{ .Values.deployments.backend.initContainers.p12_creator.image.repository }}:{{ .Values.deployments.backend.initContainers.p12_creator.image.tag }}"
