@@ -1,6 +1,56 @@
 
+<a name="v3.12.0"></a>
+## [v3.12.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.11.1...v3.12.0) - 2025-03-02
+
+
+
+### Versions
+
+| Image            | Tag                       |
+|------------------|---------------------------|
+| backend          | 1.53.1-release.53d0d289fa |
+| data_streamer    | rpk-4.47.1-alpine         |
+| frontend         | 1.53.1-release.53d0d289fa |
+| keycloak         | 1.53.1-release.53d0d289fa |
+| mysql            | 8.0.38                    |
+| rabbitmq         | 3.12.14-alpine            |
+| redis            | alpine-7.2.7-r0           |
+| router           | alpine-3.20.0-r1          |
+| standalone_nginx | stable-alpine-slim        |
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.11.1"></a>
+## [v3.11.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.11.0...v3.11.1) - 2025-02-19
+
+
+
+### Versions
+
+| Image            | Tag                       |
+|------------------|---------------------------|
+| backend          | 1.52.4-release.7ade04f7f5 |
+| data_streamer    | rpk-4.45.1-alpine         |
+| frontend         | 1.52.4-release.7ade04f7f5 |
+| keycloak         | 1.52.4-release.7ade04f7f5 |
+| mysql            | 8.0.38                    |
+| rabbitmq         | 3.12.12-alpine            |
+| redis            | alpine-7.2.5-r1           |
+| router           | alpine-3.20.0-r1          |
+| standalone_nginx | stable-alpine-slim        |
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.11.0"></a>
-## [v3.11.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.10.1...v3.11.0) - 2025-02-16
+## [v3.11.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.10.2...v3.11.0) - 2025-02-16
 
 
 
@@ -12,6 +62,30 @@
 | data_streamer    | rpk-4.45.1-alpine         |
 | frontend         | 1.52.3-release.b3d4b46f02 |
 | keycloak         | 1.52.3-release.b3d4b46f02 |
+| mysql            | 8.0.38                    |
+| rabbitmq         | 3.12.12-alpine            |
+| redis            | alpine-7.2.5-r1           |
+| router           | alpine-3.20.0-r1          |
+| standalone_nginx | stable-alpine-slim        |
+
+| Image            | Tag                       |
+|------------------|---------------------------|
+| backend          | 1.51.0-release.05d1da7dcc |
+| data_streamer    | rpk-4.45.1                |
+| frontend         | 1.51.0-release.05d1da7dcc |
+| keycloak         | 1.51.0-release.05d1da7dcc |
+| mysql            | 8.0.38                    |
+| rabbitmq         | 3.12.12-alpine            |
+| redis            | alpine-7.2.5-r1           |
+| router           | alpine-3.20.0-r1          |
+| standalone_nginx | stable-alpine-slim        |
+
+| Image            | Tag                       |
+|------------------|---------------------------|
+| backend          | 1.51.0-release.05d1da7dcc |
+| data_streamer    | rpk-4.37.0                |
+| frontend         | 1.51.0-release.05d1da7dcc |
+| keycloak         | 1.51.0-release.05d1da7dcc |
 | mysql            | 8.0.38                    |
 | rabbitmq         | 3.12.12-alpine            |
 | redis            | alpine-7.2.5-r1           |
@@ -54,6 +128,55 @@
   Co-authored-by: Eliran Barooch <36511676+imeliran@users.noreply.github.com>
   Co-authored-by: eliranb <eliranb@lightrun.com>
  
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.10.2"></a>
+## [v3.10.2](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.10.1...v3.10.2) - 2025-02-25
+
+
+
+### Versions
+
+| Image            | Tag                       |
+|------------------|---------------------------|
+| backend          | 1.51.3-release.840a48f088 |
+| data_streamer    | rpk-4.45.1                |
+| frontend         | 1.51.3-release.840a48f088 |
+| keycloak         | 1.51.3-release.840a48f088 |
+| mysql            | 8.0.38                    |
+| rabbitmq         | 3.12.12-alpine            |
+| redis            | alpine-7.2.5-r1           |
+| router           | alpine-3.20.0-r1          |
+| standalone_nginx | stable-alpine-slim        |
+
+| Image            | Tag                       |
+|------------------|---------------------------|
+| backend          | 1.51.0-release.05d1da7dcc |
+| data_streamer    | rpk-4.45.1                |
+| frontend         | 1.51.0-release.05d1da7dcc |
+| keycloak         | 1.51.0-release.05d1da7dcc |
+| mysql            | 8.0.38                    |
+| rabbitmq         | 3.12.12-alpine            |
+| redis            | alpine-7.2.5-r1           |
+| router           | alpine-3.20.0-r1          |
+| standalone_nginx | stable-alpine-slim        |
+
+| Image            | Tag                       |
+|------------------|---------------------------|
+| backend          | 1.51.0-release.05d1da7dcc |
+| data_streamer    | rpk-4.37.0                |
+| frontend         | 1.51.0-release.05d1da7dcc |
+| keycloak         | 1.51.0-release.05d1da7dcc |
+| mysql            | 8.0.38                    |
+| rabbitmq         | 3.12.12-alpine            |
+| redis            | alpine-7.2.5-r1           |
+| router           | alpine-3.20.0-r1          |
+| standalone_nginx | stable-alpine-slim        |
  
  
  
