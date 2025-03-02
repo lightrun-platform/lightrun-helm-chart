@@ -363,12 +363,12 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          - name: WGET_USER
+          - name: RABBITMQ_USER
             valueFrom:
               secretKeyRef:
                 name: {{ include "secrets.backend.name" . }}
                 key: SPRING_RABBITMQ_USERNAME
-          - name: WGET_PASSWORD
+          - name: RABBITMQ_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: {{ include "secrets.backend.name" . }}
@@ -376,7 +376,7 @@ spec:
           - name: RABBITMQ_TCP_PORT
             value: "15672"
           - name: URL
-            value: {{ include "http.scheme" . }}://$(WGET_USER):$(WGET_PASSWORD)@{{ include "lightrun-mq.endpoint" . }}:$(RABBITMQ_TCP_PORT)/api/overview {{ if .Values.general.internal_tls.enabled }}--no-check-certificate{{ end }}
+            value: {{ include "http.scheme" . }}://$(RABBITMQ_USER):$(RABBITMQ_PASSWORD)@{{ include "lightrun-mq.endpoint" . }}:$(RABBITMQ_TCP_PORT)/api/overview {{ if .Values.general.internal_tls.enabled }}--no-check-certificate{{ end }}
       {{- end }}
       - name: p12-creator
         image: "{{ .Values.deployments.backend.initContainers.p12_creator.image.repository }}:{{ .Values.deployments.backend.initContainers.p12_creator.image.tag }}"
