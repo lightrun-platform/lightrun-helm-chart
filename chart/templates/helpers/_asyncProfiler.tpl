@@ -8,7 +8,7 @@
     - |
       set -ex
       cd /tmp
-      curl -LO $(curl -s https://api.github.com/repos/async-profiler/async-profiler/releases/tags/{{ .version }} | grep browser_download_url | awk '/async-profiler-.*linux-{{ .architecture }}.*\.tar\.gz/ { print $2 }' |  tr -d '"')
+      wget $(wget -qO- https://api.github.com/repos/async-profiler/async-profiler/releases/tags/{{ .version }} | grep browser_download_url | awk '/async-profiler-.*linux-{{ .architecture }}.*\.tar\.gz/ { print $2 }' | tr -d '"')
       tar xvf async-profiler-*.tar.gz
       cp -r async-profiler-*/* /async-profiler
   resources:
@@ -97,7 +97,7 @@
 - name: async-profiler-tmp
   mountPath: /async-profiler-tmp
 - name: async-profiler-download
-  mountPath: "/async-profiler"
+  mountPath: /async-profiler
 {{- end -}}
 
 
