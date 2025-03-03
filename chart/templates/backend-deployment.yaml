@@ -295,6 +295,8 @@ spec:
               value: "{{ .Values.deployments.backend.artifacts.download_prerelease }}"
             - name: ARTIFACTS_VERSION_RESOLUTION_MODE
               value: "{{ .Values.deployments.backend.artifacts.resolution_mode }}"
+            - name: LIGHTRUN_ARTIFACTS_URL
+              value: "{{ include "http.scheme" . }}://{{ include "artifacts.name" . }}:8080"              
             {{- if .Values.general.mq.enabled }}
             - name: SPRING_RABBITMQ_HOST
               value: {{ include "lightrun-mq.endpoint" . }}
@@ -302,7 +304,7 @@ spec:
               value: {{ .Values.general.mq.port | quote }}
             - name: TRACKING_MIXPANEL_QUEUE_NAME
               value: {{ .Values.general.mq.queue_name | quote }}
-
+              
             {{- end }}
             {{- if .Values.deployments.backend.extraEnvs }}
               {{- toYaml .Values.deployments.backend.extraEnvs | nindent 12 }}
