@@ -1,5 +1,5 @@
 {{ if and .Values.general.internal_tls.enabled (eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates") -}}
-{{ range (list (include "lightrun-fe.name" $ ) (include "lightrun-keycloak.name" $ ) (include "lightrun-redis.name" $ ) (include "lightrun-mq.name" $ ) (include "data_streamer.name" $ ) )}}
+{{ range (list (include "lightrun-fe.name" $ ) (include "lightrun-keycloak.name" $ ) (include "lightrun-redis.name" $ ) (include "lightrun-mq.name" $ ) (include "data_streamer.name" $ ) (include "artifacts.name" $ ) )}}
 apiVersion: v1
 kind: Secret
 type: kubernetes.io/tls
