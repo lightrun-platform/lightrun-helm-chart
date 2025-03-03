@@ -449,7 +449,7 @@ serviceAccount:
   # Optional additional labels to add to the ServiceAccount, applies to all deployments/statefulsets
   # labels: {}
   # Automount API credentials for a Service Account.
-  automountServiceAccountToken: false
+  automountServiceAccountToken: true
 
 ################
 ## Secrets
