@@ -68,6 +68,9 @@ spec:
           image: "{{ .Values.deployments.keycloak.image.repository }}:{{ .Values.deployments.keycloak.image.tag }}"
           imagePullPolicy: {{ .Values.deployments.keycloak.image.pullPolicy }}
           ports:
+            - name: mgmt
+              containerPort: 9000
+              protocol: TCP          
             - name: http
               containerPort: 9080
               protocol: TCP
