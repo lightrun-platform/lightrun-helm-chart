@@ -46,7 +46,7 @@ spec:
             limits:
               cpu: {{ .Values.deployments.artifacts.resources.cpu }}
               memory: {{ .Values.deployments.artifacts.resources.memory }}
-          image: {{ .Values.deployments.artifacts.image.repository }}:{{ .Values.deployments.artifacts.image.tag }}
+          image: "{{ .Values.deployments.artifacts.image.repository }}:{{ .Values.deployments.artifacts.image.tag }}"
           imagePullPolicy: {{ .Values.deployments.artifacts.image.pullPolicy }}
           ports:
             - name: http
