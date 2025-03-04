@@ -449,7 +449,7 @@ serviceAccount:
   # Optional additional labels to add to the ServiceAccount, applies to all deployments/statefulsets
   # labels: {}
   # Automount API credentials for a Service Account.
-  automountServiceAccountToken: true
+  automountServiceAccountToken: false
 
 ################
 ## Secrets
@@ -490,6 +490,19 @@ secrets:
       # 3. For private registry. If dockerhub_config is set to `null`, chart will not use any imagePullSecrets.
       existingSecret: ""
       configContent: ""
+
+################
+## System Diagnostics
+################
+system_diagnostics:
+  # When enabled, it creates a Role and a RoleBinding that allow the backend pod to access the k8s API
+  # to get information about the resources in Lightrun namespace.
+  # It's used in System Diagnostics feature.
+  # It also enforces mounting the service account token to the backend pod.
+  # It must be enabled with caution, as automountServiceAccountToken is sometimes not allowed.
+  # Note: this parameter doesn't enable or disable the System Diagnostics feature itself.
+  # It only enables the k8s data collection.
+  enabled: false
 
 ################
 ## Deployments
