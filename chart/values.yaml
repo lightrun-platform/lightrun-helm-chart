@@ -788,7 +788,7 @@ deployments:
     useJsonLogFormat: false
     image:
       repository: lightruncom/rabbitmq
-      tag: 3.12.12-alpine
+      tag: 3.12.14-alpine
       pullPolicy: IfNotPresent
     resources:
       cpu: 500m
@@ -849,7 +849,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/data-streamer
-      tag: "rpk-4.47.1-alpine"
+      tag: "rpk-4.48.1-alpine"
       pullPolicy: IfNotPresent
     resources:
       cpu: 100m
