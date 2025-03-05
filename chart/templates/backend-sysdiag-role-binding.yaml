@@ -3,12 +3,16 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: {{ include "lightrun-be.name" . }}-sysdiag-role-binding
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "lightrun-be.name" . }}
 subjects:
 - kind: ServiceAccount
-  name: {{ template "lightrun-be.serviceAccountName" . }}
+  name: {{ include "lightrun-be.serviceAccountName" . }}
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: Role
   name: {{ include "lightrun-be.name" . }}-sysdiag-role
+  namespace: {{ .Release.Namespace }}
   apiGroup: rbac.authorization.k8s.io
 {{- end }}
