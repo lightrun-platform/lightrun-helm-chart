@@ -426,8 +426,10 @@ general:
   ## System Diagnostics
   ################
   system_diagnostics_k8s_api:
-    # When enabled, it creates a Role, RoleBinding and the ServiceAccount that allow the backend pod to access the k8s API.
-    # It's used in the System Diagnostics feature to get the information about the resources in Lightrun namespace.
+    # Having "serviceAccount.create: true" is a pre-requisite for this feature to work.
+    # Otherwise, setting "enabled" to true has no effect. 
+    # When properly enabled, it creates a Role and RoleBinding.
+    # They allow the backend pod to request k8s API for data about the resources in Lightrun namespace.
     # For the backend service account it also enforces mounting the token to the backend pod.
     # It must be enabled with caution, because automountServiceAccountToken is not always allowed.
     # Note: this parameter doesn't enable or disable the System Diagnostics feature itself.
