@@ -1,8 +1,8 @@
-{{- if .Values.system_diagnostics.enabled -}}
+{{- if and .Values.serviceAccount.create .Values.general.system_diagnostics_k8s_api.enabled -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ include "lightrun-be.name" . }}-sysdiag-role-binging
+  name: {{ include "lightrun-be.name" . }}-sysdiag-role-binding
 subjects:
 - kind: ServiceAccount
   name: {{ template "lightrun-be.serviceAccountName" . }}

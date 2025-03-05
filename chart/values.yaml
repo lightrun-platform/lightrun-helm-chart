@@ -422,6 +422,18 @@ general:
     seccompProfile:
       type: RuntimeDefault
 
+  ################
+  ## System Diagnostics
+  ################
+  system_diagnostics_k8s_api:
+    # When enabled, it creates a Role, RoleBinding and the ServiceAccount that allow the backend pod to access the k8s API.
+    # It's used in the System Diagnostics feature to get the information about the resources in Lightrun namespace.
+    # For the backend service account it also enforces mounting the token to the backend pod.
+    # It must be enabled with caution, because automountServiceAccountToken is not always allowed.
+    # Note: this parameter doesn't enable or disable the System Diagnostics feature itself.
+    # It only enables the k8s data collection.
+    enabled: false
+
 ################
 ## Certificate
 ################
@@ -490,18 +502,6 @@ secrets:
       # 3. For private registry. If dockerhub_config is set to `null`, chart will not use any imagePullSecrets.
       existingSecret: ""
       configContent: ""
-
-################
-## System Diagnostics
-################
-system_diagnostics:
-  # When enabled, it creates a Role, RoleBinding and the ServiceAccount that allow the backend pod to access the k8s API.
-  # It's used in the System Diagnostics feature to get the information about the resources in Lightrun namespace.
-  # For the backend service account it also enforces mounting the token to the backend pod.
-  # It must be enabled with caution, because automountServiceAccountToken is not always allowed.
-  # Note: this parameter doesn't enable or disable the System Diagnostics feature itself.
-  # It only enables the k8s data collection.
-  enabled: false
 
 ################
 ## Deployments

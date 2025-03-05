@@ -32,7 +32,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 Create the name of the lightrun backend service account to use
 */}}
 {{- define "lightrun-be.serviceAccountName" -}}
-{{- if or .Values.serviceAccount.create .Values.system_diagnostics.enabled -}}
+{{- if .Values.serviceAccount.create -}}
     {{ default (include "lightrun-be.name" .) .Values.serviceAccount.name }}
 {{- else -}}
     {{ default "default" .Values.serviceAccount.name }}
