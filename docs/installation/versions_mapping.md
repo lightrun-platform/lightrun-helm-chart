@@ -7,6 +7,7 @@
 | 3.10.2        | 1.51.3-release.840a48f088 |
 | 3.10.1        | 1.51.0-release.05d1da7dcc |
 | 3.10.0        | 1.51.0-release.05d1da7dcc |
+| 3.9.11        | 1.50.5-release.946fe1c442 |
 | 3.9.10        | 1.50.5-release.946fe1c442 |
 | 3.9.9         | 1.50.5-release.946fe1c442 |
 | 3.9.8         | 1.50.4-release.e26f2633fb |
