@@ -304,7 +304,6 @@ spec:
               value: {{ .Values.general.mq.port | quote }}
             - name: TRACKING_MIXPANEL_QUEUE_NAME
               value: {{ .Values.general.mq.queue_name | quote }}
-              
             {{- end }}
             {{- if .Values.deployments.backend.extraEnvs }}
               {{- toYaml .Values.deployments.backend.extraEnvs | nindent 12 }}
