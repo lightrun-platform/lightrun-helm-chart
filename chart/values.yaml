@@ -914,6 +914,7 @@ deployments:
       path: /ready
 
   artifacts:
+    loglevel: notice
     useJsonLogFormat: false
     replicas: 1
     rollout_strategy: "RollingUpdate"
