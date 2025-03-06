@@ -1,0 +1,3 @@
+{{- if and .Values.general.system_diagnostics_k8s_api.enabled (not .Values.serviceAccount.create) }}
+    {{- fail "Error: general.system_diagnostics_k8s_api.enabled cannot be set unless serviceAccount.create is enabled!" }}
+{{- end }}
