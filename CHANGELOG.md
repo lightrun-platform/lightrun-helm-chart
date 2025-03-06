@@ -1,4 +1,52 @@
 
+<a name="v3.12.0"></a>
+## [v3.12.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.11.1...v3.12.0) - 2025-03-06
+
+
+
+### Versions
+
+| Image            | Tag                       |
+|------------------|---------------------------|
+| backend          | 1.53.4-release.b1b8d149c9 |
+| data_streamer    | rpk-4.47.1-alpine         |
+| frontend         | 1.53.4-release.b1b8d149c9 |
+| keycloak         | 1.53.4-release.b1b8d149c9 |
+| mysql            | 8.0.38                    |
+| rabbitmq         | 3.12.14-alpine            |
+| redis            | alpine-7.2.7-r0           |
+| router           | alpine-3.20.0-r1          |
+| standalone_nginx | stable-alpine-slim        |
+
+| Image            | Tag                       |
+|------------------|---------------------------|
+| backend          | 1.53.1-release.53d0d289fa |
+| data_streamer    | rpk-4.47.1-alpine         |
+| frontend         | 1.53.1-release.53d0d289fa |
+| keycloak         | 1.53.1-release.53d0d289fa |
+| mysql            | 8.0.38                    |
+| rabbitmq         | 3.12.14-alpine            |
+| redis            | alpine-7.2.7-r0           |
+| router           | alpine-3.20.0-r1          |
+| standalone_nginx | stable-alpine-slim        |
+ 
+ 
+
+
+### Changed (2 changes)
+
+- [data-streamer version to 4.48.1](https://github.com/lightrun-platform/lightrun-helm-chart/commit/edbf2b8)
+ 
+
+- [replace-curl-with-wget-command-initcontainers](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2ef907b)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.11.1"></a>
 ## [v3.11.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.11.0...v3.11.1) - 2025-02-19
 
