@@ -32,14 +32,6 @@ rules:
       - get
       - list
 
-  - apiGroups: ["rbac.authorization.k8s.io"]
-    resources:
-      - roles
-      - rolebindings
-    verbs:
-      - get
-      - list
-
   - apiGroups: ["networking.k8s.io"]
     resources:
       - ingresses
