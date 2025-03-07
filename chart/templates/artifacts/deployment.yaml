@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "artifacts.name" . }}
+  {{- with .Values.deployments.artifacts.annotations }}
+  annotations:
+    {{ toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.deployments.artifacts.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "artifacts.name" . }}
+  template:
+    metadata:
+      {{- with .Values.deployments.artifacts.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ include "artifacts.name" . }}
+        {{- with .Values.deployments.artifacts.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ template "artifacts.serviceAccountName" . }}
+        {{- if .Values.deployments.artifacts.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.deployments.artifacts.podSecurityContext | nindent 8 }}
+        {{- end }}
+      {{- if .Values.secrets.defaults.dockerhub_config }}
+      imagePullSecrets:
+      {{- if .Values.secrets.defaults.dockerhub_config.existingSecret }}
+        - name: {{ .Values.secrets.defaults.dockerhub_config.existingSecret }}
+      {{- else }}
+        - name: {{ include "secrets.dockerhub.name" . }}
+      {{- end -}}
+      {{- end }}
+      containers:
+        - name: {{ include "artifacts.name" . }}
+          securityContext: {{- include "artifacts.containerSecurityContext" . | indent 12 }}
+          resources:  
+            requests:
+              cpu: {{ .Values.deployments.artifacts.resources.cpu }}
+              memory: {{ .Values.deployments.artifacts.resources.memory }}
+            limits:
+              cpu: {{ .Values.deployments.artifacts.resources.cpu }}
+              memory: {{ .Values.deployments.artifacts.resources.memory }}
+          image: "{{ .Values.deployments.artifacts.image.repository }}:{{ .Values.deployments.artifacts.image.tag }}"
+          imagePullPolicy: {{ .Values.deployments.artifacts.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.deployments.artifacts.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.deployments.artifacts.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.deployments.artifacts.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.deployments.artifacts.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.artifacts.livenessProbe.failureThreshold }}
+            httpGet:
+              scheme: {{ include "http.scheme" . | upper }}
+              path: {{ .Values.deployments.artifacts.livenessProbe.path }}
+              port: http
+          readinessProbe:
+            initialDelaySeconds: {{ .Values.deployments.artifacts.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.deployments.artifacts.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.deployments.artifacts.readinessProbe.periodSeconds }}
+            successThreshold: {{ .Values.deployments.artifacts.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.artifacts.readinessProbe.failureThreshold }}
+            httpGet:
+              scheme: {{ include "http.scheme" . | upper }}
+              path: {{ .Values.deployments.artifacts.readinessProbe.path }}
+              port: http
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.server.conf
+              subPath: nginx.server.conf
+              readOnly: true
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.http.conf
+              subPath: nginx.http.conf
+              readOnly: true              
+          {{- if .Values.general.internal_tls.enabled }}
+            - name: internal-cert
+              mountPath: /cert/
+              readOnly: true
+          {{- end }}
+      {{- if .Values.general.tolerations }}
+      tolerations:
+        {{ toYaml .Values.general.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.general.nodeSelector }}
+      nodeSelector:
+        {{ toYaml .Values.general.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.deployments.artifacts.affinity }}
+      affinity:
+        {{ toYaml .Values.deployments.artifacts.affinity | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: {{ include "artifacts.name" . }}-config
+      {{- if .Values.general.internal_tls.enabled }}
+      - name: internal-cert
+        secret:
+          {{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" }}
+          secretName: {{ include "artifacts.name" . }}-cert
+          {{- else if eq .Values.general.internal_tls.certificates.source "existing_certificates" }}
+          secretName: {{ .Values.general.internal_tls.certificates.existing_certificates.artifacts }}
+          {{- end }}
+      {{- end }}
