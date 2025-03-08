@@ -13,6 +13,5 @@ subjects:
 roleRef:
   kind: Role
   name: {{ include "lightrun-be.name" . }}-sysdiag-role
-  namespace: {{ .Release.Namespace }}
   apiGroup: rbac.authorization.k8s.io
 {{- end }}
