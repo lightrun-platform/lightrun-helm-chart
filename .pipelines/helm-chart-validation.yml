@@ -59,6 +59,12 @@ pool:
 
 steps:
 - script: |
+    # Cleanup any existing k3d cluster
+    k3d cluster delete chart-testing || true
+  displayName: 'Cleanup Previous Cluster'
+  continueOnError: true
+
+- script: |
     # Create a temporary file to store the helm parameters
     echo '$(HELM_PARAMS)' > helm_params.txt
     echo "##vso[task.setvariable variable=HELM_PARAMS_FILE]helm_params.txt"
