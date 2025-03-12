@@ -642,11 +642,8 @@ deployments:
       # deployments.backend.asyncProfiler.enabled -- Run async-profiler on every backend pod
       ## ref: https://github.com/async-profiler/async-profiler
       enabled: false
-      # deployments.backend.asyncProfiler.version -- Specify the async-profiler version to use. Set exact version or "nightly".
-      ## ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
-      version: "v3.0"
-      # deployments.backend.asyncProfiler.architecture -- Specify the async-profiler architecture, valid values are: x64 or arm64
-      architecture: "x64"
+      # Download URL end point for async profiler binary, ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
+      downloadUrl: "https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz"
       # deployments.backend.asyncProfiler.arguments -- Configure the async profiler arguments
       ## ref: https://github.com/async-profiler/async-profiler/blob/v3.0/src/arguments.cpp#L44
       arguments: "start,event=ctimer,loop=10m,chunksize=1m,file=/async-profiler-tmp/profile-%t.jfr,log=/tmp/asyncprofiler.log"
@@ -716,11 +713,8 @@ deployments:
       # deployments.keycloak.asyncProfiler.enabled -- Run async-profiler on every keycloak pod
       ## ref: https://github.com/async-profiler/async-profiler
       enabled: false
-      # deployments.keycloak.asyncProfiler.version -- Specify the async-profiler version to use. Set exact version or "nightly".
-      ## ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
-      version: "v3.0"
-      # deployments.keycloak.asyncProfiler.architecture -- Specify the async-profiler architecture, valid values are: x64 or arm64
-      architecture: "x64"
+      # Download URL end point for async profiler binary, ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
+      downloadUrl: "https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz"
       # deployments.keycloak.asyncProfiler.arguments -- Configure the async profiler arguments
       ## ref: https://github.com/async-profiler/async-profiler/blob/v3.0/src/arguments.cpp#L44
       arguments: "start,event=ctimer,loop=10m,chunksize=1m,file=/async-profiler-tmp/profile-%t.jfr,log=/tmp/asyncprofiler.log"
