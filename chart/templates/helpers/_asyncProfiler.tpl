@@ -8,8 +8,8 @@
     - |
       set -ex
       cd /tmp
-      wget $(wget -qO- https://api.github.com/repos/async-profiler/async-profiler/releases/tags/{{ .version }} | grep browser_download_url | awk '/async-profiler-.*linux-{{ .architecture }}.*\.tar\.gz/ { print $2 }' | tr -d '"')
-      tar xvf async-profiler-*.tar.gz
+      wget {{ .downloadUrl }} -O async-profiler.tar.gz
+      tar xvf async-profiler.tar.gz
       cp -r async-profiler-*/* /async-profiler
   resources:
     limits:
