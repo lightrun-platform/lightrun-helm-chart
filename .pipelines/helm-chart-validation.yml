@@ -37,22 +37,22 @@ variables:
       --set secrets.defaults.keystore_password=test123
       --set certificate.tls.crt=$(CERTIFICATE_CRT)
       --set certificate.tls.key=$(CERTIFICATE_KEY)      
-      --set deployments.frontend.resources.cpu=0 
-      --set deployments.frontend.resources.memory=0 
-      --set deployments.backend.resources.cpu=0 
-      --set deployments.backend.resources.memory=0 
-      --set deployments.keycloak.resources.cpu=0 
-      --set deployments.keycloak.resources.memory=0 
-      --set deployments.redis.resources.cpu=0 
-      --set deployments.redis.resources.memory=0 
-      --set deployments.mysql.resources.cpu=0 
-      --set deployments.mysql.resources.memory=0 
-      --set deployments.rabbitmq.resources.cpu=0 
-      --set deployments.rabbitmq.resources.memory=0 
-      --set deployments.data_streamer.resources.cpu=0 
-      --set deployments.data_streamer.resources.memory=0 
-      --set deployments.router.resources.cpu=0 
-      --set deployments.router.resources.memory=0
+      --set deployments.frontend.resources.cpu="0m" 
+      --set deployments.frontend.resources.memory="0Mi" 
+      --set deployments.backend.resources.cpu="0m" 
+      --set deployments.backend.resources.memory="0Mi" 
+      --set deployments.keycloak.resources.cpu="0m" 
+      --set deployments.keycloak.resources.memory="0Mi" 
+      --set deployments.redis.resources.cpu="0m" 
+      --set deployments.redis.resources.memory="0Mi" 
+      --set deployments.mysql.resources.cpu="0m" 
+      --set deployments.mysql.resources.memory="0Mi" 
+      --set deployments.rabbitmq.resources.cpu="0m" 
+      --set deployments.rabbitmq.resources.memory="0Mi" 
+      --set deployments.data_streamer.resources.cpu="0m" 
+      --set deployments.data_streamer.resources.memory="0Mi" 
+      --set deployments.router.resources.cpu="0m" 
+      --set deployments.router.resources.memory="0Mi"
 
 pool:
   name: "Azure VMSS"
