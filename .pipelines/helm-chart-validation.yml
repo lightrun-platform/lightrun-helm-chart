@@ -118,6 +118,9 @@ steps:
         resources:
           cpu: "0m"
           memory: "0Mi"
+      artifacts:
+        image:
+          tag: ${APP_VERSION}
     EOF
   displayName: 'Create Values File'
 
