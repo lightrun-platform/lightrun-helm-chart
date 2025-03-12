@@ -19,46 +19,6 @@ variables:
     value: 'test-namespace'
   - name: HELM_VERSION
     value: '3.13.2'  # Specify a fixed version for stability
-  - name: HELM_PARAMS
-    value: >-
-      --set general.lightrun_endpoint=test.example.com 
-      --set general.name=test-client      
-      --set general.deployment_type=saas
-      --set general.statefulset.enabled=false
-      --set secrets.keycloak.password=test123 
-      --set secrets.db.user=test_user 
-      --set secrets.db.password=test123 
-      --set secrets.mq.user=test_user 
-      --set secrets.mq.password=test123 
-      --set secrets.redis.password=test123 
-      --set secrets.license.content=test123 
-      --set secrets.license.signature=test123 
-      --set secrets.defaults.dockerhub_config.configContent=$(DOCKERHUB_CONFIG)
-      --set secrets.defaults.mail_password=test123 
-      --set secrets.defaults.keystore_password=test123
-      --set certificate.tls.crt=$(CERTIFICATE_CRT)
-      --set certificate.tls.key=$(CERTIFICATE_KEY)      
-      --set deployments.frontend.resources.cpu="0m" 
-      --set deployments.frontend.resources.memory="0Mi" 
-      --set deployments.backend.resources.cpu="0m" 
-      --set deployments.backend.resources.memory="0Mi" 
-      --set deployments.backend.extraEnv[0].name=_JAVA_OPTIONS,deployments.backend.extraEnv[0].value=""
-      --set deployments.keycloak.resources.cpu="0m" 
-      --set deployments.keycloak.resources.memory="0Mi"
-      --set deployments.keycloak.extraEnv[0].name=_JAVA_OPTIONS,deployments.keycloak.extraEnv[0].value=""
-      --set deployments.redis.resources.cpu="0m" 
-      --set deployments.redis.resources.memory="0Mi" 
-      --set deployments.mysql.resources.cpu="0m" 
-      --set deployments.mysql.resources.memory="0Mi" 
-      --set deployments.rabbitmq.resources.cpu="0m" 
-      --set deployments.rabbitmq.resources.memory="0Mi" 
-      --set deployments.data_streamer.resources.cpu="0m" 
-      --set deployments.data_streamer.resources.memory="0Mi" 
-      --set deployments.router.resources.cpu="0m" 
-      --set deployments.router.resources.memory="0Mi"
-
-pool:
-  name: "Azure VMSS"
 
 steps:
 - script: |
@@ -68,10 +28,81 @@ steps:
   continueOnError: true
 
 - script: |
-    # Create a temporary file to store the helm parameters
-    echo '$(HELM_PARAMS)' > helm_params.txt
-    echo "##vso[task.setvariable variable=HELM_PARAMS_FILE]helm_params.txt"
-  displayName: 'Store Helm Parameters'
+    # Create values.yaml file
+    cat > values.yaml << EOF
+    general:
+      lightrun_endpoint: test.example.com
+      name: test-client
+      deployment_type: saas
+      statefulset:
+        enabled: false
+    
+    secrets:
+      keycloak:
+        password: test123
+      db:
+        user: test_user
+        password: test123
+      mq:
+        user: test_user
+        password: test123
+      redis:
+        password: test123
+      license:
+        content: test123
+        signature: test123
+      defaults:
+        dockerhub_config:
+          configContent: $(DOCKERHUB_CONFIG)
+        mail_password: test123
+        keystore_password: test123
+    
+    certificate:
+      tls:
+        crt: $(CERTIFICATE_CRT)
+        key: $(CERTIFICATE_KEY)
+    
+    deployments:
+      frontend:
+        resources:
+          cpu: "0m"
+          memory: "0Mi"
+      backend:
+        resources:
+          cpu: "0m"
+          memory: "0Mi"
+        extraEnv:
+          - name: "_JAVA_OPTIONS"
+            value: ""
+      keycloak:
+        resources:
+          cpu: "0m"
+          memory: "0Mi"
+        extraEnv:
+          - name: "_JAVA_OPTIONS"
+            value: ""
+      redis:
+        resources:
+          cpu: "0m"
+          memory: "0Mi"
+      mysql:
+        resources:
+          cpu: "0m"
+          memory: "0Mi"
+      rabbitmq:
+        resources:
+          cpu: "0m"
+          memory: "0Mi"
+      data_streamer:
+        resources:
+          cpu: "0m"
+          memory: "0Mi"
+      router:
+        resources:
+          cpu: "0m"
+          memory: "0Mi"
+    EOF
+  displayName: 'Create Values File'
 
 - script: |
     # Install jq for JSON parsing
@@ -85,8 +116,20 @@ steps:
     echo "Latest chart version: $CHART_VERSION"
     echo "Latest app version: $APP_VERSION"
     
-    # Add version-specific tags to the parameters file
-    echo " --set deployments.frontend.image.tag=${APP_VERSION} --set deployments.backend.image.tag=${APP_VERSION} --set deployments.keycloak.image.tag=${APP_VERSION}" >> helm_params.txt
+    # Add image tags to values file
+    cat >> values.yaml << EOF
+    
+    deployments:
+      frontend:
+        image:
+          tag: ${APP_VERSION}
+      backend:
+        image:
+          tag: ${APP_VERSION}
+      keycloak:
+        image:
+          tag: ${APP_VERSION}
+    EOF
   displayName: 'Set Latest Chart Tags'
 
 - task: HelmInstaller@0
@@ -101,15 +144,12 @@ steps:
   displayName: 'Create k3d Cluster'
 
 - script: |
-    helm lint $(CHART_PATH) 2>&1 | grep -v "SECRET" || exit ${PIPESTATUS[0]}
+    helm lint $(CHART_PATH) -f values.yaml 2>&1 | grep -v "SECRET" || exit ${PIPESTATUS[0]}
   displayName: 'Lint Helm Chart'
   
 - script: |
-    # Use the parameters from the file
-    HELM_PARAMS=$(cat helm_params.txt)
-    
     # Redirect output to file
-    helm template $(RELEASE_NAME) $(CHART_PATH) --namespace $(NAMESPACE) $HELM_PARAMS > template_output.yaml 2>&1
+    helm template $(RELEASE_NAME) $(CHART_PATH) -f values.yaml --namespace $(NAMESPACE) > template_output.yaml 2>&1
     
     # Filter sensitive data and display
     cat template_output.yaml | grep -v "password:\|secret:\|token:\|key:" || true
@@ -131,15 +171,12 @@ steps:
   displayName: 'Create Namespace'
 
 - script: |
-    # Use the parameters from the file
-    HELM_PARAMS=$(cat helm_params.txt)
-    
     helm install $(RELEASE_NAME) $(CHART_PATH) \
+      -f values.yaml \
       --namespace $(NAMESPACE) \
       --wait \
       --timeout 5m \
-      --debug \
-      $HELM_PARAMS
+      --debug
   displayName: 'Install Chart'
 
 - script: |
