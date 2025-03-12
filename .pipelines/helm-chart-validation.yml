@@ -32,9 +32,16 @@ steps:
     sudo apt-get update && sudo apt-get install -y gawk
     
     # Read the latest version from versions_mapping.md
-    # Gets the first non-header row from the markdown table and properly handles the | separators
-    CHART_VERSION=$(awk -F'|' 'NR==3 {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$2); print $2}' docs/installation/versions_mapping.md)
-    APP_VERSION=$(awk -F'|' 'NR==3 {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$3); print $3}' docs/installation/versions_mapping.md)
+    # Skip header and separator, get first data row with actual version numbers
+    CHART_VERSION=$(awk -F'|' 'NR > 2 && $2 !~ /^[[:space:]]*-+[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$2); if ($2 != "") {print $2; exit}}' docs/installation/versions_mapping.md)
+    APP_VERSION=$(awk -F'|' 'NR > 2 && $3 !~ /^[[:space:]]*-+[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$3); if ($3 != "") {print $3; exit}}' docs/installation/versions_mapping.md)
+    
+    # Verify that we got the versions
+    if [ -z "$CHART_VERSION" ] || [ -z "$APP_VERSION" ]; then
+      echo "Failed to extract versions from versions_mapping.md"
+      cat docs/installation/versions_mapping.md
+      exit 1
+    fi
     
     echo "Latest chart version: $CHART_VERSION"
     echo "Latest app version: $APP_VERSION"
