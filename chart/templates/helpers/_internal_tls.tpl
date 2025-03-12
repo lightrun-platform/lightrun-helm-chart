@@ -6,7 +6,7 @@ Generate ca secret
 {{- define "internal-tls.gen-crt-with-ca" -}}
 {{- $ca := genCA  ( printf "%s-ca" .Release.Name ) 365 -}}
 ca.crt: {{ $ca.Cert | b64enc }}
-{{ range (list (include "lightrun-be.name" $ ) (include "lightrun-fe.name" $ ) (include "lightrun-keycloak.name" $ ) (include "lightrun-redis.name" $ ) (include "lightrun-mq.name" $ ) (include "data_streamer.name" $ ) )}}
+{{ range (list (include "lightrun-be.name" $ ) (include "lightrun-fe.name" $ ) (include "lightrun-keycloak.name" $ ) (include "lightrun-redis.name" $ ) (include "lightrun-mq.name" $ ) (include "data_streamer.name" $ ) (include "artifacts.name" $ ) )}}
 {{- $altNames := list . ( printf "%s.%s" . $.Release.Namespace ) ( printf "%s.%s.svc" . $.Release.Namespace ) -}}
 {{- $cert := genSignedCert $.Release.Name nil $altNames 3650 $ca }}
 {{ . }}.tls.crt: {{ $cert.Cert | b64enc | quote }}
