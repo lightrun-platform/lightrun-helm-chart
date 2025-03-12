@@ -116,6 +116,10 @@ steps:
     # Install jq for JSON parsing
     sudo apt-get update && sudo apt-get install -y jq
     
+    # Install yq for YAML processing
+    wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+    chmod +x /usr/local/bin/yq
+    
     # Fetch latest appVersion from ArtifactHub
     RESPONSE=$(curl -s https://artifacthub.io/api/v1/packages/helm/lightrun-helm-chart/lightrun-helm-chart)
     APP_VERSION=$(echo $RESPONSE | jq -r '.app_version')
@@ -124,24 +128,30 @@ steps:
     echo "Latest chart version: $CHART_VERSION"
     echo "Latest app version: $APP_VERSION"
     
-    # Add image tags to values file
-    cat >> values.yaml << EOF
+    # Create a temporary file with just the image tags
+    TEMP_FILE=$(mktemp)
+    yq eval ".deployments.frontend.image.tag = \"${APP_VERSION}\" | 
+            .deployments.backend.image.tag = \"${APP_VERSION}\" | 
+            .deployments.keycloak.image.tag = \"${APP_VERSION}\"" values.yaml > "$TEMP_FILE"
     
-    deployments:
-      frontend:
-        image:
-          tag: ${APP_VERSION}
-      backend:
-        image:
-          tag: ${APP_VERSION}
-      keycloak:
-        image:
-          tag: ${APP_VERSION}
-    EOF
+    # Replace the original file
+    mv "$TEMP_FILE" values.yaml
 
     # Debug: Show final content of values.yaml
     echo "Final content of values.yaml after adding tags:"
-    cat values.yaml
+    echo "----------------------------------------"
+    cat values.yaml | grep -v "configContent" # Skip sensitive data
+    echo "----------------------------------------"
+    
+    # Specifically show Java-related configurations
+    echo "Java-related configurations:"
+    cat values.yaml | grep -A 5 "_JAVA_OPTIONS" || true
+    echo "----------------------------------------"
+    
+    # Show image tags to verify they were added correctly
+    echo "Image tags configuration:"
+    cat values.yaml | grep -A 2 "tag:" || true
+    echo "----------------------------------------"
   displayName: 'Set Latest Chart Tags'
 
 - task: HelmInstaller@0
@@ -173,8 +183,15 @@ steps:
     # Redirect output to file
     helm template $(RELEASE_NAME) $(CHART_PATH) -f values.yaml --namespace $(NAMESPACE) > template_output.yaml 2>&1
     
-    # Filter sensitive data and display
-    cat template_output.yaml | grep -v "password:\|secret:\|token:\|key:" || true
+    # Show specific sections we're interested in
+    echo "Checking Java-related configurations:"
+    cat template_output.yaml | grep -A 5 "_JAVA_OPTIONS" || true
+    
+    echo "Checking environment variables in deployments:"
+    cat template_output.yaml | grep -A 20 "env:" || true
+    
+    echo "Checking container resources:"
+    cat template_output.yaml | grep -A 10 "resources:" || true
     
     # Check if template command was successful
     if [ -s template_output.yaml ]; then
