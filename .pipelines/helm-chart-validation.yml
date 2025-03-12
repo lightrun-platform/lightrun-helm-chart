@@ -24,6 +24,7 @@ variables:
       --set general.lightrun_endpoint=test.example.com 
       --set general.name=test-client      
       --set general.deployment_type=saas
+      --set general.statefulset.enabled=false
       --set secrets.keycloak.password=test123 
       --set secrets.db.user=test_user 
       --set secrets.db.password=test123 
