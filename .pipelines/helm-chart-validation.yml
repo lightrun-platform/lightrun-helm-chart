@@ -28,13 +28,13 @@ steps:
   continueOnError: true
 
 - script: |
-    # Install jq for JSON parsing
-    sudo apt-get update && sudo apt-get install -y jq
+    # Install required tools
+    sudo apt-get update && sudo apt-get install -y gawk
     
-    # Fetch latest appVersion from ArtifactHub
-    RESPONSE=$(curl -s https://artifacthub.io/api/v1/packages/helm/lightrun-helm-chart/lightrun-helm-chart)
-    APP_VERSION=$(echo $RESPONSE | jq -r '.app_version')
-    CHART_VERSION=$(echo $RESPONSE | jq -r '.version')
+    # Read the latest version from versions_mapping.md
+    # Gets the first non-header row from the markdown table
+    APP_VERSION=$(awk 'NR==3 {print $3}' docs/installation/versions_mapping.md)
+    CHART_VERSION=$(awk 'NR==3 {print $1}' docs/installation/versions_mapping.md)
     
     echo "Latest chart version: $CHART_VERSION"
     echo "Latest app version: $APP_VERSION"
@@ -182,7 +182,21 @@ steps:
   displayName: 'Verify Deployment'
 
 - script: |
+    # Run helm test and capture the pod names
     helm test $(RELEASE_NAME) -n $(NAMESPACE)
+    
+    # Get the test pod names and logs
+    TEST_PODS=$(kubectl get pods -n $(NAMESPACE) -l "app.kubernetes.io/instance=$(RELEASE_NAME),helm.sh/test=true" -o name)
+    
+    echo "Test pods found:"
+    echo "$TEST_PODS"
+    echo "==================== Test Logs ===================="
+    
+    for pod in $TEST_PODS; do
+      echo "Logs for $pod:"
+      kubectl logs $pod -n $(NAMESPACE)
+      echo "-----------------------------------------------"
+    done
   displayName: 'Run Chart Tests'
 
 - script: |
