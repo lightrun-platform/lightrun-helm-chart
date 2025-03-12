@@ -102,6 +102,14 @@ steps:
           cpu: "0m"
           memory: "0Mi"
     EOF
+
+    # Debug: Show the content of values.yaml
+    echo "Content of values.yaml:"
+    cat values.yaml
+    
+    # Debug: Show current directory and files
+    pwd
+    ls -la
   displayName: 'Create Values File'
 
 - script: |
@@ -130,6 +138,10 @@ steps:
         image:
           tag: ${APP_VERSION}
     EOF
+
+    # Debug: Show final content of values.yaml
+    echo "Final content of values.yaml after adding tags:"
+    cat values.yaml
   displayName: 'Set Latest Chart Tags'
 
 - task: HelmInstaller@0
@@ -144,10 +156,20 @@ steps:
   displayName: 'Create k3d Cluster'
 
 - script: |
+    # Debug: Verify values file exists and show working directory
+    pwd
+    ls -la
+    echo "Using values file from:"
+    realpath values.yaml
+    
     helm lint $(CHART_PATH) -f values.yaml 2>&1 | grep -v "SECRET" || exit ${PIPESTATUS[0]}
   displayName: 'Lint Helm Chart'
   
 - script: |
+    # Debug: Verify values file and show helm command
+    echo "Using values file from: $(pwd)/values.yaml"
+    echo "Running helm template with values file..."
+    
     # Redirect output to file
     helm template $(RELEASE_NAME) $(CHART_PATH) -f values.yaml --namespace $(NAMESPACE) > template_output.yaml 2>&1
     
@@ -171,6 +193,10 @@ steps:
   displayName: 'Create Namespace'
 
 - script: |
+    # Debug: Verify values file and show helm command
+    echo "Using values file from: $(pwd)/values.yaml"
+    echo "Running helm install with values file..."
+    
     helm install $(RELEASE_NAME) $(CHART_PATH) \
       -f values.yaml \
       --namespace $(NAMESPACE) \
