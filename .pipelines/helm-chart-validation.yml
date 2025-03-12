@@ -32,9 +32,9 @@ steps:
     sudo apt-get update && sudo apt-get install -y gawk
     
     # Read the latest version from versions_mapping.md
-    # Gets the first non-header row from the markdown table
-    APP_VERSION=$(awk 'NR==3 {print $3}' docs/installation/versions_mapping.md)
-    CHART_VERSION=$(awk 'NR==3 {print $1}' docs/installation/versions_mapping.md)
+    # Gets the first non-header row from the markdown table and properly handles the | separators
+    CHART_VERSION=$(awk -F'|' 'NR==3 {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$2); print $2}' docs/installation/versions_mapping.md)
+    APP_VERSION=$(awk -F'|' 'NR==3 {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$3); print $3}' docs/installation/versions_mapping.md)
     
     echo "Latest chart version: $CHART_VERSION"
     echo "Latest app version: $APP_VERSION"
