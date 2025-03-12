@@ -21,6 +21,9 @@ variables:
     value: '3.13.2'  # Specify a fixed version for stability
   - name: HELM_PARAMS
     value: >-
+      --set general.lightrun_endpoint=test.example.com 
+      --set general.name=test-client      
+      --set general.deployment_type=saas
       --set secrets.keycloak.password=test123 
       --set secrets.db.user=test_user 
       --set secrets.db.password=test123 
@@ -29,11 +32,27 @@ variables:
       --set secrets.redis.password=test123 
       --set secrets.license.content=test123 
       --set secrets.license.signature=test123 
-      --set secrets.defaults.dockerhub_config.configContent=$(DOCKERHUB_CONFIG) 
+      --set secrets.defaults.dockerhub_config.configContent=$(DOCKERHUB_CONFIG)
       --set secrets.defaults.mail_password=test123 
-      --set secrets.defaults.keystore_password=test123 
-      --set general.lightrun_endpoint=test.example.com 
-      --set general.name=test-client
+      --set secrets.defaults.keystore_password=test123
+      --set certificate.tls.crt=$(CERTIFICATE_CRT)
+      --set certificate.tls.key=$(CERTIFICATE_KEY)      
+      --set deployments.frontend.resources.cpu=0 
+      --set deployments.frontend.resources.memory=0 
+      --set deployments.backend.resources.cpu=0 
+      --set deployments.backend.resources.memory=0 
+      --set deployments.keycloak.resources.cpu=0 
+      --set deployments.keycloak.resources.memory=0 
+      --set deployments.redis.resources.cpu=0 
+      --set deployments.redis.resources.memory=0 
+      --set deployments.mysql.resources.cpu=0 
+      --set deployments.mysql.resources.memory=0 
+      --set deployments.rabbitmq.resources.cpu=0 
+      --set deployments.rabbitmq.resources.memory=0 
+      --set deployments.data_streamer.resources.cpu=0 
+      --set deployments.data_streamer.resources.memory=0 
+      --set deployments.router.resources.cpu=0 \
+      --set deployments.router.resources.memory=0"      
 
 pool:
   name: "Azure VMSS"
@@ -42,6 +61,27 @@ steps:
 - script: |
     echo "##vso[task.setvariable variable=HELM_PARAMS;issecret=true]$(HELM_PARAMS)"
   displayName: 'Mask Sensitive Parameters'
+
+- script: |
+    # Install jq for JSON parsing
+    sudo apt-get update && sudo apt-get install -y jq
+    
+    # Fetch latest appVersion from ArtifactHub
+    RESPONSE=$(curl -s https://artifacthub.io/api/v1/packages/helm/lightrun-helm-chart/lightrun-helm-chart)
+    APP_VERSION=$(echo $RESPONSE | jq -r '.app_version')
+    CHART_VERSION=$(echo $RESPONSE | jq -r '.version')
+    
+    echo "Latest chart version: $CHART_VERSION"
+    echo "Latest app version: $APP_VERSION"
+    
+    # Add version-specific tags and resource limits to HELM_PARAMS
+    HELM_PARAMS="$HELM_PARAMS \
+    --set deployments.frontend.image.tag=$APP_VERSION \
+    --set deployments.backend.image.tag=$APP_VERSION \
+    --set deployments.keycloak.image.tag=$APP_VERSION 
+    
+    echo "##vso[task.setvariable variable=HELM_PARAMS;issecret=true]$HELM_PARAMS"
+  displayName: 'Set Latest Chart Tags'
 
 - task: HelmInstaller@0
   displayName: 'Install Helm'
