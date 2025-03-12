@@ -192,6 +192,40 @@ steps:
     # Run helm test and capture the pod names
     helm test $(RELEASE_NAME) -n $(NAMESPACE)
     
+    # Check router logs for /version endpoint
+    ROUTER_POD=$(kubectl get pods -n $(NAMESPACE) -l "app.kubernetes.io/instance=$(RELEASE_NAME),app.kubernetes.io/component=router" -o name)
+    echo "Router pod found:"
+    echo "$ROUTER_POD"
+    echo "==================== Router Logs ===================="
+    echo "Checking router logs for version endpoint access..."
+    
+    # Get relevant router logs with context
+    echo "Recent router logs with version endpoint activity:"
+    kubectl logs $ROUTER_POD -n $(NAMESPACE) | grep -i -B2 -A2 "/version\|status.*200\|status.*500" || true
+    
+    # Get specific status codes
+    echo -e "\nHTTP Status Code Summary for /version:"
+    kubectl logs $ROUTER_POD -n $(NAMESPACE) | grep -i "/version" | grep -o "status=[0-9]*" | sort | uniq -c || true
+    echo "-----------------------------------------------"
+    
+    # Check backend logs
+    BACKEND_POD=$(kubectl get pods -n $(NAMESPACE) -l "app.kubernetes.io/instance=$(RELEASE_NAME),app.kubernetes.io/component=backend" -o name)
+    echo "Backend pod found:"
+    echo "$BACKEND_POD"
+    echo "==================== Backend Logs ===================="
+    echo "Last 50 lines of backend logs:"
+    kubectl logs $BACKEND_POD -n $(NAMESPACE) --tail=50 || true
+    echo "-----------------------------------------------"
+    
+    # Check keycloak logs
+    KEYCLOAK_POD=$(kubectl get pods -n $(NAMESPACE) -l "app.kubernetes.io/instance=$(RELEASE_NAME),app.kubernetes.io/component=keycloak" -o name)
+    echo "Keycloak pod found:"
+    echo "$KEYCLOAK_POD"
+    echo "==================== Keycloak Logs ===================="
+    echo "Last 50 lines of keycloak logs:"
+    kubectl logs $KEYCLOAK_POD -n $(NAMESPACE) --tail=50 || true
+    echo "-----------------------------------------------"
+    
     # Get the test pod names and logs
     TEST_PODS=$(kubectl get pods -n $(NAMESPACE) -l "app.kubernetes.io/instance=$(RELEASE_NAME),helm.sh/test=true" -o name)
     
