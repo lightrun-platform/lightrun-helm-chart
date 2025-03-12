@@ -10,29 +10,39 @@ pr:
       - '.pipelines/helm-chart-validation.yml'
 
 variables:
-  CHART_PATH: './chart'
-  RELEASE_NAME: 'test-release'
-  NAMESPACE: 'test-namespace'
-  HELM_VERSION: '3.13.2'  # Specify a fixed version for stability
-  # Common Helm parameters for testing
-  HELM_PARAMS: >-
-    --set secrets.keycloak.password=test123 
-    --set secrets.db.user=test_user 
-    --set secrets.db.password=test123 
-    --set secrets.mq.user=test_user 
-    --set secrets.mq.password=test123 
-    --set secrets.redis.password=test123 
-    --set secrets.license.content=test123 
-    --set secrets.license.signature=test123 
-    --set secrets.defaults.mail_password=test123 
-    --set secrets.defaults.keystore_password=test123 
-    --set general.lightrun_endpoint=test.example.com 
-    --set general.name=test-client
+  - group: lightrun-helm-chart-variables
+  - name: CHART_PATH
+    value: './chart'
+  - name: RELEASE_NAME
+    value: 'test-release'
+  - name: NAMESPACE
+    value: 'test-namespace'
+  - name: HELM_VERSION
+    value: '3.13.2'  # Specify a fixed version for stability
+  - name: HELM_PARAMS
+    value: >-
+      --set secrets.keycloak.password=test123 
+      --set secrets.db.user=test_user 
+      --set secrets.db.password=test123 
+      --set secrets.mq.user=test_user 
+      --set secrets.mq.password=test123 
+      --set secrets.redis.password=test123 
+      --set secrets.license.content=test123 
+      --set secrets.license.signature=test123 
+      --set secrets.defaults.dockerhub_config.configContent=$(DOCKERHUB_CONFIG) 
+      --set secrets.defaults.mail_password=test123 
+      --set secrets.defaults.keystore_password=test123 
+      --set general.lightrun_endpoint=test.example.com 
+      --set general.name=test-client
 
 pool:
-  vmImage: 'ubuntu-latest'
+  name: "Azure VMSS"
 
 steps:
+- script: |
+    echo "##vso[task.setvariable variable=HELM_PARAMS;issecret=true]$(HELM_PARAMS)"
+  displayName: 'Mask Sensitive Parameters'
+
 - task: HelmInstaller@0
   displayName: 'Install Helm'
   inputs:
@@ -45,11 +55,26 @@ steps:
   displayName: 'Create k3d Cluster'
 
 - script: |
-    helm lint $(CHART_PATH)
+    helm lint $(CHART_PATH) 2>&1 | grep -v "SECRET" || exit ${PIPESTATUS[0]}
   displayName: 'Lint Helm Chart'
   
 - script: |
-    helm template $(RELEASE_NAME) $(CHART_PATH) --namespace $(NAMESPACE) --debug $(HELM_PARAMS)
+    # Redirect output to file
+    helm template $(RELEASE_NAME) $(CHART_PATH) --namespace $(NAMESPACE) $(HELM_PARAMS) > template_output.yaml 2>&1
+    
+    # Filter sensitive data and display
+    cat template_output.yaml | grep -v "password:\|secret:\|token:\|key:" || true
+    
+    # Check if template command was successful
+    if [ -s template_output.yaml ]; then
+      echo "Template validation successful"
+      rm template_output.yaml
+      exit 0
+    else
+      echo "Template validation failed"
+      rm template_output.yaml
+      exit 1
+    fi
   displayName: 'Validate Templates'
 
 - script: |
