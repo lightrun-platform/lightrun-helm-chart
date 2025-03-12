@@ -52,7 +52,7 @@ variables:
       --set deployments.data_streamer.resources.cpu=0 
       --set deployments.data_streamer.resources.memory=0 
       --set deployments.router.resources.cpu=0 
-      --set deployments.router.resources.memory=0"      
+      --set deployments.router.resources.memory=0
 
 pool:
   name: "Azure VMSS"
