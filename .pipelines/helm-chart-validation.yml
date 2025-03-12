@@ -75,12 +75,9 @@ steps:
     echo "Latest app version: $APP_VERSION"
     
     # Add version-specific tags and resource limits to HELM_PARAMS
-    HELM_PARAMS="$HELM_PARAMS \
-    --set deployments.frontend.image.tag=$APP_VERSION \
-    --set deployments.backend.image.tag=$APP_VERSION \
-    --set deployments.keycloak.image.tag=$APP_VERSION 
+    HELM_PARAMS="${HELM_PARAMS} --set deployments.frontend.image.tag=${APP_VERSION} --set deployments.backend.image.tag=${APP_VERSION} --set deployments.keycloak.image.tag=${APP_VERSION}"
     
-    echo "##vso[task.setvariable variable=HELM_PARAMS;issecret=true]$HELM_PARAMS"
+    echo "##vso[task.setvariable variable=HELM_PARAMS;issecret=true]${HELM_PARAMS}"
   displayName: 'Set Latest Chart Tags'
 
 - task: HelmInstaller@0
