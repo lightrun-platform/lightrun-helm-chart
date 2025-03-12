@@ -73,14 +73,14 @@ steps:
           memory: "0Mi"
         extraEnv:
           - name: "_JAVA_OPTIONS"
-            value: ""
+            value: "-XX:+UseContainerSupport"          
       keycloak:
         resources:
           cpu: "0m"
           memory: "0Mi"
         extraEnv:
           - name: "_JAVA_OPTIONS"
-            value: ""
+            value: "-XX:+UseContainerSupport"
       redis:
         resources:
           cpu: "0m"
@@ -102,23 +102,11 @@ steps:
           cpu: "0m"
           memory: "0Mi"
     EOF
-
-    # Debug: Show the content of values.yaml
-    echo "Content of values.yaml:"
-    cat values.yaml
-    
-    # Debug: Show current directory and files
-    pwd
-    ls -la
   displayName: 'Create Values File'
 
 - script: |
     # Install jq for JSON parsing
     sudo apt-get update && sudo apt-get install -y jq
-    
-    # Install yq for YAML processing
-    wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
-    chmod +x /usr/local/bin/yq
     
     # Fetch latest appVersion from ArtifactHub
     RESPONSE=$(curl -s https://artifacthub.io/api/v1/packages/helm/lightrun-helm-chart/lightrun-helm-chart)
@@ -128,30 +116,20 @@ steps:
     echo "Latest chart version: $CHART_VERSION"
     echo "Latest app version: $APP_VERSION"
     
-    # Create a temporary file with just the image tags
-    TEMP_FILE=$(mktemp)
-    yq eval ".deployments.frontend.image.tag = \"${APP_VERSION}\" | 
-            .deployments.backend.image.tag = \"${APP_VERSION}\" | 
-            .deployments.keycloak.image.tag = \"${APP_VERSION}\"" values.yaml > "$TEMP_FILE"
+    # Add image tags to values file
+    cat >> values.yaml << EOF
     
-    # Replace the original file
-    mv "$TEMP_FILE" values.yaml
-
-    # Debug: Show final content of values.yaml
-    echo "Final content of values.yaml after adding tags:"
-    echo "----------------------------------------"
-    cat values.yaml | grep -v "configContent" # Skip sensitive data
-    echo "----------------------------------------"
-    
-    # Specifically show Java-related configurations
-    echo "Java-related configurations:"
-    cat values.yaml | grep -A 5 "_JAVA_OPTIONS" || true
-    echo "----------------------------------------"
-    
-    # Show image tags to verify they were added correctly
-    echo "Image tags configuration:"
-    cat values.yaml | grep -A 2 "tag:" || true
-    echo "----------------------------------------"
+    deployments:
+      frontend:
+        image:
+          tag: ${APP_VERSION}
+      backend:
+        image:
+          tag: ${APP_VERSION}
+      keycloak:
+        image:
+          tag: ${APP_VERSION}
+    EOF
   displayName: 'Set Latest Chart Tags'
 
 - task: HelmInstaller@0
@@ -166,32 +144,15 @@ steps:
   displayName: 'Create k3d Cluster'
 
 - script: |
-    # Debug: Verify values file exists and show working directory
-    pwd
-    ls -la
-    echo "Using values file from:"
-    realpath values.yaml
-    
     helm lint $(CHART_PATH) -f values.yaml 2>&1 | grep -v "SECRET" || exit ${PIPESTATUS[0]}
   displayName: 'Lint Helm Chart'
   
 - script: |
-    # Debug: Verify values file and show helm command
-    echo "Using values file from: $(pwd)/values.yaml"
-    echo "Running helm template with values file..."
-    
     # Redirect output to file
     helm template $(RELEASE_NAME) $(CHART_PATH) -f values.yaml --namespace $(NAMESPACE) > template_output.yaml 2>&1
     
-    # Show specific sections we're interested in
-    echo "Checking Java-related configurations:"
-    cat template_output.yaml | grep -A 5 "_JAVA_OPTIONS" || true
-    
-    echo "Checking environment variables in deployments:"
-    cat template_output.yaml | grep -A 20 "env:" || true
-    
-    echo "Checking container resources:"
-    cat template_output.yaml | grep -A 10 "resources:" || true
+    # Filter sensitive data and display
+    cat template_output.yaml | grep -v "password:\|secret:\|token:\|key:" || true
     
     # Check if template command was successful
     if [ -s template_output.yaml ]; then
@@ -210,10 +171,6 @@ steps:
   displayName: 'Create Namespace'
 
 - script: |
-    # Debug: Verify values file and show helm command
-    echo "Using values file from: $(pwd)/values.yaml"
-    echo "Running helm install with values file..."
-    
     helm install $(RELEASE_NAME) $(CHART_PATH) \
       -f values.yaml \
       --namespace $(NAMESPACE) \
