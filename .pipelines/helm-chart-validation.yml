@@ -59,8 +59,10 @@ pool:
 
 steps:
 - script: |
-    echo "##vso[task.setvariable variable=HELM_PARAMS;issecret=true]$(HELM_PARAMS)"
-  displayName: 'Mask Sensitive Parameters'
+    # Create a temporary file to store the helm parameters
+    echo '$(HELM_PARAMS)' > helm_params.txt
+    echo "##vso[task.setvariable variable=HELM_PARAMS_FILE]helm_params.txt"
+  displayName: 'Store Helm Parameters'
 
 - script: |
     # Install jq for JSON parsing
@@ -74,10 +76,8 @@ steps:
     echo "Latest chart version: $CHART_VERSION"
     echo "Latest app version: $APP_VERSION"
     
-    # Add version-specific tags and resource limits to HELM_PARAMS
-    HELM_PARAMS="${HELM_PARAMS} --set deployments.frontend.image.tag=${APP_VERSION} --set deployments.backend.image.tag=${APP_VERSION} --set deployments.keycloak.image.tag=${APP_VERSION}"
-    
-    echo "##vso[task.setvariable variable=HELM_PARAMS;issecret=true]${HELM_PARAMS}"
+    # Add version-specific tags to the parameters file
+    echo " --set deployments.frontend.image.tag=${APP_VERSION} --set deployments.backend.image.tag=${APP_VERSION} --set deployments.keycloak.image.tag=${APP_VERSION}" >> helm_params.txt
   displayName: 'Set Latest Chart Tags'
 
 - task: HelmInstaller@0
@@ -96,8 +96,11 @@ steps:
   displayName: 'Lint Helm Chart'
   
 - script: |
+    # Use the parameters from the file
+    HELM_PARAMS=$(cat helm_params.txt)
+    
     # Redirect output to file
-    helm template $(RELEASE_NAME) $(CHART_PATH) --namespace $(NAMESPACE) $(HELM_PARAMS) > template_output.yaml 2>&1
+    helm template $(RELEASE_NAME) $(CHART_PATH) --namespace $(NAMESPACE) $HELM_PARAMS > template_output.yaml 2>&1
     
     # Filter sensitive data and display
     cat template_output.yaml | grep -v "password:\|secret:\|token:\|key:" || true
@@ -119,12 +122,15 @@ steps:
   displayName: 'Create Namespace'
 
 - script: |
+    # Use the parameters from the file
+    HELM_PARAMS=$(cat helm_params.txt)
+    
     helm install $(RELEASE_NAME) $(CHART_PATH) \
       --namespace $(NAMESPACE) \
       --wait \
       --timeout 5m \
       --debug \
-      $(HELM_PARAMS)
+      $HELM_PARAMS
   displayName: 'Install Chart'
 
 - script: |
