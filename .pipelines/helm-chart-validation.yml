@@ -28,6 +28,17 @@ steps:
   continueOnError: true
 
 - script: |
+    # Install jq for JSON parsing
+    sudo apt-get update && sudo apt-get install -y jq
+    
+    # Fetch latest appVersion from ArtifactHub
+    RESPONSE=$(curl -s https://artifacthub.io/api/v1/packages/helm/lightrun-helm-chart/lightrun-helm-chart)
+    APP_VERSION=$(echo $RESPONSE | jq -r '.app_version')
+    CHART_VERSION=$(echo $RESPONSE | jq -r '.version')
+    
+    echo "Latest chart version: $CHART_VERSION"
+    echo "Latest app version: $APP_VERSION"
+
     # Create values.yaml file
     cat > values.yaml << EOF
     general:
@@ -67,13 +78,17 @@ steps:
         resources:
           cpu: "0m"
           memory: "0Mi"
+        image:
+          tag: ${APP_VERSION}
       backend:
         resources:
           cpu: "0m"
           memory: "0Mi"
         extraEnv:
           - name: "_JAVA_OPTIONS"
-            value: "-XX:+UseContainerSupport"          
+            value: "-XX:+UseContainerSupport"
+        image:
+          tag: ${APP_VERSION}
       keycloak:
         resources:
           cpu: "0m"
@@ -81,6 +96,8 @@ steps:
         extraEnv:
           - name: "_JAVA_OPTIONS"
             value: "-XX:+UseContainerSupport"
+        image:
+          tag: ${APP_VERSION}
       redis:
         resources:
           cpu: "0m"
@@ -103,34 +120,6 @@ steps:
           memory: "0Mi"
     EOF
   displayName: 'Create Values File'
-
-- script: |
-    # Install jq for JSON parsing
-    sudo apt-get update && sudo apt-get install -y jq
-    
-    # Fetch latest appVersion from ArtifactHub
-    RESPONSE=$(curl -s https://artifacthub.io/api/v1/packages/helm/lightrun-helm-chart/lightrun-helm-chart)
-    APP_VERSION=$(echo $RESPONSE | jq -r '.app_version')
-    CHART_VERSION=$(echo $RESPONSE | jq -r '.version')
-    
-    echo "Latest chart version: $CHART_VERSION"
-    echo "Latest app version: $APP_VERSION"
-    
-    # Add image tags to values file
-    cat >> values.yaml << EOF
-    
-    deployments:
-      frontend:
-        image:
-          tag: ${APP_VERSION}
-      backend:
-        image:
-          tag: ${APP_VERSION}
-      keycloak:
-        image:
-          tag: ${APP_VERSION}
-    EOF
-  displayName: 'Set Latest Chart Tags'
 
 - task: HelmInstaller@0
   displayName: 'Install Helm'
