@@ -658,4 +658,49 @@ Container SecurityContext of lightrun data_streamer
 {{- end -}}
 {{- end -}}
 
+{{/*
+###################
+## Artifacts ##
+###################
+*/}}
+
+
+{{- define "artifacts.name" -}}
+{{ include "lightrun.fullname" . }}-artifacts
+{{- end -}}
+
+
+
+{{/*
+Create the name of the lightrun artifacts service account to use
+*/}}
+{{- define "artifacts.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+    {{ default (include "artifacts.name" .) .Values.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Container SecurityContext of lightrun artifacts
+*/}}
+{{- define "artifacts.containerSecurityContext" -}}
+{{/*Define a local variable baseSecurityContext with the minimum required securityContext on the container level*/}}
+{{- $readOnlyRootFilesystem := dict "readOnlyRootFilesystem" (.Values.general.readOnlyRootFilesystem) -}}
+{{- $baseSecurityContext := include "baseSecurityContext" . | fromYaml -}}
+{{- $localSecurityContext := mustMerge $baseSecurityContext $readOnlyRootFilesystem -}}
+{{/*If user provided values for containerSecurityContext, merge them with the baseSecurityContext*/}}
+{{/*Values passed by user will override defaults*/}}
+{{- if .Values.deployments.artifacts.containerSecurityContext -}}
+{{- $mergedSecurityContext := mergeOverwrite  $localSecurityContext (.Values.deployments.artifacts.containerSecurityContext | default dict) -}}
+{{- $mergedSecurityContext | toYaml -}}
+{{- else if kindIs "invalid" .Values.deployments.artifacts.containerSecurityContext -}}
+{{ default dict | toYaml -}}
+{{- else -}}
+{{/*use default values from baseSecurityContext*/}}
+{{- $localSecurityContext | toYaml -}}
+{{- end -}}
+{{- end -}}
+
 

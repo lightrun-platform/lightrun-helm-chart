@@ -184,6 +184,7 @@ general:
         redis: ""
         rabbitmq: ""
         data_streamer: ""
+        artifacts: ""
 
   ############
   ## Router ##
@@ -919,6 +920,47 @@ deployments:
       successThreshold: 1
       failureThreshold: 3
       path: /ready
+
+  artifacts:
+    loglevel: notice
+    useJsonLogFormat: false
+    replicas: 1
+    rollout_strategy: "RollingUpdate"
+    image:
+      repository: lightruncom/artifacts
+      tag: ""
+      pullPolicy: IfNotPresent
+    resources:
+      cpu: 500m
+      memory: 128Mi
+    podLabels: {}
+    podAnnotations: {}
+    annotations: {} # deployment annotations
+    extraEnvs: []
+    podSecurityContext: {}
+    containerSecurityContext: {}
+    service:
+      annotations: {}
+      labels: {}
+    extraVolumes: []
+    extraVolumeMounts: []
+    podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
+    topologySpreadConstraints: []
+    affinity: {}
+    livenessProbe: 
+      initialDelaySeconds: 10
+      periodSeconds: 20
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+      path: /health
+    readinessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+      path: /health
 
   standalone_nginx:
     replicas: 1
