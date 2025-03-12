@@ -84,18 +84,18 @@ steps:
         resources:
           cpu: "0m"
           memory: "0Mi"
-        extraEnv:
+        extraEnvs:
           - name: "_JAVA_OPTIONS"
-            value: "-XX:+UseContainerSupport"
+            value: ""
         image:
           tag: ${APP_VERSION}
       keycloak:
         resources:
           cpu: "0m"
           memory: "0Mi"
-        extraEnv:
+        extraEnvs:
           - name: "_JAVA_OPTIONS"
-            value: "-XX:+UseContainerSupport"
+            value: ""
         image:
           tag: ${APP_VERSION}
       redis:
