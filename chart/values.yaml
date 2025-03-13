@@ -486,7 +486,7 @@ deployments:
     replicas: 1
     image:
       repository: lightruncom/webapp
-      tag: "1.50.5-release.946fe1c442"
+      tag: "1.50.6-release.09f2987522"
       pullPolicy: IfNotPresent
     resources:
       cpu: 100m
@@ -527,7 +527,7 @@ deployments:
     rollout_strategy: "Recreate"
     image:
       repository: lightruncom/server
-      tag: "1.50.5-release.946fe1c442"
+      tag: "1.50.6-release.09f2987522"
       pullPolicy: IfNotPresent
     resources:
       cpu: 3000m
@@ -629,7 +629,7 @@ deployments:
     rollout_strategy: "Recreate"
     image:
       repository: lightruncom/keycloak
-      tag: "1.50.5-release.946fe1c442"
+      tag: "1.50.6-release.09f2987522"
       pullPolicy: IfNotPresent
     resources:
       cpu: 1000m
