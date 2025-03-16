@@ -1,4 +1,50 @@
 
+<a name="v3.13.0"></a>
+## [v3.13.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.12.0...v3.13.0) - 2025-03-16
+
+
+
+### Versions
+
+| Image            | Tag                       |
+|------------------|---------------------------|
+| backend          | 1.54.2-release.c4f1e2daa7 |
+| data_streamer    | rpk-4.48.1-alpine         |
+| frontend         | 1.54.2-release.c4f1e2daa7 |
+| keycloak         | 1.54.2-release.c4f1e2daa7 |
+| mysql            | 8.0.38                    |
+| rabbitmq         | 3.12.14-alpine            |
+| redis            | alpine-7.2.7-r0           |
+| router           | alpine-3.20.0-r1          |
+| standalone_nginx | stable-alpine-slim        |
+ 
+ 
+
+
+### Added (2 changes)
+
+- [override-download-endpoint-for-async-profiler-for-internal-mirror-purposes (#28)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/1eefdeb)
+ 
+
+- [Propose changes to support k8s system diagnostics (#21)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/79e46a2)
+
+
+  Having "serviceAccount.create: true" is a pre-requisite for this feature to work.
+  Otherwise, setting "enabled" to true has no effect.
+  When properly enabled, it creates a Role and RoleBinding.
+  They allow the backend pod to request k8s API for data about the resources in Lightrun namespace.
+  For the backend service account it also enforces mounting the token to the backend pod.
+  It must be enabled with caution, because automountServiceAccountToken is not always allowed.
+  Note: this parameter doesn't enable or disable the System Diagnostics feature itself.
+  It only enables the k8s data collection.
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.12.0"></a>
 ## [v3.12.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.11.1...v3.12.0) - 2025-03-06
 
@@ -233,7 +279,7 @@
 
 
 <a name="v3.10.0"></a>
-## [v3.10.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.9.11...v3.10.0) - 2025-01-28
+## [v3.10.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.9.12...v3.10.0) - 2025-01-28
 
 
 
@@ -248,6 +294,31 @@
 | mysql            | 8.0.38                    |
 | rabbitmq         | 3.12.12-alpine            |
 | redis            | alpine-7.2.5-r1           |
+| router           | alpine-3.20.0-r1          |
+| standalone_nginx | stable-alpine-slim        |
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.9.12"></a>
+## [v3.9.12](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.9.11...v3.9.12) - 2025-03-13
+
+
+
+### Versions
+
+| Image            | Tag                       |
+|------------------|---------------------------|
+| backend          | 1.50.6-release.09f2987522 |
+| data_streamer    | rpk-4.48.1-alpine         |
+| frontend         | 1.50.6-release.09f2987522 |
+| keycloak         | 1.50.6-release.09f2987522 |
+| mysql            | 8.0.38                    |
+| rabbitmq         | 3.12.14-alpine            |
+| redis            | alpine-7.2.7-r0           |
 | router           | alpine-3.20.0-r1          |
 | standalone_nginx | stable-alpine-slim        |
  
