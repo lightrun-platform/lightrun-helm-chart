@@ -567,17 +567,17 @@ deployments:
       wait_for_keycloak:
         image:
           repository: lightruncom/chart-helper
-          tag: latest
+          tag: "0.2.0"
           pullPolicy: ""
       p12_creator:
         image:
           repository: lightruncom/chart-helper
-          tag: latest
+          tag: "0.2.0"
           pullPolicy: ""
       wait_for_rabbitmq:
         image:
           repository: lightruncom/chart-helper
-          tag: latest
+          tag: "0.2.0"
           pullPolicy: ""
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
@@ -658,7 +658,7 @@ deployments:
       cluster_cert:
         image:
           repository: lightruncom/chart-helper
-          tag: latest
+          tag: "0.2.0"
           pullPolicy: ""
     topologySpreadConstraints: []
     affinity: {}
@@ -819,7 +819,7 @@ deployments:
           memory: 128Mi
         image:
           repository: lightruncom/chart-helper
-          tag: latest
+          tag: "0.2.0"
           pullPolicy: ""
     # EmptyDir is used for rabbitmq data when mq.storage is set to 0
     emptyDir:
