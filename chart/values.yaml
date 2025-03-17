@@ -184,6 +184,7 @@ general:
         redis: ""
         rabbitmq: ""
         data_streamer: ""
+        artifacts: ""
 
   ############
   ## Router ##
@@ -422,6 +423,20 @@ general:
     seccompProfile:
       type: RuntimeDefault
 
+  ################
+  ## System Diagnostics
+  ################
+  system_diagnostics_k8s_api:
+    # Having "serviceAccount.create: true" is a pre-requisite for this feature to work.
+    # Otherwise, setting "enabled" to true has no effect. 
+    # When properly enabled, it creates a Role and RoleBinding.
+    # They allow the backend pod to request k8s API for data about the resources in Lightrun namespace.
+    # For the backend service account it also enforces mounting the token to the backend pod.
+    # It must be enabled with caution, because automountServiceAccountToken is not always allowed.
+    # Note: this parameter doesn't enable or disable the System Diagnostics feature itself.
+    # It only enables the k8s data collection.
+    enabled: false
+
 ################
 ## Certificate
 ################
@@ -582,17 +597,17 @@ deployments:
       wait_for_keycloak:
         image:
           repository: lightruncom/chart-helper
-          tag: latest
+          tag: "0.2.0"
           pullPolicy: ""
       p12_creator:
         image:
           repository: lightruncom/chart-helper
-          tag: latest
+          tag: "0.2.0"
           pullPolicy: ""
       wait_for_rabbitmq:
         image:
           repository: lightruncom/chart-helper
-          tag: latest
+          tag: "0.2.0"
           pullPolicy: ""
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
@@ -628,11 +643,8 @@ deployments:
       # deployments.backend.asyncProfiler.enabled -- Run async-profiler on every backend pod
       ## ref: https://github.com/async-profiler/async-profiler
       enabled: false
-      # deployments.backend.asyncProfiler.version -- Specify the async-profiler version to use. Set exact version or "nightly".
-      ## ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
-      version: "v3.0"
-      # deployments.backend.asyncProfiler.architecture -- Specify the async-profiler architecture, valid values are: x64 or arm64
-      architecture: "x64"
+      # Download URL end point for async profiler binary, ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
+      downloadUrl: "https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz"
       # deployments.backend.asyncProfiler.arguments -- Configure the async profiler arguments
       ## ref: https://github.com/async-profiler/async-profiler/blob/v3.0/src/arguments.cpp#L44
       arguments: "start,event=ctimer,loop=10m,chunksize=1m,file=/async-profiler-tmp/profile-%t.jfr,log=/tmp/asyncprofiler.log"
@@ -675,7 +687,7 @@ deployments:
       cluster_cert:
         image:
           repository: lightruncom/chart-helper
-          tag: latest
+          tag: "0.2.0"
           pullPolicy: ""
     topologySpreadConstraints: []
     affinity: {}
@@ -702,11 +714,8 @@ deployments:
       # deployments.keycloak.asyncProfiler.enabled -- Run async-profiler on every keycloak pod
       ## ref: https://github.com/async-profiler/async-profiler
       enabled: false
-      # deployments.keycloak.asyncProfiler.version -- Specify the async-profiler version to use. Set exact version or "nightly".
-      ## ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
-      version: "v3.0"
-      # deployments.keycloak.asyncProfiler.architecture -- Specify the async-profiler architecture, valid values are: x64 or arm64
-      architecture: "x64"
+      # Download URL end point for async profiler binary, ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
+      downloadUrl: "https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz"
       # deployments.keycloak.asyncProfiler.arguments -- Configure the async profiler arguments
       ## ref: https://github.com/async-profiler/async-profiler/blob/v3.0/src/arguments.cpp#L44
       arguments: "start,event=ctimer,loop=10m,chunksize=1m,file=/async-profiler-tmp/profile-%t.jfr,log=/tmp/asyncprofiler.log"
@@ -840,7 +849,7 @@ deployments:
           memory: 128Mi
         image:
           repository: lightruncom/chart-helper
-          tag: latest
+          tag: "0.2.0"
           pullPolicy: ""
     # EmptyDir is used for rabbitmq data when mq.storage is set to 0
     emptyDir:
@@ -878,7 +887,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/data-streamer
-      tag: "rpk-4.47.1-alpine"
+      tag: "rpk-4.48.1-alpine"
       pullPolicy: IfNotPresent
     resources:
       cpu: 100m
@@ -911,6 +920,47 @@ deployments:
       successThreshold: 1
       failureThreshold: 3
       path: /ready
+
+  artifacts:
+    loglevel: notice
+    useJsonLogFormat: false
+    replicas: 1
+    rollout_strategy: "RollingUpdate"
+    image:
+      repository: lightruncom/artifacts
+      tag: ""
+      pullPolicy: IfNotPresent
+    resources:
+      cpu: 500m
+      memory: 128Mi
+    podLabels: {}
+    podAnnotations: {}
+    annotations: {} # deployment annotations
+    extraEnvs: []
+    podSecurityContext: {}
+    containerSecurityContext: {}
+    service:
+      annotations: {}
+      labels: {}
+    extraVolumes: []
+    extraVolumeMounts: []
+    podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
+    topologySpreadConstraints: []
+    affinity: {}
+    livenessProbe: 
+      initialDelaySeconds: 10
+      periodSeconds: 20
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+      path: /health
+    readinessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+      path: /health
 
   standalone_nginx:
     replicas: 1
