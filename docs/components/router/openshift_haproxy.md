@@ -161,9 +161,9 @@ router:
 2. Based on your DNS provider, create a DNS A record with the record name matching the lightrun endpoint (e.g., "lightrun-tig-router-oc.internal.lightrun.com") and set it to the EXTERNAL-IP provided in the output (e.g., "internal-xxxxxx-1542719919.us-east-1.elb.amazonaws.com").
 
 # Verification
-## Verify Lightrun Router get requests from nginx ingress contoller:
+## Verify Lightrun Router get requests from OpenShift HAProxy Router:
 
-1. run `kubectl get pods -n <lightrun_namespace>` and fetch the name lightrun router pod
+1. Run `kubectl get pods -n <lightrun_namespace>` and fetch the name lightrun router pod.
 	```
 	lightrun-tig-backend-8b7d546d7-7n2nc     1/1     Running   0          85m
 	lightrun-tig-frontend-574b8f7b74-nf6ps   1/1     Running   0          85m
@@ -174,7 +174,7 @@ router:
 	
 	```
 
-2. run `kubectl logs <name of the router pod from point 1 above> -n <lightrun_namespace>` and confirm that requests are seen after you tried to access the lightrun server. for instance:
+2. Run `kubectl logs <name of the router pod from point 1 above> -n <lightrun_namespace>` and confirm that requests are seen after you tried to access the lightrun server. for instance:
 	```
 	x.x.x.x - - [07/Aug/2024:15:03:18 +0000] "GET /content/geomanist-regular-OKFSMC6R.woff2 HTTP/1.1" 200 28420 "https://lightrun-tig-router-nginx.internal.lightrun.com/app/main.bundle.css" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36" "x.x.x.x"
 	x.x.x.x - - [07/Aug/2024:15:03:18 +0000] "GET /api/company/a8dcd0b3-2994-48d5-b6a0-954be6c98d92/agent-pools/default HTTP/1.1" 200 313 "https://lightrun-tig-router-nginx.internal.lightrun.com/company/a8dcd0b3-2994-48d5-b6a0-954be6c98d92" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36" "x.x.x.x"

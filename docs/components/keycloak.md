@@ -87,6 +87,8 @@ initContainers:
       tag: latest
       pullPolicy: ""
 ```
+> **Note:** The `cluster_cert` init container is used only with internal_tls and keycloak cluster mode.
+
 #### Pod Disruption Budget & Scheduling
 
 ```yaml

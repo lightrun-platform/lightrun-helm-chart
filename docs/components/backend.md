@@ -26,6 +26,7 @@ backend:
 ```yaml
   rollout_strategy: "Recreate"  # Defines the rollout strategy
 ```
+> **Note:** The `rollout_strategy` should not be changed while upgrading Lightrun version.
 
 #### Image Configuration
 
@@ -54,7 +55,7 @@ backend:
 
 #### Artifact Management
 
-```
+```yaml
   artifacts:
     enable: true
     repository_url: https://artifacts.lightrun.com/

@@ -12,7 +12,7 @@ Choose the most suitable option from the list below:
    >The Lightrun Router then performs SSL termination and directs the traffic to Lightrun services within the cluster.
 ###### 1.1 - Create an Istio Gateway Custom Resource
 * Replace `spec.servers[0].hosts` with your Lightrun endpoint FQDN.
-* Make sure `spec.servers[0].tls.mode` is set to `PASSTHROUGH`, otherwise you might run into the [gateway missmatch issue](https://istio.io/latest/docs/ops/common-problems/network-issues/#gateway-mismatch).
+* Make sure `spec.servers[0].tls.mode` is set to `PASSTHROUGH`, otherwise you might run into the [gateway mismatch issue](https://istio.io/latest/docs/ops/common-problems/network-issues/#gateway-mismatch).
 ```yaml
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
@@ -158,6 +158,7 @@ spec:
             host: lightrun-tig-router.lightrun-tig.svc.cluster.local
             port:
               number: 8080
+      timeout: 90s
 ```
 ###### 2.4 - Configure the Lightrun Router in the Helm chart
 In the "values.yaml" of the lightrun Helm chart navigate to "general.router" and ensure at the minimum the following configuration is set:
@@ -257,7 +258,8 @@ router:
 	NAME                                              VHOST NAME                                              DOMAINS                                             MATCH                  VIRTUAL SERVICE
 	https.443.https.lightrun-gateway.lightrun-tig     lightrun-tig-router-istio.internal.lightrun.com:443     lightrun-tig-router-istio.internal.lightrun.com     /*                     lightrun-virtual-service.lightrun-tig
 	```
-## Verify Lightrun Router get requests from nginx ingress contoller:
+
+## Verify Lightrun Router get requests from Istio Gateway:
 
 1. Run `kubectl get pods -n <lightrun_namespace>` and fetch the name lightrun router pod.
 	```

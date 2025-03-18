@@ -58,6 +58,7 @@ deployments:
 ```
 
 ## Configuring ImagePullSecrets for registry
+> **Note ** although the name is dockerhub_config, it is not limited to dockerhub and can be used for any image registry.
 
 The configuration is defined under `secrets.defaults.dockerhub_config`:
 ```yaml
@@ -84,7 +85,7 @@ secrets:
       configContent: "BASE64_ENCODED_AUTH_CONFIG"
 ```
 > [!NOTE]
-> By default, the chart is configured to use `lightruncom` as a private registry, and the value for `configContent` is provided by the Lightrun persona.
+> By default, the chart is configured to use `lightruncom` as a private registry, and the value for `configContent` is provided by a Lightrun persona.
 
 However, if you are **not** using the default Lightrun private registry and instead need to use your own private registry that requires authentication, you will need to manually follow these steps to create the image pull secret as part of the chart:
 
@@ -104,7 +105,11 @@ Then, use the result to build the JSON structure:
 ```
 Encode this JSON file into base64 before setting it in `configContent`:
 ```
+# For Linux (GNU base64)
 cat auth.json | base64 -w 0
+
+# For macOS (BSD base64)
+cat auth.json | base64 -b 0
 ```
 For more details on creating and managing Kubernetes image pull secrets, refer to the [official Kubernetes documentation](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/).
 

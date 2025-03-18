@@ -2,7 +2,7 @@ This document outlines the versioning strategy for major, minor, and patch relea
 
 ## Major Releases
 
-Major releases indicate significant changes that can impact functionality or require users to take action for upgrades. We update the major version number for the following:
+Major releases indicate significant changes that can impact functionality or require users to take action for upgrades. We update the major version number if one or more of the following conditions are met:
 
 - The introduction of new features or large-scale modifications (e.g., introduce Lightrun Router).
 - Breaking changes in the chart or Lightrun that necessitate manual intervention for upgrading existing installations.
@@ -12,9 +12,11 @@ Major releases indicate significant changes that can impact functionality or req
 
 Minor releases typically align with minor version updates of the Lightrun image, as well as updates made to the chart. These releases are triggered by:
 
-- Updates to Lightrun’s minor version.
+- Updates to Lightrun's minor version.
 - Changes to default values in the chart that may result in higher resource consumption (e.g., additional pods or services).
 - Functional improvements or additions that warrant greater visibility but don't require a major version bump.
+
+Minor releases follow a regular two-week cadence, ensuring consistent and predictable updates for users.
 
 ## Patch Releases
 
@@ -22,3 +24,4 @@ Patch releases consist of stable fixes or small improvements to previous version
 
 - Patch updates to the Lightrun image.
 - Any minor changes or fixes that don't necessitate a major or minor version update.
+- Security patches.

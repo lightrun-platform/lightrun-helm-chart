@@ -21,6 +21,7 @@ There are two ways to supply certificates to pods:
 
 ```yaml
 general:
+  enabled: true
   internal_tls:
     certificates:
       source: "choose one of the two options below"
@@ -40,11 +41,22 @@ The Helm chart applies the following hooks to these secrets:
 This prevents secrets from being recreated during `helm upgrade` operations.
 
 > [!NOTE]
-> ArgoCD will replace these secrets during a "full sync" operation, but this does not disrupt existing deployments. Since pods are not redeployed upon certificate updates, they continue functioning as usual. If pods are restarted, they will retrieve the new certificates automatically.
+> When using ArgoCD, a “full sync” operation will replace these secrets without disrupting existing deployments. Since pods are not redeployed when certificates are updated, they continue to function normally. However, if pods are restarted, they will automatically retrieve the new certificates.
 
 #### Option 2: `existing_certificates`
 
 If you prefer to use externally generated certificates, specify the Kubernetes secret names containing them. Each secret must include the `tls.crt` and `tls.key` keys.
+
+example of a secret:
+
+```yaml
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/tls
+data:
+  tls.crt: <base64 encoded certificate>
+  tls.key: <base64 encoded key>
+```
 
 If a certificate’s Subject Alternative Name (SAN) includes all necessary services, the same certificate can be reused across multiple pods.
 
@@ -65,7 +77,7 @@ general:
 
 ### Certificate Verification
 
-By default, pods verify remote SSL certificates. This behavior can be modified using the following flag:
+By default, lightrun services verify remote SSL certificates. This behavior can be modified using the following flag:
 
 ```yaml
 general:
@@ -74,7 +86,7 @@ general:
       verification: true
 ```
 
-If you use a private Certificate Authority (CA), specify a Kubernetes secret containing the CA certificate used to sign all internal certificates. This secret must contain a `ca.crt` key:
+If you use a private Certificate Authority (CA), specify a Kubernetes secret containing the CA's certificate used to sign all internal certificates. This secret must contain a `ca.crt` key:
 
 ```yaml
 general:

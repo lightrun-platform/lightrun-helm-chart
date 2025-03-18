@@ -12,23 +12,23 @@ Based on the [official documentation GKE Ingress Controller](https://cloud.googl
     
     | `kubernetes.io/ingress.class` value                  | `ingressClassName` value                  | GKE Ingress controller behavior                                                                 |
     |------------------------------------------------------|-------------------------------------------|--------------------------------------------------------------------------------------------------|
-    | Not set                                              | Not set                                   | Process the Ingress manifest and create an external Application Load Balancer.                   |
+    | Not set                                              | Not set                                   | Processes the Ingress manifest and creates an external Application Load Balancer.                   |
     | Not set                                              | Any value                                 | Takes no action. The Ingress manifest could be processed by a third-party Ingress controller if one has been deployed. |
-    | `gce`                                                | Any value. This field is ignored.         | Process the Ingress manifest and create an external Application Load Balancer.                   |
-    | `gce-internal`                                       | Any value. This field is ignored.         | Process the Ingress manifest and create an internal Application Load Balancer.                   |
+    | `gce`                                                | Any value. This field is ignored.         | Processes the Ingress manifest and creates an external Application Load Balancer.                   |
+    | `gce-internal`                                       | Any value. This field is ignored.         | Processes the Ingress manifest and creates an internal Application Load Balancer.                   |
     | Set to a value other than `gce` or `gce-internal`    | Any value                                 | Takes no action. The Ingress manifest could be processed by a third-party Ingress controller if one has been deployed. |
 
     For clusters running older GKE versions, the GKE controller processes any Ingress that does not have the annotation kubernetes.io/ingress.class, or has the annotation with the value gce or gce-internal.
 3. GKE use so-called Container-native load balancing which is a practice of load balancing directly to Pod endpoints in GKE using [Network Endpoint Groups (NEGs)](https://cloud.google.com/load-balancing/docs/negs).
-   Container-native load balancing is enabled by default for Services when all of the following conditions are true:
+   Container-native load balancing is enabled by default for Services when all of the following conditions are met:
 
 	- For Services created in GKE clusters 1.17.6-gke.7 and up
 	- Using VPC-native clusters
 	- Not using a Shared VPC
 	- Not using GKE Network Policy
 
-	In these conditions, Services will be annotated automatically with `cloud.google.com/neg: '{"ingress": true}'` indicating that a NEG should be created to mirror the Pod IPs within the Service. The NEG is what allows Compute Engine load balancers to communicate directly with Pods. Note that existing Services created prior to GKE 1.17.6-gke.7 won't be automatically annotated by the Service controller.  
-	The most important note to take here is that it might takes time for GCP to complete provisioning the required resources and you can monitor it through the ingress object on GCP Console 
+	Under these conditions, Services will be annotated automatically with `cloud.google.com/neg: '{"ingress": true}'` indicating that a NEG should be created to mirror the Pod IPs within the Service. The NEG is what allows Compute Engine load balancers to communicate directly with Pods. Note that existing Services created prior to GKE 1.17.6-gke.7 won't be automatically annotated by the Service controller.  
+	The most important note to take here is that it might take time for GCP to complete the provisioning of the required resources and you can monitor it through the ingress object on GCP Console. 
 
 # Configure the Lightrun Router in the helm chart
 Choose the most suitable option from the list below:  
@@ -156,19 +156,27 @@ router:
 2. Based on your DNS provider, create a DNS A record with the record name matching the HOST from the above output (e.g., "lightrun-tig-router-gcp.internal.lightrun.com") and set it to the ADDRESS provided in the output (e.g., "34.54.170.204").
 
 # Verification
-## Verify Lightrun Router pod is up:
+## Verify Lightrun Router get requests from GCP Application Load Balancer:
 
-1. run `kubectl get pods -n <lightrun_namespace>` and check the status of the lightrun router pod
+1. Run `kubectl get pods -n <lightrun_namespace>` and fetch the name lightrun router pod.
 	```
-	NAME                                                        READY   STATUS    RESTARTS      AGE
-	lightrun-tig-router-gcp-3-6-0-backend-77669554d5-vwssb    1/1     Running   0             19h
-	lightrun-tig-router-gcp-3-6-0-frontend-5b989584f8-4x4l4   1/1     Running   0             19h
-	lightrun-tig-router-gcp-3-6-0-keycloak-65998c7bb7-9t4cv   1/1     Running   0             19h
-	lightrun-tig-router-gcp-3-6-0-mysql-0                     1/1     Running   0             19h
-	lightrun-tig-router-gcp-3-6-0-redis-67886ff869-zp5ls      1/1     Running   0             19h
-	lightrun-tig-router-gcp-3-6-0-router-699dd99bbf-kkwlr     1/1     Running   0             22m
+	lightrun-tig-backend-8b7d546d7-7n2nc     1/1     Running   0          85m
+	lightrun-tig-frontend-574b8f7b74-nf6ps   1/1     Running   0          85m
+	lightrun-tig-keycloak-79bb8d9686-zb87z   1/1     Running   0          85m
+	lightrun-tig-mysql-0                     1/1     Running   0          85m
+	lightrun-tig-redis-9cb6877-49vpt         1/1     Running   0          85m
+	lightrun-tig-router-65cb8ddf58-slsxn     1/1     Running   0          85m
 	
 	```
- 
-2. On GCP console check the ingress status:  
+
+2. Run `kubectl logs <name of the router pod from point 1 above> -n <lightrun_namespace>` and confirm that requests are seen after you tried to access the lightrun server. for instance:
+	```
+	x.x.x.x - - [07/Aug/2024:15:03:18 +0000] "GET /content/geomanist-regular-OKFSMC6R.woff2 HTTP/1.1" 200 28420 "https://lightrun-tig-router-nginx.internal.lightrun.com/app/main.bundle.css" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36" "x.x.x.x"
+	x.x.x.x - - [07/Aug/2024:15:03:18 +0000] "GET /api/company/a8dcd0b3-2994-48d5-b6a0-954be6c98d92/agent-pools/default HTTP/1.1" 200 313 "https://lightrun-tig-router-nginx.internal.lightrun.com/company/a8dcd0b3-2994-48d5-b6a0-954be6c98d92" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36" "x.x.x.x"
+	x.x.x.x - - [07/Aug/2024:15:03:18 +0000] "GET /web/company/a8dcd0b3-2994-48d5-b6a0-954be6c98d92/1.38/onboardingStatus HTTP/1.1" 200 165 "https://lightrun-tig-router-nginx.internal.lightrun.com/company/a8dcd0b3-2994-48d5-b6a0-954be6c98d92" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36" "x.x.x.x"
+	x.x.x.x - - [07/Aug/2024:15:03:18 +0000] "GET /web/company/a8dcd0b3-2994-48d5-b6a0-954be6c98d92/1.38/onboardingStatus HTTP/1.1" 200 160 "https://lightrun-tig-router-nginx.internal.lightrun.com/company/a8dcd0b3-2994-48d5-b6a0-954be6c98d92" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36" "x.x.x.x"
+	x.x.x.x - - [07/Aug/2024:15:03:18 +0000] "GET /web/company/a8dcd0b3-2994-48d5-b6a0-954be6c98d92/1.38/onboardingStatus HTTP/1.1" 200 165 "https://lightrun-tig-router-nginx.internal.lightrun.com/company/a8dcd0b3-2994-48d5-b6a0-954be6c98d92" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36" "x.x.x.x"
+	```
+
+3. On GCP console check the ingress status:  
 ![gcp-gke-ingress-details](../../images/gcp-gke-ingress-details.png)

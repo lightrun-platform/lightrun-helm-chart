@@ -27,6 +27,34 @@ deployments:
       enabled: false      # Enable Redis authentication. Requires secrets.redis.password to be set.
 ```
 ---
+#### External Redis
+
+To use an external Redis instance, set `redis.external.enabled` to `true`. In this mode, the chart will not deploy a local Redis pod but will connect to an existing redis.
+
+- **Single Architecture (default):**
+```yaml
+deployments:
+  redis:
+    external:
+      enabled: true
+      endpoint: "redis.example.com"  # External Redis endpoint (FQDN)
+```
+* **Replicated Architecture (commonly used with AWS ElastiCache):**
+```yaml
+deployments:
+  redis:
+    architecture: replicated  # Use replicated mode for Redis.
+    external:
+      enabled: true
+      replicatedConfig:
+        nodeAddresses: ["redis-1.example.com", "redis-2.example.com"]  # List of FQDNs for reachable Redis nodes (mandatory for replicated mode)
+```
+
+> [!IMPORTANT] 
+> - When using external Redis, local deployment settings (image, resources, health probes, etc.) do not apply.
+> - In replicated mode, providing the list of node addresses is **mandatory** for proper connectivity.
+
+---
 #### Local Redis
 
 When using a local Redis deployment (i.e., `deployments.redis.external.enabled: false`), the chart deploys a local Redis instance with the following characteristics:
@@ -73,32 +101,4 @@ deployments:
 ```
 - The chart uses an **EmptyDir** for data persistence.
 - Local deployment is suitable for development or smaller installations. For production, verify that your resources and persistence settings meet your requirements.
----
-#### External Redis
-
-To use an external Redis instance, set `redis.external.enabled` to `true`. In this mode, the chart will not deploy a local Redis pod but will connect to an existing redis.
-
-- **Single Architecture (default):**
-```yaml
-deployments:
-  redis:
-    external:
-      enabled: true
-      endpoint: "redis.example.com"  # External Redis endpoint (FQDN)
-```
-* **Replicated Architecture (commonly used with AWS ElastiCache):**
-```yaml
-deployments:
-  redis:
-    architecture: replicated  # Use replicated mode for Redis.
-    external:
-      enabled: true
-      replicatedConfig:
-        nodeAddresses: ["redis-1.example.com", "redis-2.example.com"]  # List of FQDNs for reachable Redis nodes (mandatory for replicated mode)
-```
-
-> [!IMPORTANT] 
-> - When using external Redis, local deployment settings (image, resources, health probes, etc.) do not apply.
-> - In replicated mode, providing the list of node addresses is **mandatory** for proper connectivity.
-
 ---

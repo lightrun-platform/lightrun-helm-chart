@@ -14,7 +14,7 @@ or
 
 > [!NOTE]
 >   - If `general.mq.local: false`, all other RabbitMQ properties (such as storage and policies) **will be ignored** because the external RabbitMQ is expected to be pre-configured.
->   - If `general.mq.local: true`, only 1 replica of rabbitmq will be deployed.
+>   - If `general.mq.local: true`, only 1 replica of rabbitmq will be deployed. in addition we do not support more than 1 replica of rabbitmq with local. such behavior will result in unexpected behavior.
 
 
 ### **Queue Configuration**
@@ -44,10 +44,11 @@ general:
 | **`queue_regex_pattern`**        | Regex pattern to match queues for policy application.                           |
 | **`message_ttl: 600000000`**     | Time-to-live (TTL) for messages in milliseconds (**~7 days**).                  |
 | **`max_length: 2000`**           | Maximum number of messages allowed in the queue.                                |
-| **`overflow: "reject-publish"`** | Behavior when `max_length` is reached (`reject-publish` prevents new messages). |
+| [**`overflow: "reject-publish"`**](https://www.rabbitmq.com/docs/maxlength#overflow-behaviour) | Behavior when `max_length` is reached (`reject-publish` prevents new messages). |
 | **`max_length_bytes: 1000000`**  | Maximum total size of all messages (**500 bytes × 2000 messages**).             |
 
 This configuration **prevents queue overload** and ensures messages are retained only as needed.
+
 
 ### **Storage Configuration (Only if `general.mq.local: true`)**
 
@@ -57,14 +58,14 @@ general:
     persistentVolumeClaimRetentionPolicy:
       whenDeleted: "Retain"
       whenScaled: "Retain"
-    storageClassName: "gp2"
+    storageClassName: "gp3"
     storage: "10Gi"
     pvc_name: ""
 ```
 
 |Property|Description|
 |---|---|
-|**`storageClassName: "gp2"`**|The storage class for the PersistentVolumeClaim (PVC).|
+|**`storageClassName: "gp3"`**|The storage class for the PersistentVolumeClaim (PVC).|
 |**`storage: "10Gi"`**|Amount of storage allocated for RabbitMQ.|
 |**`pvc_name: ""`**|PVC name (default: `{{ .Release.Name }}-mq-data`).|
 |**`persistentVolumeClaimRetentionPolicy`**|Controls PVC retention when the StatefulSet is deleted or scaled down.|
@@ -141,6 +142,13 @@ deployments:
               (rabbitmqctl add_user $RABBITMQ_DEFAULT_USER $RABBITMQ_DEFAULT_PASS && \
               rabbitmqctl set_user_tags $RABBITMQ_DEFAULT_USER administrator && \
               rabbitmqctl set_permissions -p / $RABBITMQ_DEFAULT_USER ".*" ".*" ".*")
+    # The postStart lifecycle hook ensures proper RabbitMQ user setup:
+    # 1. Waits for RabbitMQ to be ready (up to 60 seconds)
+    # 2. Checks if the default user exists
+    # 3. If user doesn't exist:
+    #    - Creates the default user with provided credentials
+    #    - Sets user as administrator
+    #    - Grants full permissions on all vhosts
     livenessProbe:
       initialDelaySeconds: 60
       periodSeconds: 45
@@ -163,7 +171,7 @@ general:
   mq:
     enabled: true
     local: true
-    storageClassName: "gp2"
+    storageClassName: "gp3"
     storage: "10Gi"
     metrics: true
 ```

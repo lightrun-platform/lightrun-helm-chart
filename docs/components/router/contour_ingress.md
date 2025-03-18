@@ -16,7 +16,7 @@ Choose the most suitable option from the list below:
 ##### 1.1 - Create Contour HTTPProxy Custom Resource
 * Replace `metadata.namespace` with your Lightrun's namespace installation.
 * Replace `spec.virtualhost.fqdn` with your Lightrun endpoint FQDN.
-* Replace `spec.virtualhost.tls.secretName` with your secret name that include lighrun certificate , if it was installed as part of lightrun helm chart you may find it using command kubectl get secrets -n lightrun.
+* Replace `spec.virtualhost.tls.secretName` with your secret name that include lighrun certificate , if it was installed as part of lightrun helm chart you may find it using command `kubectl get secrets -n lightrun`.
 * Replace `spec.virtualhost.routes.services[].name` with the service name of the lightrun router
 
 ```yaml
@@ -38,6 +38,10 @@ spec:
           port: 8443
           protocol: tls
       enableWebsockets: true
+      timeoutPolicy:
+        request: 90s      # Timeout for the entire request
+        idle: 90s         # Timeout for idle connections
+        response: 90s     # Timeout for waiting on a response from the backend
 ```
 
 
@@ -109,6 +113,10 @@ spec:
         - name: lightrun-router
       port: 8080
       enableWebsockets: true
+      timeoutPolicy:
+        request: 90s      # Timeout for the entire request
+        idle: 90s         # Timeout for idle connections
+        response: 90s     # Timeout for waiting on a response from the backend
 ```
 ##### 2.2 - Configure the Lightrun Router in the Helm chart
 In the "values.yaml" of the lightrun Helm chart navigate to "general.router" and ensure at the minimum the following configuration is set:

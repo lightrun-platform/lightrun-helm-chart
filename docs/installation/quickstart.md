@@ -6,7 +6,7 @@ Download the latest Lightrun Helm chart:
 ```bash
 helm pull oci://registry-1.docker.io/lightruncom/lightrun-helm-chart --version <VERSION> --destination ./
 ```
-Replace `<VERSION>` with the desired chart version. This will save the Helm chart as a `.tgz` file in the current directory.
+Replace `<VERSION>` with the desired chart version. This will save the Helm chart as a `.tgz` file in the current directory. refer to the [Versions Mapping](../installation/versions_mapping.md) to find latest version.
 
 ## Step 2: Configure `values.yaml`
 
@@ -22,25 +22,25 @@ general:
         nginx.ingress.kubernetes.io/proxy-body-size: "25m"
 certificate:
   tls:
-    crt: ""
-    key: ""
+    crt: "<BASE64_CRT>"
+    key: "<BASE64_KEY>"
 secrets:
   keycloak:
-    password: ""
+    password: "<KEYCLOAK_PASSWORD>"
   db:
-    user: ""
-    password: ""
+    user: "<DB_USER>"
+    password: "<DB_PASSWORD>"
   mq:
-    user: ""
-    password: ""
+    user: "<MQ_USER>"
+    password: "<MQ_PASSWORD>"
   redis:
-    password: ""
+    password: "<REDIS_PASSWORD>"
   license:
-    content: ""  # Provided by Lightrun
-    signature: ""  # Provided by Lightrun
+    content: "<LICENSE_CONTENT>"  # Provided by Lightrun
+    signature: "<LICENSE_SIGNATURE>"  # Provided by Lightrun
   defaults:
     dockerhub_config:
-      configContent: ""  # Provided by Lightrun
+      configContent: "<BASE64_DOCKERHUB_CONFIG>"  # Provided by Lightrun
 ```
 ### Key Configuration Details:
 

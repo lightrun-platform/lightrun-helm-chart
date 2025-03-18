@@ -1,5 +1,5 @@
 This section configures **Lightrun Router** with the  **Azure Application Gateway Ingress Controller**.
-This guide covers set [Azure Application Gateways]([Azure Application Gateway](https://azure.microsoft.com/en-us/services/application-gateway/)) based on Kubernetes [Ingress resources](https://kubernetes.io/docs/concepts/services-networking/ingress/).
+This guide covers [Azure Application Gateways](https://azure.microsoft.com/en-us/services/application-gateway/) based on Kubernetes [Ingress resources](https://kubernetes.io/docs/concepts/services-networking/ingress/).
 # Prerequisites
 1. A certificate that is provided by the customer as part of Lightrun helm chat. the same certificate will be used by Azure Application Gateway for SSL termination.
 2. Ability to create DNS A record points to the Azure Application Gateway record.
