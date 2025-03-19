@@ -216,11 +216,11 @@ spec:
             {{ else }}
             - name: KC_HTTPS_CERTIFICATE_FILE
             - name: KC_HTTPS_CERTIFICATE_KEY_FILE
+            - name: KC_HTTP_ENABLED
+              value: "true"
             {{ end }}
             - name: KC_DB
               value: mysql
-            - name: KC_PROXY
-              value: edge
             - name: KC_DB_URL
               {{- if eq .Values.deployments.keycloak.dbConnector "mysql" }}
               value: jdbc:mysql://{{ include "mysql.db_endpoint" . }}:3306/{{ .Values.general.db_database }}?useSSL={{ .Values.general.db_require_secure_transport }}&allowPublicKeyRetrieval=true&trustServerCertificate=true&serverTimezone=UTC
