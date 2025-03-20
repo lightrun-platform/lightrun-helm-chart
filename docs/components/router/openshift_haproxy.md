@@ -41,7 +41,7 @@ In the "values.yaml" of the lightrun helm chart navigate to "general.router" and
 * general.router.ingress.enabled: true
 * general.router.ingress.ingress_class_name: "openshift-default"
 * general.router.ingress.annotations at the minimum have:
-	* `haproxy.router.openshift.io/timeout: "90"`
+	* `haproxy.router.openshift.io/timeout: "90s"`
 * general.router.service.enabled: true
 * general.router.service.type: ClusterIP
 * general.router.host_port.enabled: false  
@@ -59,7 +59,7 @@ router:
     enabled: true  
     ingress_class_name: "openshift-default"  
     annotations:  
-      haproxy.router.openshift.io/timeout: "90"  
+      haproxy.router.openshift.io/timeout: "90s"  
     labels: {}  
   
   service:  
