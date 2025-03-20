@@ -349,7 +349,7 @@ spec:
         image: "{{ .Values.deployments.backend.initContainers.wait_for_rabbitmq.image.repository }}:{{ .Values.deployments.backend.initContainers.wait_for_rabbitmq.image.tag }}"
         imagePullPolicy: {{ .Values.deployments.backend.initContainers.wait_for_rabbitmq.image.pullPolicy }}
         securityContext: {{ include "lightrun-be.containerSecurityContext" . | indent 10 }}
-        command: 
+        command:
           - sh
           - /scripts/wait-for-200.sh
         resources:
