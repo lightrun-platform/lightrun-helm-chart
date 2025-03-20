@@ -349,7 +349,7 @@ spec:
         image: "{{ .Values.deployments.backend.initContainers.wait_for_rabbitmq.image.repository }}:{{ .Values.deployments.backend.initContainers.wait_for_rabbitmq.image.tag }}"
         imagePullPolicy: {{ .Values.deployments.backend.initContainers.wait_for_rabbitmq.image.pullPolicy }}
         securityContext: {{ include "lightrun-be.containerSecurityContext" . | indent 10 }}
-        command:
+        command: 
           - sh
           - /scripts/wait-for-200.sh
         resources:
@@ -364,12 +364,12 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          - name: RABBITMQ_USER
+          - name: AUTH_USER
             valueFrom:
               secretKeyRef:
                 name: {{ include "secrets.backend.name" . }}
                 key: SPRING_RABBITMQ_USERNAME
-          - name: RABBITMQ_PASSWORD
+          - name: AUTH_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: {{ include "secrets.backend.name" . }}
@@ -377,7 +377,7 @@ spec:
           - name: RABBITMQ_TCP_PORT
             value: "15672"
           - name: URL
-            value: {{ include "http.scheme" . }}://$(RABBITMQ_USER):$(RABBITMQ_PASSWORD)@{{ include "lightrun-mq.endpoint" . }}:$(RABBITMQ_TCP_PORT)/api/overview {{ if .Values.general.internal_tls.enabled }}--no-check-certificate{{ end }}
+            value: {{ include "http.scheme" . }}://{{ include "lightrun-mq.endpoint" . }}:$(RABBITMQ_TCP_PORT)/api/overview {{ if .Values.general.internal_tls.enabled }}--no-check-certificate{{ end }}
       {{- end }}
       - name: p12-creator
         image: "{{ .Values.deployments.backend.initContainers.p12_creator.image.repository }}:{{ .Values.deployments.backend.initContainers.p12_creator.image.tag }}"
