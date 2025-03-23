@@ -14,7 +14,7 @@ The capacity planning estimates include:
 - **Managed Services**: Database and Redis services specifications.
 ## Capacity Planning Table
 > [!NOTE]
-> the capacity planning do not include k8s reserved resources, such kube-reserved, system-reserved, and eviction threshold.
+> the capacity planning do not include k8s reserved resources, such as kube-reserved, system-reserved, and eviction threshold.
 The following table outlines resource allocations based on different agent counts:
 
 ### Scaling by Agent Count
