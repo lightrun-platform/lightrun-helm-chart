@@ -597,17 +597,17 @@ deployments:
       wait_for_keycloak:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.2.0"
+          tag: "0.2.0-alpine-3.21.3-r0.lr-0"
           pullPolicy: ""
       p12_creator:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.2.0"
+          tag: "0.2.0-alpine-3.21.3-r0.lr-0"
           pullPolicy: ""
       wait_for_rabbitmq:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.2.0"
+          tag: "0.2.0-alpine-3.21.3-r0.lr-0"
           pullPolicy: ""
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
@@ -687,7 +687,7 @@ deployments:
       cluster_cert:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.2.0"
+          tag: "0.2.0-alpine-3.21.3-r0.lr-0"
           pullPolicy: ""
     topologySpreadConstraints: []
     affinity: {}
@@ -752,7 +752,7 @@ deployments:
       enabled: false
     image:
       repository: lightruncom/redis
-      tag: alpine-7.2.7-r0
+      tag: 7.2.7-alpine-3.21.3-r0.lr-0
       pullPolicy: IfNotPresent
     resources:
       cpu: 2000m
@@ -849,7 +849,7 @@ deployments:
           memory: 128Mi
         image:
           repository: lightruncom/chart-helper
-          tag: "0.2.0"
+          tag: "0.2.0-alpine-3.21.3-r0.lr-0"
           pullPolicy: ""
     # EmptyDir is used for rabbitmq data when mq.storage is set to 0
     emptyDir:
@@ -887,7 +887,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/data-streamer
-      tag: "rpk-4.48.1-alpine"
+      tag: "4.48.1-alpine-3.21.3-r0.lr-0"
       pullPolicy: IfNotPresent
     resources:
       cpu: 100m
@@ -1004,7 +1004,7 @@ deployments:
       maxReplicas: 5
     image:
       repository: lightruncom/router
-      tag: "alpine-3.20.0-r1.lr-0"
+      tag: "1.26.3-alpine-3.21.3-r0.lr-0"
       pullPolicy: IfNotPresent
     podSecurityContext: {}
     containerSecurityContext: {}
