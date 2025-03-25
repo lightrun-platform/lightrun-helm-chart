@@ -5,6 +5,7 @@ pr:
   branches:
     include:
       - main
+      - releases*
   autoCancel: true
 
 pool:
@@ -27,12 +28,7 @@ steps:
       PR_ID=$(System.PullRequest.PullRequestNumber)
       REPO=$(Build.Repository.Name)
 
-      if [ -z "$PR_ID" ]; then
-        echo "❌ This pipeline should only run on PRs."
-        exit 1
-      fi
-
-      # Get PR title using GitHub API
+      # Get PR details using GitHub API
       PR_RESPONSE=$(curl --silent \
         --header "Authorization: Bearer $(PRETTYDEVOPS_HELM_CHART_GITHUB_PAT)" \
         --header "Accept: application/vnd.github.v3+json" \
@@ -42,15 +38,10 @@ steps:
 
       PR_TITLE=$(echo "$PR_RESPONSE" | jq -r .title)
 
-      if [ -z "$PR_TITLE" ]; then
-        echo "❌ PR title is empty. Please set a title for your PR."
-        exit 1
-      fi
-
       echo "Checking PR #$PR_ID in repo $REPO"
       echo "PR Title: $PR_TITLE"
 
-      # Check labels from PR response
+      # Check skip label from PR response
       if echo "$PR_RESPONSE" | jq -r '.labels[].name' | grep -q "$SKIP_LABEL"; then
         echo "✅ Skipping PR title validation for changelog format due to '$SKIP_LABEL' label."
         exit 0
