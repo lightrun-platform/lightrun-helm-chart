@@ -1,4 +1,4 @@
-name: Changelog Format Check
+name: Lightrun Helm Chart - Validate PR Title for Changelog
 trigger: none  # No trigger on push; only runs on PRs
 
 pr:
@@ -9,7 +9,7 @@ pr:
   autoCancel: true
 
 pool:
-  vmImage: 'ubuntu-latest'
+  name: "Azure VMSS"
 
 variables:
   - group: HelmChartReleaseToolConfig
@@ -51,7 +51,7 @@ steps:
         TYPE="${BASH_REMATCH[2]}"
       else
         echo "❌ PR title does not match changelog format: $PR_TITLE"
-        echo "Expected format: [JIRA-ID-]type-description"
+        echo "Expected format: JIRA-ID-type-description"
         echo "Example: DEVOPS-123-added-new-feature"
         echo "Allowed changelog types: $ALLOWED_CHANGELOG_TYPES"
         echo "To skip this check, add the '$SKIP_LABEL' label to your PR."
