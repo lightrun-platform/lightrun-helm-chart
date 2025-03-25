@@ -47,7 +47,7 @@ steps:
       fi
 
       # Fetch commit messages from the PR
-      COMMITS=$(git log --pretty=format:"%s" $TARGET_BRANCH..$SOURCE_BRANCH)
+      COMMITS=$(git log --pretty=format:"%s" refs/remotes/origin/${TARGET_BRANCH#refs/heads/}..refs/remotes/origin/${SOURCE_BRANCH#refs/heads/})
 
       if [ -z "$COMMITS" ]; then
         echo "❌ No commit messages found in the PR."
