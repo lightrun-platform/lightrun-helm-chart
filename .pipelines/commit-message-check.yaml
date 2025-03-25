@@ -30,11 +30,11 @@ steps:
         exit 1
       fi
 
-      # Get PR title using Azure DevOps API
+      # Get PR title using GitHub API
       PR_RESPONSE=$(curl --silent \
-        --header "Authorization: Bearer $(System.AccessToken)" \
-        --header "Content-Type: application/json" \
-        "$ORG_URL$PROJECT/_apis/git/repositories/$REPO/pullRequests/$PR_ID?api-version=6.0")
+        --header "Authorization: token $(System.AccessToken)" \
+        --header "Accept: application/vnd.github.v3+json" \
+        "https://api.github.com/repos/lightrun-platform/lightrun-helm-chart/pulls/$PR_ID")
 
       echo "API Response: $PR_RESPONSE"
 
@@ -48,14 +48,15 @@ steps:
       echo "Checking PR #$PR_ID in repo $REPO"
       echo "PR Title: $PR_TITLE"
 
-      # Get PR labels using Azure DevOps API
-      LABELS=$(curl -s --header "Authorization: Bearer $(System.AccessToken)" \
-                      --header "Content-Type: application/json" \
-                      "$ORG_URL$PROJECT/_apis/git/repositories/$REPO/pullRequests/$PR_ID/labels?api-version=6.0")
+      # Get PR labels using GitHub API
+      LABELS=$(curl --silent \
+        --header "Authorization: token $(System.AccessToken)" \
+        --header "Accept: application/vnd.github.v3+json" \
+        "https://api.github.com/repos/lightrun-platform/lightrun-helm-chart/pulls/$PR_ID/labels")
 
       if [ -z "$LABELS" ] || [[ "$LABELS" == *"html"* ]]; then
         echo "⚠️ Warning: Could not retrieve labels, skipping check."
-      elif echo "$LABELS" | jq -r '.value[].name' | grep -q "skip-changelog-format"; then
+      elif echo "$LABELS" | jq -r '.[].name' | grep -q "skip-changelog-format"; then
         echo "✅ Skipping PR title validation for changelog format due to 'skip-changelog-format' label."
         exit 0
       fi
