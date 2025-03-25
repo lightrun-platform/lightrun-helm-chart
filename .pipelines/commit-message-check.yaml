@@ -24,12 +24,16 @@ steps:
       PROJECT=$(System.TeamProject)
       REPO=$(Build.Repository.Name)
       ORG_URL=$(System.CollectionUri)
-      PR_TITLE=$(System.PullRequest.Title)
 
       if [ -z "$PR_ID" ]; then
         echo "❌ This pipeline should only run on PRs."
         exit 1
       fi
+
+      # Get PR title using Azure DevOps API
+      PR_TITLE=$(curl --silent -u azdo:$SYSTEM_ACCESSTOKEN \
+        "$ORG_URL$PROJECT/_apis/git/repositories/$REPO/pullRequests/$PR_ID?api-version=5.1" \
+        | jq -r .title)
 
       if [ -z "$PR_TITLE" ]; then
         echo "❌ PR title is empty. Please set a title for your PR."
