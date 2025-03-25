@@ -30,13 +30,11 @@ steps:
         exit 1
       fi
 
-      echo "Fetching PR details from: $ORG_URL$PROJECT/_apis/git/repositories/$REPO/pullRequests/$PR_ID?api-version=5.1"
-
       # Get PR title using Azure DevOps API
       PR_RESPONSE=$(curl --silent \
         --header "Authorization: Bearer $(System.AccessToken)" \
         --header "Content-Type: application/json" \
-        "$ORG_URL$PROJECT/_apis/git/repositories/$REPO/pullRequests/$PR_ID?api-version=5.1")
+        "$ORG_URL$PROJECT/_apis/git/repositories/$REPO/pullRequests/$PR_ID?api-version=6.0")
 
       echo "API Response: $PR_RESPONSE"
 
