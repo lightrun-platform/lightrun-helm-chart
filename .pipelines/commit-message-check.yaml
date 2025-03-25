@@ -1,4 +1,4 @@
-name: Commit Message Check
+name: Changelog Format Check
 trigger: none  # No trigger on push; only runs on PRs
 
 pr:
@@ -15,19 +15,24 @@ steps:
     fetchDepth: 0  # Ensure full commit history for validation
 
   - script: |
-      # Define allowed commit message regex
-      COMMIT_REGEX="^(?:([A-Z]+-[0-9]+)-)?([^-]+)-(.+)$"
-      ALLOWED_TYPES="added versions changed deprecated removed fixed security docs other"
+      # Define changelog format regex
+      CHANGELOG_REGEX="^(?:([A-Z]+-[0-9]+)-)?([^-]+)-(.+)$"
+      ALLOWED_CHANGELOG_TYPES="added versions changed deprecated removed fixed security docs other"
 
       # Get PR details
       PR_ID=$(System.PullRequest.PullRequestId)
       PROJECT=$(System.TeamProject)
       REPO=$(Build.Repository.Name)
       ORG_URL=$(System.CollectionUri)
-      PR_TITLE=$(System.PullRequest.Title)
+      PR_TITLE="$(System.PullRequest.Title)"
 
       if [ -z "$PR_ID" ]; then
         echo "❌ This pipeline should only run on PRs."
+        exit 1
+      fi
+
+      if [ -z "$PR_TITLE" ]; then
+        echo "❌ PR title is empty. Please set a title for your PR."
         exit 1
       fi
 
@@ -41,28 +46,28 @@ steps:
 
       if [ -z "$LABELS" ] || [[ "$LABELS" == *"html"* ]]; then
         echo "⚠️ Warning: Could not retrieve labels, skipping check."
-      elif echo "$LABELS" | jq -r '.value[].name' | grep -q "skip-commit-check"; then
-        echo "✅ Skipping PR title validation due to 'skip-commit-check' label."
+      elif echo "$LABELS" | jq -r '.value[].name' | grep -q "skip-changelog-format"; then
+        echo "✅ Skipping PR title validation for changelog format due to 'skip-changelog-format' label."
         exit 0
       fi
 
-      # Validate PR title
-      if ! [[ "$PR_TITLE" =~ $COMMIT_REGEX ]]; then
-        echo "❌ PR title does not match pattern: $PR_TITLE"
+      # Validate PR title against changelog format
+      if ! [[ "$PR_TITLE" =~ $CHANGELOG_REGEX ]]; then
+        echo "❌ PR title does not match changelog format: $PR_TITLE"
         echo "Expected format: [JIRA-ID-]type-description"
         echo "Example: DEVOPS-123-added-new-feature"
-        echo "Allowed types: $ALLOWED_TYPES"
+        echo "Allowed changelog types: $ALLOWED_CHANGELOG_TYPES"
         exit 1
       fi
 
       # Extract Type and validate it
-      TYPE=$(echo "$PR_TITLE" | sed -E "s/$COMMIT_REGEX/\2/")
-      if ! echo "$ALLOWED_TYPES" | grep -qw "$TYPE"; then
-        echo "❌ PR title type '$TYPE' is not allowed. Allowed types: $ALLOWED_TYPES"
+      TYPE=$(echo "$PR_TITLE" | sed -E "s/$CHANGELOG_REGEX/\2/")
+      if ! echo "$ALLOWED_CHANGELOG_TYPES" | grep -qw "$TYPE"; then
+        echo "❌ PR title type '$TYPE' is not allowed. Allowed changelog types: $ALLOWED_CHANGELOG_TYPES"
         exit 1
       fi
 
-      echo "✅ PR title is valid and follows the required format."
-    displayName: "Validate PR Title"
+      echo "✅ PR title follows the required changelog format."
+    displayName: "Validate PR Title for Changelog"
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
