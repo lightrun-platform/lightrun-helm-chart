@@ -24,15 +24,15 @@ steps:
       PROJECT=$(System.TeamProject)
       REPO=$(Build.Repository.Name)
       ORG_URL=$(System.CollectionUri)
-      TARGET_BRANCH=$(System.PullRequest.TargetBranch)
-      SOURCE_BRANCH=$(System.PullRequest.SourceBranch)
+      PR_TITLE=$(System.PullRequest.Title)
 
       if [ -z "$PR_ID" ]; then
         echo "❌ This pipeline should only run on PRs."
         exit 1
       fi
 
-      echo "Checking PR #$PR_ID in repo $REPO targeting branch $TARGET_BRANCH"
+      echo "Checking PR #$PR_ID in repo $REPO"
+      echo "PR Title: $PR_TITLE"
 
       # Get PR labels using Azure DevOps API
       LABELS=$(curl -s --header "Authorization: Bearer $(System.AccessToken)" \
@@ -42,36 +42,27 @@ steps:
       if [ -z "$LABELS" ] || [[ "$LABELS" == *"html"* ]]; then
         echo "⚠️ Warning: Could not retrieve labels, skipping check."
       elif echo "$LABELS" | jq -r '.value[].name' | grep -q "skip-commit-check"; then
-        echo "✅ Skipping commit message validation due to 'skip-commit-check' label."
+        echo "✅ Skipping PR title validation due to 'skip-commit-check' label."
         exit 0
       fi
 
-      # Fetch commit messages from the PR
-      COMMITS=$(git log --pretty=format:"%s" refs/remotes/origin/${TARGET_BRANCH#refs/heads/}..refs/remotes/origin/${SOURCE_BRANCH#refs/heads/})
-
-      if [ -z "$COMMITS" ]; then
-        echo "❌ No commit messages found in the PR."
+      # Validate PR title
+      if ! [[ "$PR_TITLE" =~ $COMMIT_REGEX ]]; then
+        echo "❌ PR title does not match pattern: $PR_TITLE"
+        echo "Expected format: [JIRA-ID-]type-description"
+        echo "Example: DEVOPS-123-added-new-feature"
+        echo "Allowed types: $ALLOWED_TYPES"
         exit 1
       fi
 
-      # Validate commit messages
-      while IFS= read -r COMMIT; do
-        echo "Validating commit: $COMMIT"
+      # Extract Type and validate it
+      TYPE=$(echo "$PR_TITLE" | sed -E "s/$COMMIT_REGEX/\2/")
+      if ! echo "$ALLOWED_TYPES" | grep -qw "$TYPE"; then
+        echo "❌ PR title type '$TYPE' is not allowed. Allowed types: $ALLOWED_TYPES"
+        exit 1
+      fi
 
-        if ! [[ "$COMMIT" =~ $COMMIT_REGEX ]]; then
-          echo "❌ Commit message does not match pattern: $COMMIT"
-          exit 1
-        fi
-
-        # Extract Type and validate it
-        TYPE=$(echo "$COMMIT" | sed -E "s/$COMMIT_REGEX/\2/")
-        if ! echo "$ALLOWED_TYPES" | grep -qw "$TYPE"; then
-          echo "❌ Commit type '$TYPE' is not allowed. Allowed types: $ALLOWED_TYPES"
-          exit 1
-        fi
-      done <<< "$COMMITS"
-
-      echo "✅ All commit messages are valid."
-    displayName: "Validate Commit Messages"
+      echo "✅ PR title is valid and follows the required format."
+    displayName: "Validate PR Title"
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
