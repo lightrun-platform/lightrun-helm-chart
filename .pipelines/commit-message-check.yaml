@@ -20,7 +20,7 @@ steps:
 
   - script: |
       # Define changelog format regex
-      CHANGELOG_REGEX="^([A-Z]+-[0-9]+-)?([^-]+)-(.+)$"
+      CHANGELOG_REGEX="^([A-Z]+-[0-9]+-)([^-]+)-(.+)$"
       ALLOWED_CHANGELOG_TYPES="added versions changed deprecated removed fixed security docs other"
       SKIP_LABEL="skip-changelog-validation"
 
