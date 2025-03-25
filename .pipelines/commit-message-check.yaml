@@ -36,16 +36,17 @@ steps:
       # Get PR labels using Azure DevOps API
       LABELS=$(curl -s --header "Authorization: Bearer $(System.AccessToken)" \
                       --header "Content-Type: application/json" \
-                      "$ORG_URL$PROJECT/_apis/git/repositories/$REPO/pullRequests/$PR_ID/labels?api-version=6.0" \
-                      | jq -r '.value[].name')
+                      "$ORG_URL$PROJECT/_apis/git/repositories/$REPO/pullRequests/$PR_ID/labels?api-version=6.0")
 
-      if echo "$LABELS" | grep -q "skip-commit-check"; then
+      if [ -z "$LABELS" ] || [[ "$LABELS" == *"html"* ]]; then
+        echo "⚠️ Warning: Could not retrieve labels, skipping check."
+      elif echo "$LABELS" | jq -r '.value[].name' | grep -q "skip-commit-check"; then
         echo "✅ Skipping commit message validation due to 'skip-commit-check' label."
         exit 0
       fi
 
       # Fetch commit messages from the PR
-      COMMITS=$(git log --pretty=format:"%s" origin/$(Build.SourceBranchName)..HEAD)
+      COMMITS=$(git log --pretty=format:"%s" origin/$(Build.SourceVersion)..HEAD)
 
       if [ -z "$COMMITS" ]; then
         echo "❌ No commit messages found in the PR."
