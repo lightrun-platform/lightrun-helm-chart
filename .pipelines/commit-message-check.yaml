@@ -25,6 +25,7 @@ steps:
       REPO=$(Build.Repository.Name)
       ORG_URL=$(System.CollectionUri)
       TARGET_BRANCH=$(System.PullRequest.TargetBranch)
+      SOURCE_BRANCH=$(System.PullRequest.SourceBranch)
 
       if [ -z "$PR_ID" ]; then
         echo "❌ This pipeline should only run on PRs."
@@ -46,7 +47,7 @@ steps:
       fi
 
       # Fetch commit messages from the PR
-      COMMITS=$(git log --pretty=format:"%s" origin/$(Build.SourceVersion)..HEAD)
+      COMMITS=$(git log --pretty=format:"%s" $TARGET_BRANCH..$SOURCE_BRANCH)
 
       if [ -z "$COMMITS" ]; then
         echo "❌ No commit messages found in the PR."
