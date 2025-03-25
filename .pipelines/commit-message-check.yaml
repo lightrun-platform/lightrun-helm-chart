@@ -12,37 +12,47 @@ pool:
 
 steps:
   - checkout: self
-    fetchDepth: 0  # Ensure we get full commit history for PR validation
+    fetchDepth: 0  # Ensure full commit history for validation
 
   - script: |
       # Define allowed commit message regex
       COMMIT_REGEX="^(?:([A-Z]+-[0-9]+)-)?([^-]+)-(.+)$"
       ALLOWED_TYPES="added versions changed deprecated removed fixed security docs other"
 
-      # Get PR details using Azure DevOps API
+      # Get PR details
       PR_ID=$(System.PullRequest.PullRequestId)
       PROJECT=$(System.TeamProject)
       REPO=$(Build.Repository.Name)
       ORG_URL=$(System.CollectionUri)
+      TARGET_BRANCH=$(System.PullRequest.TargetBranch)
 
-      echo "Checking PR $PR_ID in $REPO"
+      if [ -z "$PR_ID" ]; then
+        echo "❌ This pipeline should only run on PRs."
+        exit 1
+      fi
 
-      # Get PR labels
+      echo "Checking PR #$PR_ID in repo $REPO targeting branch $TARGET_BRANCH"
+
+      # Get PR labels using Azure DevOps API
       LABELS=$(curl -s --header "Authorization: Bearer $(System.AccessToken)" \
                       --header "Content-Type: application/json" \
                       "$ORG_URL$PROJECT/_apis/git/repositories/$REPO/pullRequests/$PR_ID/labels?api-version=6.0" \
                       | jq -r '.value[].name')
 
-      # Check if 'skip-commit-check' label exists
       if echo "$LABELS" | grep -q "skip-commit-check"; then
-        echo "Skipping commit message check due to label"
+        echo "✅ Skipping commit message validation due to 'skip-commit-check' label."
         exit 0
       fi
 
-      # Fetch commit messages
-      COMMITS=$(git log --pretty=format:"%s" origin/$(System.PullRequest.TargetBranch)..HEAD)
+      # Fetch commit messages from the PR
+      COMMITS=$(git log --pretty=format:"%s" origin/$(Build.SourceBranchName)..HEAD)
 
-      # Validate each commit message
+      if [ -z "$COMMITS" ]; then
+        echo "❌ No commit messages found in the PR."
+        exit 1
+      fi
+
+      # Validate commit messages
       while IFS= read -r COMMIT; do
         echo "Validating commit: $COMMIT"
 
