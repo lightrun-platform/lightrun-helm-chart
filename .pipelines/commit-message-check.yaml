@@ -24,7 +24,7 @@ steps:
       PROJECT=$(System.TeamProject)
       REPO=$(Build.Repository.Name)
       ORG_URL=$(System.CollectionUri)
-      PR_TITLE="$(System.PullRequest.Title)"
+      PR_TITLE=$(System.PullRequest.Title)
 
       if [ -z "$PR_ID" ]; then
         echo "❌ This pipeline should only run on PRs."
