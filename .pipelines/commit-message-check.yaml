@@ -21,6 +21,7 @@ steps:
       # Define changelog format regex
       CHANGELOG_REGEX="^(?:([A-Z]+-[0-9]+)-)?([^-]+)-(.+)$"
       ALLOWED_CHANGELOG_TYPES="added versions changed deprecated removed fixed security docs other"
+      SKIP_LABEL="skip-changelog-validation"
 
       # Get PR details
       PR_ID=$(System.PullRequest.PullRequestNumber)
@@ -51,8 +52,8 @@ steps:
       echo "PR Title: $PR_TITLE"
 
       # Check labels from PR response
-      if echo "$PR_RESPONSE" | jq -r '.labels[].name' | grep -q "skip-changelog-format"; then
-        echo "✅ Skipping PR title validation for changelog format due to 'skip-changelog-format' label."
+      if echo "$PR_RESPONSE" | jq -r '.labels[].name' | grep -q "$SKIP_LABEL"; then
+        echo "✅ Skipping PR title validation for changelog format due to '$SKIP_LABEL' label."
         exit 0
       fi
 
@@ -62,6 +63,7 @@ steps:
         echo "Expected format: [JIRA-ID-]type-description"
         echo "Example: DEVOPS-123-added-new-feature"
         echo "Allowed changelog types: $ALLOWED_CHANGELOG_TYPES"
+        echo "To skip this check, add the '$SKIP_LABEL' label to your PR."
         exit 1
       fi
 
@@ -69,6 +71,7 @@ steps:
       TYPE=$(echo "$PR_TITLE" | sed -E "s/$CHANGELOG_REGEX/\2/")
       if ! echo "$ALLOWED_CHANGELOG_TYPES" | grep -qw "$TYPE"; then
         echo "❌ PR title type '$TYPE' is not allowed. Allowed changelog types: $ALLOWED_CHANGELOG_TYPES"
+        echo "To skip this check, add the '$SKIP_LABEL' label to your PR."
         exit 1
       fi
 
