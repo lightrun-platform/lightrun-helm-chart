@@ -10,6 +10,9 @@ pr:
 pool:
   vmImage: 'ubuntu-latest'
 
+variables:
+  - group: HelmChartReleaseToolConfig
+
 steps:
   - checkout: self
     fetchDepth: 0  # Ensure full commit history for validation
@@ -32,7 +35,7 @@ steps:
 
       # Get PR title using GitHub API
       PR_RESPONSE=$(curl --silent \
-        --header "Authorization: token $(System.AccessToken)" \
+        --header "Authorization: token $(PRETTYDEVOPS_HELM_CHART_GITHUB_PAT)" \
         --header "Accept: application/vnd.github.v3+json" \
         "https://api.github.com/repos/lightrun-platform/lightrun-helm-chart/pulls/$PR_ID")
 
@@ -50,7 +53,7 @@ steps:
 
       # Get PR labels using GitHub API
       LABELS=$(curl --silent \
-        --header "Authorization: token $(System.AccessToken)" \
+        --header "Authorization: token $(PRETTYDEVOPS_HELM_CHART_GITHUB_PAT)" \
         --header "Accept: application/vnd.github.v3+json" \
         "https://api.github.com/repos/lightrun-platform/lightrun-helm-chart/pulls/$PR_ID/labels")
 
@@ -79,5 +82,3 @@ steps:
 
       echo "✅ PR title follows the required changelog format."
     displayName: "Validate PR Title for Changelog"
-    env:
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
