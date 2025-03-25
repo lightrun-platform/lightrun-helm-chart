@@ -1,0 +1,65 @@
+name: Commit Message Check
+trigger: none  # No trigger on push; only runs on PRs
+
+pr:
+  branches:
+    include:
+      - main
+  autoCancel: true
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+  - checkout: self
+    fetchDepth: 0  # Ensure we get full commit history for PR validation
+
+  - script: |
+      # Define allowed commit message regex
+      COMMIT_REGEX="^(?:([A-Z]+-[0-9]+)-)?([^-]+)-(.+)$"
+      ALLOWED_TYPES="added versions changed deprecated removed fixed security docs other"
+
+      # Get PR details using Azure DevOps API
+      PR_ID=$(System.PullRequest.PullRequestId)
+      PROJECT=$(System.TeamProject)
+      REPO=$(Build.Repository.Name)
+      ORG_URL=$(System.CollectionUri)
+
+      echo "Checking PR $PR_ID in $REPO"
+
+      # Get PR labels
+      LABELS=$(curl -s --header "Authorization: Bearer $(System.AccessToken)" \
+                      --header "Content-Type: application/json" \
+                      "$ORG_URL$PROJECT/_apis/git/repositories/$REPO/pullRequests/$PR_ID/labels?api-version=6.0" \
+                      | jq -r '.value[].name')
+
+      # Check if 'skip-commit-check' label exists
+      if echo "$LABELS" | grep -q "skip-commit-check"; then
+        echo "Skipping commit message check due to label"
+        exit 0
+      fi
+
+      # Fetch commit messages
+      COMMITS=$(git log --pretty=format:"%s" origin/$(System.PullRequest.TargetBranch)..HEAD)
+
+      # Validate each commit message
+      while IFS= read -r COMMIT; do
+        echo "Validating commit: $COMMIT"
+
+        if ! [[ "$COMMIT" =~ $COMMIT_REGEX ]]; then
+          echo "❌ Commit message does not match pattern: $COMMIT"
+          exit 1
+        fi
+
+        # Extract Type and validate it
+        TYPE=$(echo "$COMMIT" | sed -E "s/$COMMIT_REGEX/\2/")
+        if ! echo "$ALLOWED_TYPES" | grep -qw "$TYPE"; then
+          echo "❌ Commit type '$TYPE' is not allowed. Allowed types: $ALLOWED_TYPES"
+          exit 1
+        fi
+      done <<< "$COMMITS"
+
+      echo "✅ All commit messages are valid."
+    displayName: "Validate Commit Messages"
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
