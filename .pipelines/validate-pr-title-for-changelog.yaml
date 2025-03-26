@@ -9,7 +9,7 @@ pr:
   autoCancel: true
 
 pool:
-  name: "Azure VMSS"
+  vmImage: 'ubuntu-latest'
 
 variables:
   - group: HelmChartReleaseToolConfig
