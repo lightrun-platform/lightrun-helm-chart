@@ -286,6 +286,11 @@ data:
           proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-be.name" . }};
         }
 
+        location /router_status {
+          stub_status;
+          access_log off;
+        }
+
         location / {
         {{ if .Values.general.internal_tls.enabled }}
           proxy_ssl_name $host;
