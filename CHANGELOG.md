@@ -1,4 +1,67 @@
 
+<a name="v3.14.0"></a>
+## [v3.14.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.13.1...v3.14.0) - 2025-03-30
+
+
+
+### Versions
+
+| Image            | Tag                       |
+|------------------|---------------------------|
+| artifacts        | 1.55.1-release.6f1f87ac95 |
+| backend          | 1.55.1-release.6f1f87ac95 |
+| data_streamer    | rpk-4.48.1-alpine         |
+| frontend         | 1.55.1-release.6f1f87ac95 |
+| keycloak         | 1.55.1-release.6f1f87ac95 |
+| mysql            | 8.0.38                    |
+| rabbitmq         | 3.12.14-alpine            |
+| redis            | alpine-7.2.7-r0           |
+| router           | alpine-3.20.0-r1.lr-0     |
+| standalone_nginx | stable-alpine-slim        |
+ 
+ 
+
+
+### Changed (6 changes)
+
+- [wait-for-rabbitmq-initcontainer-pass-username-and-password-as-env-vars (#34)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/af0e492)
+
+
+  The chart-helper tag in the default values.yaml file was updated to 0.3.0-alpine-3.21.3-r0.lr-0 to accommodate the new changes.
+ 
+
+- [bump-redis-to-7-2-7-alpine-3-21-3-r-0-lr-0 (#35)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/5461370)
+ 
+
+- [bump-router-to-1-26-3-alpine-3-21-3-r-0-lr-0 (#36)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/ceae413)
+ 
+
+- [bump-chart-helper-to-0-2-0-alpine-3-21-3-r-0-lr-0 (#37)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/c079422)
+ 
+
+- [bump-data-streamer-to-4-48-1-alpine-3-21-3-r-0-lr-0 (#38)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/b0a3445)
+
+
+  Co-authored-by: eliranb <eliranb@lightrun.com>
+ 
+
+- [keycloak-environment-variables-to-support-keycloak-26.1.4](https://github.com/lightrun-platform/lightrun-helm-chart/commit/8b8a888)
+ 
+ 
+ 
+
+
+### Documentation (1 change)
+
+- [abstract-documentation (#19)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/7799746)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.13.1"></a>
 ## [v3.13.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.13.0...v3.13.1) - 2025-03-17
 
