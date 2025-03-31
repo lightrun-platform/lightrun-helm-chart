@@ -1,40 +1,22 @@
 
 <a name="v3.12.0"></a>
-## [v3.12.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.11.1...v3.12.0) - 2025-03-30
+## [v3.12.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.11.1...v3.12.0) - 2025-03-06
 
 
 
-### Added (2 changes)
+### Added (1 change)
 
-- [name-override-support-to-override-release-name ([#15](https://github.com/lightrun-platform/lightrun-helm-chart/issues/15))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/3c5bc69)
- 
-
-- [keystore-password-when-enabling-tls-on-router-level ([#6](https://github.com/lightrun-platform/lightrun-helm-chart/issues/6))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/750fd79)
+- [name-override-support-to-override-release-name ([#15](https://github.com/lightrun-platform/lightrun-helm-chart/issues/15))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2f8415b)
  
  
  
 
 
-### Changed (2 changes)
+### Changed (1 change)
 
-- [bump-lightrun-redis-to-alpine-7-2-7-r-0 ([#12](https://github.com/lightrun-platform/lightrun-helm-chart/issues/12))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/15a2a6d)
-
-
-  Co-authored-by: eliranb <eliranb[@lightrun](https://github.com/lightrun).com>
- 
-
-- [data streamer default tag to rpk-4.45.1-alpine ([#7](https://github.com/lightrun-platform/lightrun-helm-chart/issues/7))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/9762475)
- 
- 
- 
+- [bump-lightrun-redis-to-alpine-7-2-7-r-0 ([#12](https://github.com/lightrun-platform/lightrun-helm-chart/issues/12))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/451e27d)
 
 
-### Deprecated (1 change)
-
-- [api-keys-encryption ([#3](https://github.com/lightrun-platform/lightrun-helm-chart/issues/3))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/6c5b731)
-
-
-  Co-authored-by: Eliran Barooch <36511676+imeliran[@users](https://github.com/users).noreply.github.com>
   Co-authored-by: eliranb <eliranb[@lightrun](https://github.com/lightrun).com>
  
  
@@ -55,20 +37,6 @@
 | router           | alpine-3.20.0-r1          |
 | standalone_nginx | stable-alpine-slim        |
 
-| Image            | Tag                       |
-|------------------|---------------------------|
-| backend          | 1.53.1-release.53d0d289fa |
-| data_streamer    | rpk-4.47.1-alpine         |
-| frontend         | 1.53.1-release.53d0d289fa |
-| keycloak         | 1.53.1-release.53d0d289fa |
-| mysql            | 8.0.38                    |
-| rabbitmq         | 3.12.14-alpine            |
-| redis            | alpine-7.2.7-r0           |
-| router           | alpine-3.20.0-r1          |
-| standalone_nginx | stable-alpine-slim        |
-
-
-
 
 
 
@@ -80,7 +48,7 @@
 
 
 <a name="v3.11.1"></a>
-## [v3.11.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.11.0...v3.11.1) - 2025-03-30
+## [v3.11.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.11.0...v3.11.1) - 2025-02-19
 
 
 
@@ -105,13 +73,13 @@
 
 
 <a name="v3.11.0"></a>
-## [v3.11.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.10.2...v3.11.0) - 2025-03-30
+## [v3.11.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.10.2...v3.11.0) - 2025-02-16
 
 
 
 ### Added (1 change)
 
-- [keystore-password-when-enabling-tls-on-router-level ([#6](https://github.com/lightrun-platform/lightrun-helm-chart/issues/6))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2e7b831)
+- [keystore-password-when-enabling-tls-on-router-level ([#6](https://github.com/lightrun-platform/lightrun-helm-chart/issues/6))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/c3e1dad)
  
  
  
@@ -119,7 +87,7 @@
 
 ### Changed (1 change)
 
-- [data streamer default tag to rpk-4.45.1-alpine ([#7](https://github.com/lightrun-platform/lightrun-helm-chart/issues/7))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/fd31040)
+- [data streamer default tag to rpk-4.45.1-alpine ([#7](https://github.com/lightrun-platform/lightrun-helm-chart/issues/7))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2797faf)
  
  
  
@@ -127,7 +95,7 @@
 
 ### Deprecated (1 change)
 
-- [api-keys-encryption ([#3](https://github.com/lightrun-platform/lightrun-helm-chart/issues/3))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/5374b01)
+- [api-keys-encryption ([#3](https://github.com/lightrun-platform/lightrun-helm-chart/issues/3))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/7795d6b)
 
 
   Co-authored-by: Eliran Barooch <36511676+imeliran[@users](https://github.com/users).noreply.github.com>
