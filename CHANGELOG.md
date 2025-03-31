@@ -4,6 +4,17 @@
 
 
 
+### Changed (1 change)
+
+- [bump-chart-helper-to-0-2-0 ([#29](https://github.com/lightrun-platform/lightrun-helm-chart/issues/29)) ([#30](https://github.com/lightrun-platform/lightrun-helm-chart/issues/30))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/9c5ea55)
+
+
+  Co-authored-by: eliranb <eliranb[@lightrun](https://github.com/lightrun).com>
+ 
+ 
+ 
+
+
 ### Versions
 
 | Image            | Tag                       |
@@ -17,17 +28,6 @@
 | redis            | alpine-7.2.7-r0           |
 | router           | alpine-3.20.0-r1          |
 | standalone_nginx | stable-alpine-slim        |
- 
- 
-
-
-### Changed (1 change)
-
-- [bump-chart-helper-to-0-2-0 (#29)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/c8831c0)
-
-
-  Co-authored-by: eliranb <eliranb@lightrun.com>
- 
  
  
  
@@ -40,29 +40,9 @@
 
 
 
-### Versions
+### Added (1 change)
 
-| Image            | Tag                       |
-|------------------|---------------------------|
-| backend          | 1.54.2-release.c4f1e2daa7 |
-| data_streamer    | rpk-4.48.1-alpine         |
-| frontend         | 1.54.2-release.c4f1e2daa7 |
-| keycloak         | 1.54.2-release.c4f1e2daa7 |
-| mysql            | 8.0.38                    |
-| rabbitmq         | 3.12.14-alpine            |
-| redis            | alpine-7.2.7-r0           |
-| router           | alpine-3.20.0-r1          |
-| standalone_nginx | stable-alpine-slim        |
- 
- 
-
-
-### Added (2 changes)
-
-- [override-download-endpoint-for-async-profiler-for-internal-mirror-purposes (#28)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/1eefdeb)
- 
-
-- [Propose changes to support k8s system diagnostics (#21)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/79e46a2)
+- [Propose changes to support k8s system diagnostics ([#21](https://github.com/lightrun-platform/lightrun-helm-chart/issues/21))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/ec03d4f)
 
 
   Having "serviceAccount.create: true" is a pre-requisite for this feature to work.
@@ -76,6 +56,40 @@
  
  
  
+
+
+### Changed (2 changes)
+
+- [data-streamer version to 4.48.1](https://github.com/lightrun-platform/lightrun-helm-chart/commit/02984d9)
+ 
+
+- [replace-curl-with-wget-command-initcontainers](https://github.com/lightrun-platform/lightrun-helm-chart/commit/ab642dc)
+ 
+ 
+ 
+
+
+### Versions
+
+| Image            | Tag                       |
+|------------------|---------------------------|
+| backend          | 1.54.2-release.c4f1e2daa7 |
+| data_streamer    | rpk-4.48.1-alpine         |
+| frontend         | 1.54.2-release.c4f1e2daa7 |
+| keycloak         | 1.54.2-release.c4f1e2daa7 |
+| mysql            | 8.0.38                    |
+| rabbitmq         | 3.12.14-alpine            |
+| redis            | alpine-7.2.7-r0           |
+| router           | alpine-3.20.0-r1          |
+| standalone_nginx | stable-alpine-slim        |
+
+
+
+
+
+
+ 
+ 
  
 
  
@@ -84,6 +98,25 @@
 <a name="v3.12.0"></a>
 ## [v3.12.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.11.1...v3.12.0) - 2025-03-06
 
+
+
+### Added (1 change)
+
+- [name-override-support-to-override-release-name ([#15](https://github.com/lightrun-platform/lightrun-helm-chart/issues/15))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2f8415b)
+ 
+ 
+ 
+
+
+### Changed (1 change)
+
+- [bump-lightrun-redis-to-alpine-7-2-7-r-0 ([#12](https://github.com/lightrun-platform/lightrun-helm-chart/issues/12))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/451e27d)
+
+
+  Co-authored-by: eliranb <eliranb[@lightrun](https://github.com/lightrun).com>
+ 
+ 
+ 
 
 
 ### Versions
@@ -100,28 +133,9 @@
 | router           | alpine-3.20.0-r1          |
 | standalone_nginx | stable-alpine-slim        |
 
-| Image            | Tag                       |
-|------------------|---------------------------|
-| backend          | 1.53.1-release.53d0d289fa |
-| data_streamer    | rpk-4.47.1-alpine         |
-| frontend         | 1.53.1-release.53d0d289fa |
-| keycloak         | 1.53.1-release.53d0d289fa |
-| mysql            | 8.0.38                    |
-| rabbitmq         | 3.12.14-alpine            |
-| redis            | alpine-7.2.7-r0           |
-| router           | alpine-3.20.0-r1          |
-| standalone_nginx | stable-alpine-slim        |
- 
- 
 
 
-### Changed (2 changes)
 
-- [data-streamer version to 4.48.1](https://github.com/lightrun-platform/lightrun-helm-chart/commit/edbf2b8)
- 
-
-- [replace-curl-with-wget-command-initcontainers](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2ef907b)
- 
  
  
  
@@ -159,6 +173,34 @@
 
 
 
+### Added (1 change)
+
+- [keystore-password-when-enabling-tls-on-router-level ([#6](https://github.com/lightrun-platform/lightrun-helm-chart/issues/6))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/c3e1dad)
+ 
+ 
+ 
+
+
+### Changed (1 change)
+
+- [data streamer default tag to rpk-4.45.1-alpine ([#7](https://github.com/lightrun-platform/lightrun-helm-chart/issues/7))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2797faf)
+ 
+ 
+ 
+
+
+### Deprecated (1 change)
+
+- [api-keys-encryption ([#3](https://github.com/lightrun-platform/lightrun-helm-chart/issues/3))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/7795d6b)
+
+
+  Co-authored-by: Eliran Barooch <36511676+imeliran[@users](https://github.com/users).noreply.github.com>
+  Co-authored-by: eliranb <eliranb[@lightrun](https://github.com/lightrun).com>
+ 
+ 
+ 
+
+
 ### Versions
 
 | Image            | Tag                       |
@@ -173,66 +215,9 @@
 | router           | alpine-3.20.0-r1          |
 | standalone_nginx | stable-alpine-slim        |
 
-| Image            | Tag                       |
-|------------------|---------------------------|
-| backend          | 1.51.0-release.05d1da7dcc |
-| data_streamer    | rpk-4.45.1                |
-| frontend         | 1.51.0-release.05d1da7dcc |
-| keycloak         | 1.51.0-release.05d1da7dcc |
-| mysql            | 8.0.38                    |
-| rabbitmq         | 3.12.12-alpine            |
-| redis            | alpine-7.2.5-r1           |
-| router           | alpine-3.20.0-r1          |
-| standalone_nginx | stable-alpine-slim        |
-
-| Image            | Tag                       |
-|------------------|---------------------------|
-| backend          | 1.51.0-release.05d1da7dcc |
-| data_streamer    | rpk-4.37.0                |
-| frontend         | 1.51.0-release.05d1da7dcc |
-| keycloak         | 1.51.0-release.05d1da7dcc |
-| mysql            | 8.0.38                    |
-| rabbitmq         | 3.12.12-alpine            |
-| redis            | alpine-7.2.5-r1           |
-| router           | alpine-3.20.0-r1          |
-| standalone_nginx | stable-alpine-slim        |
- 
- 
 
 
-### Added (2 changes)
 
-- [name-override-support-to-override-release-name (#15)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/7394aaf)
- 
-
-- [keystore-password-when-enabling-tls-on-router-level (#6)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/a269810)
- 
- 
- 
-
-
-### Changed (2 changes)
-
-- [bump-lightrun-redis-to-alpine-7-2-7-r-0 (#12)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/4e866eb)
-
-
-  Co-authored-by: eliranb <eliranb@lightrun.com>
- 
-
-- [data streamer default tag to rpk-4.45.1-alpine (#7)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/026f022)
- 
- 
- 
-
-
-### Deprecated (1 change)
-
-- [api-keys-encryption (#3)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/0afa21a)
-
-
-  Co-authored-by: Eliran Barooch <36511676+imeliran@users.noreply.github.com>
-  Co-authored-by: eliranb <eliranb@lightrun.com>
- 
  
  
  
@@ -258,30 +243,6 @@
 | redis            | alpine-7.2.5-r1           |
 | router           | alpine-3.20.0-r1          |
 | standalone_nginx | stable-alpine-slim        |
-
-| Image            | Tag                       |
-|------------------|---------------------------|
-| backend          | 1.51.0-release.05d1da7dcc |
-| data_streamer    | rpk-4.45.1                |
-| frontend         | 1.51.0-release.05d1da7dcc |
-| keycloak         | 1.51.0-release.05d1da7dcc |
-| mysql            | 8.0.38                    |
-| rabbitmq         | 3.12.12-alpine            |
-| redis            | alpine-7.2.5-r1           |
-| router           | alpine-3.20.0-r1          |
-| standalone_nginx | stable-alpine-slim        |
-
-| Image            | Tag                       |
-|------------------|---------------------------|
-| backend          | 1.51.0-release.05d1da7dcc |
-| data_streamer    | rpk-4.37.0                |
-| frontend         | 1.51.0-release.05d1da7dcc |
-| keycloak         | 1.51.0-release.05d1da7dcc |
-| mysql            | 8.0.38                    |
-| rabbitmq         | 3.12.12-alpine            |
-| redis            | alpine-7.2.5-r1           |
-| router           | alpine-3.20.0-r1          |
-| standalone_nginx | stable-alpine-slim        |
  
  
  
@@ -290,7 +251,7 @@
 
 
 <a name="v3.10.1"></a>
-## [v3.10.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.10.0...v3.10.1) - 2025-01-28
+## [v3.10.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.10.0...v3.10.1) - 2025-03-30
 
 
 
@@ -315,7 +276,7 @@
 
 
 <a name="v3.10.0"></a>
-## [v3.10.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.9.12...v3.10.0) - 2025-01-28
+## [v3.10.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.9.12...v3.10.0) - 2025-03-30
 
 
 
@@ -369,6 +330,14 @@
 
 
 
+### Changed (1 change)
+
+- [bump-versions-in-lts-chart-version-3-9 ([#24](https://github.com/lightrun-platform/lightrun-helm-chart/issues/24))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/e8f8605)
+ 
+ 
+ 
+
+
 ### Versions
 
 | Image            | Tag                       |
@@ -382,14 +351,6 @@
 | redis            | alpine-7.2.7-r0           |
 | router           | alpine-3.20.0-r1          |
 | standalone_nginx | stable-alpine-slim        |
- 
- 
-
-
-### Changed (1 change)
-
-- [bump-versions-in-lts-chart-version-3-9 (#24)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/e8f8605)
- 
  
  
  
@@ -452,6 +413,17 @@
 
 
 
+### Changed (1 change)
+
+- [bump-lightrun-redis-to-alpine-7-2-7-r-0 ([#13](https://github.com/lightrun-platform/lightrun-helm-chart/issues/13))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/539d929)
+
+
+  Co-authored-by: eliranb <eliranb[@lightrun](https://github.com/lightrun).com>
+ 
+ 
+ 
+
+
 ### Versions
 
 | Image            | Tag                       |
@@ -467,17 +439,6 @@
 | standalone_nginx | stable-alpine-slim        |
  
  
-
-
-### Changed (1 change)
-
-- [bump-lightrun-redis-to-alpine-7-2-7-r-0 (#13)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/539d929)
-
-
-  Co-authored-by: eliranb <eliranb@lightrun.com>
- 
- 
- 
  
 
  
@@ -486,6 +447,17 @@
 <a name="v3.9.7"></a>
 ## [v3.9.7](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.9.6...v3.9.7) - 2025-02-09
 
+
+
+### Changed (1 change)
+
+- [bump-datastreamer-tag-to-rpk-4-45-1-alpine ([#11](https://github.com/lightrun-platform/lightrun-helm-chart/issues/11))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/5e021a3)
+
+
+  Co-authored-by: eliranb <eliranb[@lightrun](https://github.com/lightrun).com>
+ 
+ 
+ 
 
 
 ### Versions
@@ -503,24 +475,13 @@
 | standalone_nginx | stable-alpine-slim        |
  
  
-
-
-### Changed (1 change)
-
-- [bump-datastreamer-tag-to-rpk-4-45-1-alpine (#11)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/5e021a3)
-
-
-  Co-authored-by: eliranb <eliranb@lightrun.com>
- 
- 
- 
  
 
  
 
 
 <a name="v3.9.6"></a>
-## v3.9.6 - 2025-02-06
+## [v3.9.6](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.9.5...v3.9.6) - 2025-02-06
 
 
 
@@ -537,6 +498,27 @@
 | redis            | alpine-7.2.5-r1           |
 | router           | alpine-3.20.0-r1          |
 | standalone_nginx | stable-alpine-slim        |
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.9.5"></a>
+## [v3.9.5](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.9.4...v3.9.5) - 2025-03-30
+
+
+
+### Changed (1 change)
+
+- [data streamer default tag to rpk-4.45.1-alpine ([#7](https://github.com/lightrun-platform/lightrun-helm-chart/issues/7)) ([#10](https://github.com/lightrun-platform/lightrun-helm-chart/issues/10))](https://github.com/lightrun-platform/lightrun-helm-chart/commit/6b2f1d0)
+ 
+ 
+ 
+
+
+### Versions
 
 | Image            | Tag                       |
 |------------------|---------------------------|
@@ -549,6 +531,19 @@
 | redis            | alpine-7.2.5-r1           |
 | router           | alpine-3.20.0-r1          |
 | standalone_nginx | stable-alpine-slim        |
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.9.4"></a>
+## v3.9.4 - 2025-03-30
+
+
+
+### Versions
 
 | Image               | Tag                      |
 |---------------------|--------------------------|
@@ -561,14 +556,6 @@
 | redis               | alpine-7.2.5-r1          |
 | router              | alpine-3.20.0-r1         |
 | standalone_nginx    | stable-alpine-slim       |
- 
- 
-
-
-### Changed (1 change)
-
-- [data streamer default tag to rpk-4.45.1-alpine (#7) (#10)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/6b2f1d0)
- 
  
  
  
