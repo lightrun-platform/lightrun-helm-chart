@@ -44,10 +44,14 @@ data:
 
       location = /index.html {
         add_header Cache-Control 'no-store, no-cache, max-age=0';
+        add_header X-Frame-Options "DENY" always;
+        add_header Content-Security-Policy "frame-ancestors 'none'" always;
       }
 
       location @index {
         add_header Cache-Control 'no-store, no-cache, max-age=0';
+        add_header X-Frame-Options "DENY" always;
+        add_header Content-Security-Policy "frame-ancestors 'none'" always;
         try_files /index.html =404;
       }
 
