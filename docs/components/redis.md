@@ -53,7 +53,7 @@ deployments:
 > [!IMPORTANT] 
 > - When using external Redis, local deployment settings (image, resources, health probes, etc.) do not apply.
 > - In replicated mode, providing the list of node addresses is **mandatory** for proper connectivity.
-
+> - For instructions on integrating with Redis Enterprise Operator on OpenShift, see [Integrating Lightrun with Redis Enterprise Operator on OpenShift](../advanced/redis-enterprise-operator-integration.md).
 ---
 #### Local Redis
 
