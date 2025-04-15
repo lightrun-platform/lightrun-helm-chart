@@ -66,12 +66,12 @@ To ensure a smooth and secure production deployment of Lightrun, follow these ke
 > [!TIP] 
 > Use external redis
 - Determine if Redis will be local or external.
-    [More info on Redis Setup](docs/components/redis.md).
+    For more information, see [Redis Setup](docs/components/redis.md).
 
 #### **9. [Optional] RabbitMQ**
 
 - Determine if RabbitMQ is needed for sending telemetry to Lightrun.
-    For more information, see [RabbitMQ](docs/components/rabbitmq.md)
+    For more information, see [RabbitMQ](docs/components/rabbitmq.md).
 
 #### **10. [Optional] Network Policy**
 
