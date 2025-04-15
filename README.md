@@ -22,7 +22,7 @@ The `lightrun` Helm chart provides a reliable and efficient way to deploy and ma
 
 If you just want to get Lightrun up and running with default settings, start with our [Quick Start Guide](docs/installation/quickstart.md). This guide covers all the essential steps for a basic installation.
 
-For a **production-ready deployment**, refer to the [**Step-by-Step Planning for Production**](#step-by-step-planning-for-production) section to ensure security, scalability, and best practices.
+For a **production-ready deployment**, refer to the [Step-by-Step Planning for Production](#step-by-step-planning-for-production) section to ensure security, scalability, and best practices.
 
 ---
 ### **Step-by-Step Planning for Production**
