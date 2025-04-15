@@ -1,4 +1,6 @@
-This document provides a compatibility overview for Kubernetes and OpenShift versions with the Helm charts in this repository.
+# Lighturn Compatibility with Kubernetes and OpenShift
+
+This page provides a compatibility overview for Kubernetes and OpenShift versions with the Helm charts in this repository.
 ## Helm Compatibility
 ```
  >= 3.13.0 
