@@ -1,14 +1,14 @@
-## **Overview**
+# Managing Secrets
 
 Lightrun requires various secrets for authentication, database access, message queues, and integrations. These secrets are managed under `secrets` and can either be deployed as part of this chart or managed externally.
-### **Managing Secrets Deployment**
+### **Secret Deployment Options**
 
 - If `deploy_secrets: true`, the Helm chart will create and manage secrets.
 - If `deploy_secrets: false`, secrets **must be pre-created** in Kubernetes. The chart will look for an existing secret named:
 ```go
 {{ .Release.name }}-backend
 ```
-* To use a **custom secret name**, set:
+To use a **custom secret name**, set:
 ```yaml
 general:
   deploy_secrets:
@@ -16,9 +16,9 @@ general:
       backend: ""
       keycloak: ""
 ```
-- _(This is relevant only when `deploy_secrets: false`.)_
+Note that this is only relevant when `deploy_secrets: false`.
 > [!WARNING]
-> If managing secrets externally, ensure all required fields are present. See the [secrets template](https://github.com/lightrun-platform/lightrun-helm-chart/blob/main/chart/templates/secrets.yaml#L31) for reference.
+> When managing secrets externally, ensure all required fields are present. See the [secrets template](https://github.com/lightrun-platform/lightrun-helm-chart/blob/main/chart/templates/secrets.yaml#L31) for reference.
 
 ## **Secrets Configuration**
 ### **Authentication and Access Secrets**
@@ -68,7 +68,7 @@ Some secrets are used for integrating with external services.
     hubspot_token: ""    # (Optional) Token for HubSpot integration
 
 ```
-> **Optional Fields**: If left empty, these values **will not** be included in the Kubernetes secret.
+> **Optional fields**: If left empty, these values **will not** be included in the Kubernetes secret.
 
 ### **Container Image Registry Credentials**
 
@@ -77,4 +77,4 @@ Some secrets are used for integrating with external services.
     existingSecret: ""  # Use an existing secret if provided
     configContent: ""   # Create a new secret if `existingSecret` is empty
 ```
-Refer to [Container Image Registry Overview](container_image_registry.md) for a detailed explanation how to configure dockerhub_config.
+Refer to [Container Image Registry Overview](container_image_registry.md) for a detailed explanation of how to configure `dockerhub_config`.
