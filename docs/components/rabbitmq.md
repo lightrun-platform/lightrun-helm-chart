@@ -1,7 +1,8 @@
-This section configures **RabbitMQ** as the message queue. You can either:  
+# RabbitMQ
+
+This page configures **RabbitMQ** as the message queue. You can either:  
 - Deploy a **local RabbitMQ instance** inside the cluster (`general.mq.local: true`) 
-or  
-* Connect to an **external RabbitMQ instance** (`general.mq.local: false`).
+- Connect to an **external RabbitMQ instance** (`general.mq.local: false`).
 
 
 ### **Basic Configuration**
@@ -14,7 +15,7 @@ or
 
 > [!NOTE]
 >   - If `general.mq.local: false`, all other RabbitMQ properties (such as storage and policies) **will be ignored** because the external RabbitMQ is expected to be pre-configured.
->   - If `general.mq.local: true`, only 1 replica of rabbitmq will be deployed. in addition we do not support more than 1 replica of rabbitmq with local. such behavior will result in unexpected behavior.
+>   - If `general.mq.local: true`, only 1 replica of rabbitmq will be deployed. in addition, we do not support more than 1 replica of rabbitmq with local. Such configuraitons will result in unexpected behavior.
 
 
 ### **Queue Configuration**
@@ -71,12 +72,12 @@ general:
 |**`persistentVolumeClaimRetentionPolicy`**|Controls PVC retention when the StatefulSet is deleted or scaled down.|
 
 > [!WARNING]
-> To **disable persistent storage**, set `storage: "0"` (all data will be lost on pod restart). creates deployment instead of statefulset.
+> To **disable persistent storage**, set `storage: "0"` (all data will be lost on pod restart). This creates a deployment instead of statefulset.
 
 ### **Metrics Configuration**
 
 - **`general.mq.metrics: false`** – If `true`, enables the **RabbitMQ Prometheus plugin**.
-- **Metrics are exposed on port `15692`** via the RabbitMQ service.
+- Metrics are exposed on port `15692` via the RabbitMQ service.
 
 To collect these metrics using **Prometheus autodiscovery**, add the following annotations to rabbitmq deployment (only applicable when `general.mq.local: true`):
 
@@ -91,8 +92,8 @@ deployments:
 
 ```
 ### **Pod Configuration**
-Below is the **default RabbitMQ pod configuration**.
-configuration is defined under **`deployments.rabbitmq`** in the **`values.yaml`**
+This is the **default RabbitMQ pod configuration**.
+Configuration is defined under **`deployments.rabbitmq`** in the **`values.yaml`** file.
 ```yaml
 deployments:
   rabbitmq:
@@ -113,8 +114,8 @@ deployments:
       ## prometheus autodiscovery annotations could be added to the service
     nodeSelector: {}
     podSecurityContext:
-      # when using PVC , it is necessarily to set fsGroup so pod will have write permission to the mounted volume
-      # fsGroup should be aligned with runAsUser of the container
+      # when using a PVC , you must set `fsGroup` so pod will have write permission to the mounted volume
+      # fsGroup should be aligned with `runAsUser` of the container
       fsGroup: 1000000
     containerSecurityContext: {}
     initContainers:
