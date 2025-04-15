@@ -1,4 +1,6 @@
-This document provides capacity planning guidelines for deploying and scaling infrastructure based on the number of agents in a system. It includes details on required resources, instance types, and configurations for different cloud providers (AWS, Azure, and GCP). The goal is to ensure optimal performance and resource utilization while maintaining high availability.
+# Capacity Planning Guidelines
+
+This page provides capacity planning guidelines for deploying and scaling infrastructure based on the number of Lightrun agents in a system. It includes details on required resources, instance types, and configurations for different cloud providers (AWS, Azure, and GCP). The goal is to ensure optimal performance and resource utilization while maintaining high availability.
 
 
 > [!NOTE]
@@ -14,10 +16,11 @@ The capacity planning estimates include:
 - **Managed Services**: Database and Redis services specifications.
 ## Capacity Planning Table
 > [!NOTE]
-> the capacity planning do not include k8s reserved resources, such as kube-reserved, system-reserved, and eviction threshold.
-The following table outlines resource allocations based on different agent counts:
+> The capacity planning do not include k8s reserved resources, such as kube-reserved, system-reserved, and eviction threshold.
 
 ### Scaling by Agent Count
+
+The following table outlines resource allocations based on different agent counts:
 
 | Agents   | Router Pods         | Frontend Pods       | Backend Pods     | Keycloak Pods   | Datastreamer Pods   | RabbitMQ Pods     | Kubernetes Worker Nodes            | Managed MySQL                                                       | Managed Redis                                                       |
 | -------- | ------------------- | ------------------- | ---------------- | --------------- | ------------------- | ----------------- | ---------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------- |
