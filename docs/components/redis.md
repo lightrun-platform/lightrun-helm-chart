@@ -1,6 +1,6 @@
-### Overview
+# Redis
 
-Redis is used as a caching layer and data store within Lightrun. It can be deployed as a [**Local Redis**](#local-redis) with the chart or used as an [**External Redis**](#external-redis). This is controlled by the settings under `deploymets.redis` in `values.yaml`.
+Redis is used as a caching layer and data store within Lightrun. It can be deployed as a [**Local Redis**](#local-redis) with the chart or used as an [**External Redis**](#external-redis). This is controlled by the settings under `deployments.redis` in `values.yaml`.
 
 There are two modes:
 
@@ -62,7 +62,7 @@ When using a local Redis deployment (i.e., `deployments.redis.external.enabled: 
 - **Single Replica Only**: The local deployment always uses one replica.
 - All deployment settings (image, resources, persistence, and health probes) apply.
 
-configuration is defined under **`deployments.redis`** in the **`values.yaml`**
+Configuration is defined under **`deployments.redis`** in the **`values.yaml`** file.
 ```yaml
 deployments:
   redis:
