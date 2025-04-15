@@ -1,10 +1,10 @@
-This section configures **MySQL** as the database. You can either:  
--  Deploy a [**Local MySQL (`general.db_local true`)**](#local-mysql-generaldb_local-true).
-or  
+# MySQL
+This page describes how to configure **MySQL** as the database. The following methods are supported:  
+-  Deploy a [**Local MySQL (`general.db_local true`)**](#local-mysql-generaldb_local-true).  
 - Connect to an [**External MySQL (`general.db_local false`)**](#external-mysql-generaldb_local-false).
 
 > [!Note] 
-> **To enable SSL for both local and external MySQL instances, set `general.db_require_secure_transport: true`, which enforces secure connections by passing `require_secure_transport=ON` to the MySQL pod (db_local=true) and configuring backend services, including Keycloak, to use SSL when connecting to the database.**
+> **To enable SSL for both local and external MySQL instances, set `general.db_require_secure_transport: true`, which enforces secure connections by passing `require_secure_transport=ON` to the MySQL pod (`db_local=true`) and configuring backend services, including Keycloak, to use SSL when connecting to the database.**
 ## **External MySQL (`general.db_local: false`)**
 In this mode, MySQL is **not deployed inside the cluster**.  
 Instead, the application connects to an **existing MySQL database**.
@@ -33,7 +33,7 @@ CREATE DATABASE lightrunserver;
 
 ---
 
-### **[REQUIRED] External Database Requirements**
+### **[MANDATORY] External Database Requirements**
 
 - **MySQL Version**: `>= 8.0.37`
 - **Database Size**: CPU, Memory, and Disk must meet [**capacity table requirements**](../installation/capacity_planning.md).
@@ -44,11 +44,11 @@ CREATE DATABASE lightrunserver;
 
 While **not required**, the following HA settings are **recommended** for production:
 
-**Multi-AZ Deployment** for redundancy  
-**Master-Slave Replication** (not cluster mode)  
-**No Cluster Mode** (Avoid Galera, InnoDB Cluster, etc.)
+- **Multi-AZ Deployment** for redundancy  
+- **Source-Replica Replication** (not cluster mode)  
+- **No Cluster Mode** (Avoid Galera, InnoDB Cluster, etc.)
 
-### **Helm chart configuration**
+### **Helm Chart Configuration**
 ```yaml
 general:
   db_local: false
@@ -64,8 +64,8 @@ general:
 
 ## **Local MySQL (`general.db_local: true`)**
 In this mode, MySQL is deployed **inside the cluster** using either:  
-A **StatefulSet** with persistent storage (**Recommended**)  
-A **Deployment** with ephemeral storage (for testing purposes)
+- A **StatefulSet** with persistent storage (**Recommended**)  
+- A **Deployment** with ephemeral storage (for testing purposes)
 ### **Basic Configuration**
 ```yaml
 general:
@@ -122,8 +122,8 @@ deployments:
 | **`deployments.emptyDir.mysql.sizeLimit: 5Gi`** | Limits ephemeral storage to 5Gi.                 |
 
 ### **Pod Configuration**
-Below is the **default MySQL pod configuration**.
-configuration is defined under **`deployments.mysql`** in the **`values.yaml`**
+This is the **default MySQL pod configuration**.
+Configuration is defined under **`deployments.mysql`** in the **`values.yaml`** file.
 ```yaml
 deployments:
   mysql:
