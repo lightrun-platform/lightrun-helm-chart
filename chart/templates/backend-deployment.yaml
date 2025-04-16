@@ -303,7 +303,7 @@ spec:
             - name: SPRING_RABBITMQ_PORT
               value: {{ .Values.general.mq.port | quote }}
             - name: TRACKING_MIXPANEL_QUEUE_NAME
-              value: {{ .Values.general.mq.queue_name | quote }}
+              value: {{ include "lightrun-mq.getQueueNameByPrefix" (dict "prefix" "mixpanel-events" "Values" .Values) | quote }}
             {{- end }}
             {{- if .Values.deployments.backend.extraEnvs }}
               {{- toYaml .Values.deployments.backend.extraEnvs | nindent 12 }}
@@ -322,7 +322,7 @@ spec:
               value: "{{ include "http.scheme" . }}://{{ include "data_streamer.name" . }}:8080/events/post"
             {{- end }}
 
-      # waiting for mysql and keycloak initialization
+      # waiting for mysql, rabbitmq and keycloak initialization
       initContainers:
       {{- include "lightrun-backend.initContainer.download-async-profiler" . | nindent 6 }}
 

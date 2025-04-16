@@ -170,6 +170,12 @@ spec:
               port: 9080
           {{- end }}
           env:
+            {{- if .Values.general.mq.enabled }}
+            - name: SPRING_RABBITMQ_HOST
+              value: {{ include "lightrun-mq.endpoint" . }}
+            - name: SPRING_RABBITMQ_PORT
+              value: {{ .Values.general.mq.port | quote }}
+            {{- end }}          
             - name: INFO_DEPLOYMENT
             {{ if eq .Values.general.deployment_type "saas" }}
               value: "SaaS"
@@ -293,6 +299,41 @@ spec:
     }}
       initContainers:
       {{- include "lightrun-keycloak.initContainer.download-async-profiler" . | nindent 6 }}
+      {{ if .Values.general.mq.enabled }}
+      - name: wait-for-rabbitmq
+        image: "{{ .Values.deployments.keycloak.initContainers.wait_for_rabbitmq.image.repository }}:{{ .Values.deployments.keycloak.initContainers.wait_for_rabbitmq.image.tag }}"
+        imagePullPolicy: {{ .Values.deployments.keycloak.initContainers.wait_for_rabbitmq.image.pullPolicy }}
+        securityContext: {{ include "lightrun-keycloak.containerSecurityContext" . | indent 10 }}
+        command:
+          - sh
+          - /scripts/wait-for-200.sh
+        resources:
+          limits:
+            memory: "100Mi"
+            cpu: "100m"
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
+        env:
+          - name: MY_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: AUTH_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "secrets.backend.name" . }}
+                key: SPRING_RABBITMQ_USERNAME
+          - name: AUTH_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "secrets.backend.name" . }}
+                key: SPRING_RABBITMQ_PASSWORD
+          - name: RABBITMQ_TCP_PORT
+            value: "15672"
+          - name: URL
+            value: {{ include "http.scheme" . }}://{{ include "lightrun-mq.endpoint" . }}:$(RABBITMQ_TCP_PORT)/api/overview {{ if .Values.general.internal_tls.enabled }}--no-check-certificate{{ end }}
+      {{- end }}      
     {{- end -}}
     {{- if .Values.general.readOnlyRootFilesystem }}
         {{- include "lightrun-keycloak.initContainer.read-only-rootfs" . }}
