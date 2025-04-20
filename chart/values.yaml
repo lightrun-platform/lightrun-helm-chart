@@ -496,6 +496,7 @@ secrets:
     datadog_api_key: "" # Optional | If empty, will not be used
     mixpanel_token: "" # Optional | If empty, will not be used
     hubspot_token: "" # Optional | If empty, will not be used
+    lightrun_initial_sys_api_key: "" # Optional | If empty, will not be used
 
     dockerhub_config:
       # This secret is used as imagePullSecrets for docker registry.
