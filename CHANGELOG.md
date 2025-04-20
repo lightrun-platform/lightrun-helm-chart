@@ -1,4 +1,29 @@
 
+<a name="v3.9.13"></a>
+## [v3.9.13](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.9.12...v3.9.13) - 2025-04-20
+
+
+
+### Versions
+
+| Image            | Tag                       |
+|------------------|---------------------------|
+| backend          | 1.50.7-release.846df2025e |
+| data_streamer    | rpk-4.48.1-alpine         |
+| frontend         | 1.50.7-release.846df2025e |
+| keycloak         | 1.50.7-release.846df2025e |
+| mysql            | 8.0.38                    |
+| rabbitmq         | 3.12.14-alpine            |
+| redis            | alpine-7.2.7-r0           |
+| router           | alpine-3.20.0-r1          |
+| standalone_nginx | stable-alpine-slim        |
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.9.12"></a>
 ## [v3.9.12](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.9.11...v3.9.12) - 2025-03-13
 
@@ -180,7 +205,7 @@
 
 
 <a name="v3.9.6"></a>
-## v3.9.6 - 2025-02-06
+## [v3.9.6](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.9.5...v3.9.6) - 2025-02-06
 
 
 
@@ -197,6 +222,19 @@
 | redis            | alpine-7.2.5-r1           |
 | router           | alpine-3.20.0-r1          |
 | standalone_nginx | stable-alpine-slim        |
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.9.5"></a>
+## [v3.9.5](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.9.4...v3.9.5) - 2025-03-30
+
+
+
+### Versions
 
 | Image            | Tag                       |
 |------------------|---------------------------|
@@ -209,6 +247,27 @@
 | redis            | alpine-7.2.5-r1           |
 | router           | alpine-3.20.0-r1          |
 | standalone_nginx | stable-alpine-slim        |
+ 
+ 
+
+
+### Changed (1 change)
+
+- [data streamer default tag to rpk-4.45.1-alpine (#7) (#10)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/6b2f1d0)
+ 
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.9.4"></a>
+## v3.9.4 - 2025-03-30
+
+
+
+### Versions
 
 | Image               | Tag                      |
 |---------------------|--------------------------|
@@ -221,14 +280,6 @@
 | redis               | alpine-7.2.5-r1          |
 | router              | alpine-3.20.0-r1         |
 | standalone_nginx    | stable-alpine-slim       |
- 
- 
-
-
-### Changed (1 change)
-
-- [data streamer default tag to rpk-4.45.1-alpine (#7) (#10)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/6b2f1d0)
- 
  
  
  
