@@ -404,7 +404,7 @@
 
 
 <a name="v3.10.0"></a>
-## [v3.10.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.9.12...v3.10.0) - 2025-03-30
+## [v3.10.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.9.13...v3.10.0) - 2025-03-30
 
 
 
@@ -419,6 +419,31 @@
 | mysql            | 8.0.38                    |
 | rabbitmq         | 3.12.12-alpine            |
 | redis            | alpine-7.2.5-r1           |
+| router           | alpine-3.20.0-r1          |
+| standalone_nginx | stable-alpine-slim        |
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.9.13"></a>
+## [v3.9.13](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.9.12...v3.9.13) - 2025-04-20
+
+
+
+### Versions
+
+| Image            | Tag                       |
+|------------------|---------------------------|
+| backend          | 1.50.7-release.846df2025e |
+| data_streamer    | rpk-4.48.1-alpine         |
+| frontend         | 1.50.7-release.846df2025e |
+| keycloak         | 1.50.7-release.846df2025e |
+| mysql            | 8.0.38                    |
+| rabbitmq         | 3.12.14-alpine            |
+| redis            | alpine-7.2.7-r0           |
 | router           | alpine-3.20.0-r1          |
 | standalone_nginx | stable-alpine-slim        |
  
