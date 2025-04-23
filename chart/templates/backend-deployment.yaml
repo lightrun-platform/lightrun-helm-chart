@@ -345,39 +345,7 @@ spec:
             value: {{ include "http.scheme" . }}://{{ include "lightrun-keycloak.name" . }}:9000/auth/health/started {{ if .Values.general.internal_tls.enabled }}--no-check-certificate{{ end }}
 
       {{ if .Values.general.mq.enabled }}
-      - name: wait-for-rabbitmq
-        image: "{{ .Values.deployments.backend.initContainers.wait_for_rabbitmq.image.repository }}:{{ .Values.deployments.backend.initContainers.wait_for_rabbitmq.image.tag }}"
-        imagePullPolicy: {{ .Values.deployments.backend.initContainers.wait_for_rabbitmq.image.pullPolicy }}
-        securityContext: {{ include "lightrun-be.containerSecurityContext" . | indent 10 }}
-        command:
-          - sh
-          - /scripts/wait-for-200.sh
-        resources:
-          limits:
-            memory: "100Mi"
-            cpu: "100m"
-          requests:
-            memory: "100Mi"
-            cpu: "100m"
-        env:
-          - name: MY_POD_NAMESPACE
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.namespace
-          - name: AUTH_USER
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "secrets.backend.name" . }}
-                key: SPRING_RABBITMQ_USERNAME
-          - name: AUTH_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "secrets.backend.name" . }}
-                key: SPRING_RABBITMQ_PASSWORD
-          - name: RABBITMQ_TCP_PORT
-            value: "15672"
-          - name: URL
-            value: {{ include "http.scheme" . }}://{{ include "lightrun-mq.endpoint" . }}:$(RABBITMQ_TCP_PORT)/api/overview {{ if .Values.general.internal_tls.enabled }}--no-check-certificate{{ end }}
+      {{- include "lightrun-mq.initContainer.wait-for-rabbitmq" (merge (dict "imageConfig" .Values.deployments.backend.initContainers.wait_for_rabbitmq "securityContext" "lightrun-be.containerSecurityContext") .) | nindent 6 }}
       {{- end }}
       - name: p12-creator
         image: "{{ .Values.deployments.backend.initContainers.p12_creator.image.repository }}:{{ .Values.deployments.backend.initContainers.p12_creator.image.tag }}"
