@@ -3,7 +3,7 @@ This section configures **Lightrun Router** with the **Openshift HAProxy Router*
 1. Ability to create a DNS A record that points to the Openshift HAProxy Router external record.
 # Caution
 If you want the Lightrun application to be accessible via the default OpenShift domain (disabled by default).   
-For example, the application URL might look like this: https://lightrun.apps.<cluster-domain>/.  
+For example, the application URL might look like this: `https://lightrun.apps.test.o5mj.p1.openshiftapps.com/`.  
 Follow these steps:
 
 1. Enable Default OpenShift Domain:   

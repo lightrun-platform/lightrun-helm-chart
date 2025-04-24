@@ -56,28 +56,33 @@ To ensure a smooth and secure production deployment of Lightrun, follow these ke
 - Decide how external traffic will reach the Lightrun router (Ingress, Service, OpenShift Route).
     [More info on Router](docs/components/router/index.md)
 
-#### **7. Redis**
+#### **7. Container Images Registry**
+
+- Choose where to store and manage container images (e.g., private registry, Docker Hub, Azure Container Registry, AWS ECR).
+    [More info on Container Image Registry](docs/installation/container_image_registry.md)
+
+#### **8. Redis**
 > [!TIP] 
 > Use external managed redis
 - Determine if Redis will be local or external.
     [More info on Redis Setup](docs/components/redis.md)
 
-#### **8. (Optional)RabbitMQ**
+#### **9. (Optional)RabbitMQ**
 
 - Determine if RabbitMQ is needed for sending telemetry to Lightrun.
     [More info on RabbitMQ](docs/components/rabbitmq.md)
 
-#### **9. (Optional)Network Policy**
+#### **10. (Optional)Network Policy**
 
 - Establish network policies to restrict access between services and prevent unauthorized communication.
     [More info on Network Policy](docs/advanced/network_policy.md)
 
-#### **10. (Optional)Internal TLS Communication**
+#### **11. (Optional)Internal TLS Communication**
 
 - Decide whether internal TLS is necessary for secure component communication.
     [More info on Internal TLS](docs/advanced/internal_tls.md)
 
-#### **11. Choose Your Deployment Option**
+#### **12. Choose Your Deployment Option**
 
 Decide where to run your Kubernetes cluster based on your infrastructure needs. Consider whether you'll deploy all services locally (including RabbitMQ, Redis, and MySQL) or use managed cloud services.
 ##### **Supported Kubernetes Platforms:**
@@ -88,10 +93,7 @@ Select your preferred cloud provider for deployment:
 - **[Amazon EKS](docs/installation/cloud/eks.md)**
 - **[Google Kubernetes Engine (GKE)](docs/installation/cloud/gke.md)**
 - **[OpenShift](docs/installation/cloud/openshift.md)**
-- **[Gardener K8s](docs/installation/cloud/gardener.md)**
 ## Known Issues and Limitations
-
-Review the [Known Limitations](docs/limitations.md) before deployment.
 
 ## Release Notes
 

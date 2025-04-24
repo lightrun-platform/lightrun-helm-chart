@@ -19,5 +19,8 @@ This document provides a compatibility overview for Kubernetes and OpenShift ver
 
 | OpenShift Version | Compatibility | Comments |
 | ----------------- | ------------- | -------- |
-| 4.14-4.17         | Compatible    |          |
+| 4.14              | Compatible    |          |
+| 4.15              | Compatible    |          |
+| 4.16              | Compatible    |          |
+| 4.17              | Compatible    |          |
 
