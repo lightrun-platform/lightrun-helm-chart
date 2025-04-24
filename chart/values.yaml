@@ -540,7 +540,7 @@ deployments:
       pullPolicy: IfNotPresent
     resources:
       cpu: 3000m
-      memory: 7Gi
+      memory: 6Gi
     podLabels: {}
     podAnnotations: {}
     annotations: {} # deprecated in favor of podAnnotations
