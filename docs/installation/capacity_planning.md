@@ -12,6 +12,9 @@ The capacity planning estimates include:
 - **Kubernetes Worker Nodes**: Compute instances needed to support the workload.
     
 - **Managed Services**: Database and Redis services specifications.
+
+Capacity planning should be done in coordination with Lightrun Support Engineers.
+
 ## Capacity Planning Table
 > [!NOTE]
 > the capacity planning do not include k8s reserved resources, such as kube-reserved, system-reserved, and eviction threshold.

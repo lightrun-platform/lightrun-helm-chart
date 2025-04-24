@@ -3,6 +3,8 @@ This section configures **RabbitMQ** as the message queue. You can either:
 or  
 * Connect to an **external RabbitMQ instance** (`general.mq.local: false`).
 
+> [!NOTE]
+> When using an external RabbitMQ instance, we support RabbitMQ versions 3.12.x and 3.13.x.
 
 ### **Basic Configuration**
 | Property                                             | Description                                                                                               |
