@@ -1,4 +1,72 @@
 
+<a name="v3.16.0"></a>
+## [v3.16.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.15.1...v3.16.0) - 2025-04-27
+
+
+
+### Versions
+
+| Image            | Tag                          |
+|------------------|------------------------------|
+| artifacts        | 1.57.1-release.e5e0c8e7c4    |
+| backend          | 1.57.1-release.e5e0c8e7c4    |
+| data_streamer    | 4.51-alpine-3.21.3-r0.lr-0   |
+| frontend         | 1.57.1-release.e5e0c8e7c4    |
+| keycloak         | 1.57.1-release.e5e0c8e7c4    |
+| mysql            | 8.0.38                       |
+| rabbitmq         | 3.12.14-alpine               |
+| redis            | 7.2.7-alpine-3.21.3-r0.lr-0  |
+| router           | 1.26.3-alpine-3.21.3-r0.lr-0 |
+| standalone_nginx | stable-alpine-slim           |
+
+
+ 
+ 
+
+
+### Added (3 changes)
+
+- [Support lightrun_init_sys_api_key secret (#48) (#49)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/3e3ad0f)
+ 
+
+- [documentation-for-setting-up-external-redis-with-redis-ent-operator-with-openshift (#45)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/febcad9)
+ 
+
+- [documentation-for-system-diagnostics-k8s-api-enablement (#44)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/870c17a)
+ 
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.15.1"></a>
+## [v3.15.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.15.0...v3.15.1) - 2025-04-22
+
+
+
+### Versions
+
+| Image            | Tag                          |
+|------------------|------------------------------|
+| artifacts        | 1.56.2-release.36f0cd23dc    |
+| backend          | 1.56.2-release.36f0cd23dc    |
+| data_streamer    | 4.51-alpine-3.21.3-r0.lr-0   |
+| frontend         | 1.56.2-release.36f0cd23dc    |
+| keycloak         | 1.56.2-release.36f0cd23dc    |
+| mysql            | 8.0.38                       |
+| rabbitmq         | 3.12.14-alpine               |
+| redis            | 7.2.7-alpine-3.21.3-r0.lr-0  |
+| router           | 1.26.3-alpine-3.21.3-r0.lr-0 |
+| standalone_nginx | stable-alpine-slim           |
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.15.0"></a>
 ## [v3.15.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.14.0...v3.15.0) - 2025-04-14
 
@@ -404,7 +472,7 @@
 
 
 <a name="v3.10.0"></a>
-## [v3.10.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.9.12...v3.10.0) - 2025-03-30
+## [v3.10.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.9.13...v3.10.0) - 2025-03-30
 
 
 
@@ -419,6 +487,31 @@
 | mysql            | 8.0.38                    |
 | rabbitmq         | 3.12.12-alpine            |
 | redis            | alpine-7.2.5-r1           |
+| router           | alpine-3.20.0-r1          |
+| standalone_nginx | stable-alpine-slim        |
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.9.13"></a>
+## [v3.9.13](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.9.12...v3.9.13) - 2025-04-20
+
+
+
+### Versions
+
+| Image            | Tag                       |
+|------------------|---------------------------|
+| backend          | 1.50.7-release.846df2025e |
+| data_streamer    | rpk-4.48.1-alpine         |
+| frontend         | 1.50.7-release.846df2025e |
+| keycloak         | 1.50.7-release.846df2025e |
+| mysql            | 8.0.38                    |
+| rabbitmq         | 3.12.14-alpine            |
+| redis            | alpine-7.2.7-r0           |
 | router           | alpine-3.20.0-r1          |
 | standalone_nginx | stable-alpine-slim        |
  
