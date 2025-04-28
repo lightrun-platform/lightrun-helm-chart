@@ -703,4 +703,32 @@ Container SecurityContext of lightrun artifacts
 {{- end -}}
 {{- end -}}
 
+{{/*
+Get queue name by prefix from the queue_names list.
 
+Parameters:
+- prefix: The prefix to match against queue names
+- Values: The chart values context
+
+Returns:
+- The first queue name that matches the prefix
+- Fails if no matching queue is found
+*/}}
+{{- define "lightrun-mq.getQueueNameByPrefix" -}}
+{{- $queue_names := .Values.general.mq.queue_names | default (list .Values.general.mq.queue_name) }}
+{{- if not $queue_names }}
+{{- fail "No queue names defined in general.mq.queue_names or general.mq.queue_name" }}
+{{- end }}
+{{- $prefix := .prefix | default "" | lower }}
+{{- $matching_queue := "" }}
+{{- range $queue_names }}
+{{- if and . (hasPrefix $prefix (. | lower)) }}
+{{- $matching_queue = . }}
+{{- break }}
+{{- end }}
+{{- end }}
+{{- if eq $matching_queue "" }}
+{{- fail (printf "No queue found with prefix '%s' in queue_names list" $prefix) }}
+{{- end }}
+{{- $matching_queue }}
+{{- end }}

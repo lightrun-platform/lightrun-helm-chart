@@ -79,20 +79,22 @@ general:
     ## Changing the queue name results in a new queue (and dlq) being created
     ## Old queues will not be deleted automatically
     ## New messages will be pushed and consumed from the new queue
-    queue_name: "mixpanel-events"
+    queue_names:
+      - "mixpanel-events"
+      - "keycloak-events"
     ## RabbitMQ Policy configuration
     ## Applies on all queues that match queue_regex_pattern
     policy:
-      queue_regex_pattern: "^mixpanel-events.*"
-      # The following configuration supports a queue size of up to 2000 messages,
+      queue_regex_pattern: "^.*-events.*"
+      # The following configuration supports queues size of up to 2000 messages,
       # where each message is 500 bytes, with a message TTL (time-to-live) of one week.
       #
-      # - message_ttl: Sets the time-to-live for messages in the queue to approximately 7 days (600,000,000 ms).
-      # - max_length: Limits the queue to a maximum of 2000 messages. New messages will be rejected if this limit is reached.
-      # - overflow: Configures the queue to "reject-publish," meaning new messages are rejected when the queue hits max_length.
-      # - max_length_bytes: Restricts the total size of all messages in the queue to 1,000,000 bytes (500 bytes × 2000 messages).
+      # - message_ttl: Sets the time-to-live for messages in the queues to approximately 7 days (600,000,000 ms).
+      # - max_length: Limits the queues to a maximum of 2000 messages. New messages will be rejected if this limit is reached.
+      # - overflow: Configures the queues to "reject-publish," meaning new messages are rejected when the queue hits max_length.
+      # - max_length_bytes: Restricts the total size of all messages in the queues to 1,000,000 bytes (500 bytes × 2000 messages).
       #
-      # This configuration ensures the queue does not exceed its size or time limits and avoids overloading the system.
+      # This configuration ensures the queues does not exceed its size or time limits and avoids overloading the system.
       message_ttl: 600000000
       max_length: 2000
       overflow: "reject-publish"
@@ -690,6 +692,11 @@ deployments:
           repository: lightruncom/chart-helper
           tag: "0.3.0-alpine-3.21.3-r0.lr-0"
           pullPolicy: ""
+      wait_for_rabbitmq:
+        image:
+          repository: lightruncom/chart-helper
+          tag: "0.3.0-alpine-3.21.3-r0.lr-0"
+          pullPolicy: ""          
     topologySpreadConstraints: []
     affinity: {}
     startupProbe:
