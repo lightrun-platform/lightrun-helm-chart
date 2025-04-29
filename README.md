@@ -94,6 +94,11 @@ Select your preferred cloud provider for deployment:
 - **[Amazon EKS](docs/installation/cloud/eks.md)**
 - **[Google Kubernetes Engine (GKE)](docs/installation/cloud/gke.md)**
 - **[OpenShift](docs/installation/cloud/openshift.md)**
+
+#### **12. Setup Monitoring and Alerting system**
+
+Review the [Monitoring and Alerting guide](docs/monitoring_and_alerting_guide.md).
+
 ## Known Issues and Limitations
 
 Review the [Known Limitations](docs/limitations.md) before deployment.
