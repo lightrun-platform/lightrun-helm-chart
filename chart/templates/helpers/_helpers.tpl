@@ -703,4 +703,63 @@ Container SecurityContext of lightrun artifacts
 {{- end -}}
 {{- end -}}
 
+{{/*
+Generate a random encryption key
+*/}}
 
+{{- define "secrets.encryption-key" -}}
+    {{- if .Values.general.deploy_secrets.enabled }}
+        {{- if (not .Values.secrets.keysEncryption.userEncryptionKey) }}
+            {{- $secretObj := (lookup "v1" "Secret" .Release.Namespace (include "secrets.backend.name" .)) }}
+            {{- if and $secretObj (hasKey $secretObj.data ( include "secrets.encryption-key-name" . ) ) }}
+                {{- index $secretObj.data ( include "secrets.encryption-key-name" . ) | b64dec }}
+            {{- else }}
+                {{- randBytes 32 }}
+            {{- end }}
+        {{- else }}
+            {{- .Values.secrets.keysEncryption.userEncryptionKey }}
+        {{- end }}
+    {{- end }}
+{{- end }}
+
+{{- define "secrets.encryption-key-name" -}}
+    {{- $rotateKey := .Values.secrets.keysEncryption.rotateKey }}
+    {{- $defaultKey := "encryption-key-0" }}
+    {{- $keyPrefix := "encryption-key-" }}
+    {{- $secret := (lookup "v1" "Secret" .Release.Namespace (include "secrets.backend.name" .)) }}
+
+    {{- $maxIndex := -1 }}
+    {{- if $secret }}
+        {{- range $k, $ := $secret.data }}
+            {{- if hasPrefix $keyPrefix $k }}
+                {{- $suffix := trimPrefix $keyPrefix $k }}
+                {{- $num := int $suffix }}
+                {{- if gt $num $maxIndex }}
+                    {{- $maxIndex = $num }}
+                {{- end }}
+            {{- end }}
+        {{- end }}
+    {{- end }}
+
+    {{- if eq $maxIndex -1 }}
+        {{- $defaultKey }}
+    {{- else if $rotateKey }}
+        {{- printf "encryption-key-%d" (add1 $maxIndex) }}
+    {{- else }}
+        {{- printf "encryption-key-%d" $maxIndex }}
+    {{- end }}
+{{- end }}
+
+{{/* Helper function to render encryption key items */}}
+{{- define "encryption.key.items" -}}
+{{- range $key, $value := (lookup "v1" "Secret" .Release.Namespace (include "secrets.backend.name" .)).data }}
+{{- if hasPrefix "encryption-key-" $key }}
+- key: {{ $key }}
+  path: {{ $key }}
+{{- end }}
+{{- end }}
+{{- if .Values.secrets.keysEncryption.rotateKey }}
+- key: {{ (include "secrets.encryption-key-name" . ) }}
+  path: {{ (include "secrets.encryption-key-name" . ) }}
+{{- end }}
+{{- end -}}

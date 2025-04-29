@@ -506,6 +506,13 @@ secrets:
       # 3. For private registry. If dockerhub_config is set to `null`, chart will not use any imagePullSecrets.
       existingSecret: ""
       configContent: ""
+  keysEncryption:
+    # relevant only when deploy_secrets.enabled=true, chart creates the backend secret
+    # WARNING: Storing this in values.yaml is not secure for production! Recommended to use external secrets
+    # leave empty for auto generated key
+    # see documenatation for generating AES-256 key <LINK>
+    userEncryptionKey: ""
+    rotateKey: false
 
 ################
 ## Deployments
