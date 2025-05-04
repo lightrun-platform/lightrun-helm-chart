@@ -142,7 +142,7 @@ general:
     enabled: false
     ## Note:
     ## - backend pod will use existing certificate that is also used for cert pinning verification
-    ## - If ingress class is "ngnix", Ingress objects will have annotation:
+    ## - If ingress class is "nginx", Ingress objects will have annotation:
     ##     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     ##   For any other ingress controller you'll need to add appropriate annotations, see below
     ## - For Keycloak deployments in cluster mode, intra-cluster communication supported only with `source: "existing_certificates"`
@@ -192,9 +192,6 @@ general:
   ## Router ##
   ############
   router:
-    ## general.router.enabled - boolean flag, indicates whether to enable a Router (single entrypoint for Lightrun deployment).
-    ##
-    enabled: true
     tls:
       # If enabled router will expose HTTPS traffic
       # If internal_tls.enabled is set to true, SSL termination will be enabled regardless of this value
@@ -258,28 +255,6 @@ general:
     #   proxy_send_timeout      60s;
     #   proxy_read_timeout      60s;
     http_snippets: ""
-
-  ################
-  ## Ingress
-  ################
-  # Ingress deployment
-  ingress_controller: true
-  ## If set to `false`, will not create ingress objects and instead will create a deployment
-  ## of an Nginx pod with `LoadBalancer` as an entrypoint
-  ingress_class_name: "nginx"
-  ## Class name of the ingress-controller
-  ## previously was configured by annotation `kubernetes.io/ingress.class`, which is deprecated
-
-  nginx_svc:
-    ## details of nginx service deployment
-    type: LoadBalancer
-    ## `LoadBalancer`
-    ## In case of EKS or GKE, it will create a cloud load balancer.
-    ## For an on-prem k8s cluster, it should have some k8s-addon or external LB solution.
-    ## More explanation may be found here https://www.tkng.io/services/loadbalancer/
-    ## `ClusterIP` is supported only with local port 443 - `sudo kubectl port-forward service/<chart release name>-nginx 443:443`
-    ## `NodePort` is not supported due to complexity of redirect URLs with port
-    annotations: {}
 
   ################
   ## Node selection
@@ -443,7 +418,7 @@ general:
 ## Certificate
 ################
 certificate:
-  ## This Certificate will be used in ingress/standalone nginx and in the backend service's communication with IDE plugin and agents
+  ## This Certificate will be used in ingress nginx and in the backend service's communication with IDE plugin and agents
   existing_cert: ""
   ## To reuse an already deployed certificate
   ## This secret has to be deployed in the same namespace as the rest of this chart
@@ -970,38 +945,6 @@ deployments:
       failureThreshold: 3
       path: /health
 
-  standalone_nginx:
-    replicas: 1
-    image:
-      repository: nginxinc/nginx-unprivileged
-      tag: stable-alpine-slim
-      pullPolicy: IfNotPresent
-    podSecurityContext: {}
-    containerSecurityContext: {}
-    resources:
-      cpu: 300m
-      memory: 256Mi
-    podLabels: {}
-    ports:
-      ## in case there is a need to use privileged ports such as 80/443. to make it work the image.repository should be
-      ## replaced to nginx , also podSecurityContext/containerSecurityContext should be set to null
-      http: 8080
-      https: 8443
-    topologySpreadConstraints: []
-    affinity: {}
-    livenessProbe:
-      initialDelaySeconds: 10
-      periodSeconds: 20
-      timeoutSeconds: 10
-      successThreshold: 1
-      failureThreshold: 3
-    readinessProbe:
-      initialDelaySeconds: 10
-      periodSeconds: 10
-      timeoutSeconds: 5
-      successThreshold: 1
-      failureThreshold: 3
-
   router:
     useJsonLogFormat: false
     replicas: 1 # It's always 1 if general.router.host_port.enabled is true
@@ -1023,7 +966,7 @@ deployments:
       memory: 256Mi
     ports:
       ## in case there is a need to use privileged ports such as 80/443. to make it work the deployments.router.image.repository should be
-      ## replaced to nginx, also podSecurityContext/containerSecurityContext should be set to null
+      ## replaced to router, also podSecurityContext/containerSecurityContext should be set to null
       http: 8080
       https: 8443
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
@@ -1045,112 +988,3 @@ deployments:
       worker_processes: 3
       worker_connections: 10240
       worker_rlimit_nofile: 20480 # hast to be less than ulimits of the system
-
-######################
-## Ingress annotations
-######################
-## Examples below are for an ingress-nginx controller
-## https://kubernetes.github.io/ingress-nginx/deploy/
-## for any other ingress controller this section will need to be adapted - please work with your Lightrun Solution Engineer
-ingress_clients:
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-buffer-size: "1m"
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
-    # nginx.ingress.kubernetes.io/configuration-snippet: |
-    #   allow   1.2.3.4/32; # Allowed IP
-    #   # drop rest of the world
-    #   # deny    all;
-
-    ## If cluster has no access to the internet - comment out the section below
-    nginx.ingress.kubernetes.io/server-snippet: |
-      location @custom_403 {
-        return 403 "<html xmlns='http://www.w3.org/1999/xhtml'> <head> <meta charset='utf-8'> <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/> <meta name='robots' content='noindex, nofollow'> <title>Not allowed</title> <link href='https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/css/errors-page.css' rel='stylesheet'/> </head> <body> <div class='login-content' style=\"background-image: url('https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/img/background.svg');\"> <div class='box'> <div class='form-container'> <img src='https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/img/logo.svg' alt='Logo' style='width: 97px; height: 50px; object-fit: contain;'> </div><div class='form-container'> <span class='message-text'>You're not allowed to get this page</span> </div></div></div></body></html>";
-      }
-      location @custom_503 {
-        return 503 "<html xmlns='http://www.w3.org/1999/xhtml'> <head> <meta charset='utf-8'> <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/> <meta name='robots' content='noindex, nofollow'> <title>Service Unavailable</title> <link href='https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/css/errors-page.css' rel='stylesheet'/> </head> <body> <div class='login-content' style=\"background-image: url('https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/img/background.svg');\"> <div class='box'> <div class='form-container'> <img src='https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/img/logo.svg' alt='Logo' style='width: 97px; height: 50px; object-fit: contain;'> </div><div class='form-container'> <span class='message-text'>Oops... Something went wrong - please try again later.</span> </div></div></div></body></html>";
-      }
-      location @custom_429 {
-        return 429 "<html xmlns='http://www.w3.org/1999/xhtml'> <head> <meta charset='utf-8'> <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/> <meta name='robots' content='noindex, nofollow'> <title>Too Many Requests</title> <link href='https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/css/errors-page.css' rel='stylesheet'/> </head> <body> <div class='login-content' style=\"background-image: url('https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/img/background.svg');\"> <div class='box'> <div class='form-container'> <img src='https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/img/logo.svg' alt='Logo' style='width: 97px; height: 50px; object-fit: contain;'> </div><div class='form-container'> <span class='message-text'>Sorry, but you're sending too many requests - please slow down</span> </div></div></div></body></html>";
-      }
-      error_page 503 @custom_503;
-      error_page 403 @custom_403;
-      error_page 429 @custom_429;
-      limit_req_status 429;
-      limit_conn_status 429;
-    # Optional load throttling configuration options
-    # The limit is based on the formula: period * rps + burst-window, e.g. 1 second * 150 rps + 150 = 300 rps in practice
-    # nginx.ingress.kubernetes.io/limit-rps: "150" # Number of requests per second from any given IP;
-    # nginx.ingress.kubernetes.io/limit-connections: "30" # Concurent connections from any given IP
-    # nginx.ingress.kubernetes.io/limit-burst-multiplier: "1" # for 5 rps, burst window = rps * 1 = 5
-
-ingress_agents:
-  annotations:
-    ## As above, for any other ingress controller this section will need to be adapted - please work with your Lightrun Solution Engineer
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-buffer-size: "1m"
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
-    # nginx.ingress.kubernetes.io/configuration-snippet: |
-    #   allow   1.2.3.4/32; # Allowed IP
-    #   # drop rest of the world
-    #   deny    all;
-    # nginx.ingress.kubernetes.io/server-snippet: |
-    #   limit_req_status 429;
-    #   limit_conn_status 429;
-    # Optional load throttling configuration options
-    # The limit is based on the formula: period * rps + burst-window, e.g. 1 second * 150 rps + 150 = 300 rps in practice
-    # nginx.ingress.kubernetes.io/limit-rps: "150" # Number of requests per second from any given IP;
-    # nginx.ingress.kubernetes.io/limit-connections: "30" # Concurent connections from any given IP
-    # nginx.ingress.kubernetes.io/limit-burst-multiplier: "1" # for 5 rps, burst window = rps * 1 = 5
-
-ingress_keycloak_admin:
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-buffer-size: "1m"
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
-    # nginx.ingress.kubernetes.io/configuration-snippet: |
-    #   allow   1.2.3.4/32; # Allowed IP
-    #   #drop rest of the world
-    #   #deny    all;
-    # nginx.ingress.kubernetes.io/server-snippet: |
-    #   limit_req_status 429;
-    #   limit_conn_status 429;
-    # Optional load throttling configuration options
-    # The limit is based on the formula: period * rps + burst-window, e.g. 1 second * 150 rps + 150 = 300 rps in practice
-    # nginx.ingress.kubernetes.io/limit-rps: "150" # Number of requests per second from any given IP;
-    # nginx.ingress.kubernetes.io/limit-connections: "30" # Concurent connections from any given IP
-    # nginx.ingress.kubernetes.io/limit-burst-multiplier: "1" # for 5 rps, burst window = rps * 1 = 5
-ingress_metrics:
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/backend-protocol: HTTP
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-buffer-size: "1m"
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
-    #    nginx.ingress.kubernetes.io/configuration-snippet: |
-    #      #allow   1.2.3.4/32; # Allowed IP
-    #      #drop rest of the world
-    #      #deny    all;
-    nginx.ingress.kubernetes.io/limit-rps: "150" # Number of requests per second from givven ip; formula = period * rps + burst-window = 1 second * 150 rps + 150 = 300 rps in practice
-    nginx.ingress.kubernetes.io/limit-connections: "30" # Concurent connections from given ip
-    nginx.ingress.kubernetes.io/limit-burst-multiplier: "1" # It means that for 5 rps, burst window = rps * 1 = 5
