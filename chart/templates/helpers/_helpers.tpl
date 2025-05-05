@@ -753,14 +753,17 @@ Generate a random encryption key
 {{/* Helper function to render encryption key items */}}
 {{- define "encryption.key.items" -}}
 {{- $secret := (lookup "v1" "Secret" .Release.Namespace (include "secrets.backend.name" .)) -}}
+{{- $hasEncryptionKeys := false -}}
 {{- if $secret -}}
 {{- range $key, $value := $secret.data }}
 {{- if hasPrefix "encryption-key-" $key }}
+{{- $hasEncryptionKeys = true }}
 - key: {{ $key }}
   path: {{ $key }}
 {{- end }}
 {{- end }}
-{{- else }}
+{{- end }}
+{{- if not $hasEncryptionKeys }}
 - key: encryption-key-0
   path: encryption-key-0
 {{- end }}

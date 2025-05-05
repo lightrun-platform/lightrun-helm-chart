@@ -1,0 +1,140 @@
+general:
+  name: "onprem-client"
+  lightrun_endpoint: "onprem-client-prod.internal.lightrun.com"
+  deploy_secrets:
+    enabled: true
+  openshift: false
+  db_local: true
+  db_require_secure_transport: false
+  statefulset:
+    enabled: true
+  db_endpoint: "lightrun-onprem-db-prod-lce.cy6fmhqpgryn.us-east-1.rds.amazonaws.com"
+  db_database: lightrunserver
+  mq:
+    enabled: true
+    storageClassName: "gp2"
+    storage: 1Gi
+  data_streamer:
+    enabled: true
+
+router:
+  enabled: true
+  tls:
+    enabled: true
+  ingress:
+    enabled: true
+    ingress_class_name: "nginx"
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "90"
+      nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
+      nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    labels: {}
+  service:
+    enabled: true
+    ## Supported types: ClusterIP, LoadBalancer, NodePort, Headless
+    type: "ClusterIP"
+    annotations: {}
+    labels: {}
+    ports:
+      http: 8080
+      https: 443
+  host_port:
+    enabled: false
+    ports:
+      http: 80
+      https: 443
+
+certificate:
+  tls:
+    crt: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZTakNDQXpLZ0F3SUJBZ0lVRHpNOHd0VDUzanc0cksxRGJMWmxDTmw5U3ZFd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0ZqRVVNQklHQTFVRUF3d0xWR0ZzTFZscGRIcG9ZV3N3SGhjTk1qUXdOekV5TVRJek16STVXaGNOTXpRdwpOekV3TVRJek16STVXakFXTVJRd0VnWURWUVFEREF0VVlXd3RXV2wwZW1oaGF6Q0NBaUl3RFFZSktvWklodmNOCkFRRUJCUUFEZ2dJUEFEQ0NBZ29DZ2dJQkFMNUc5R1Jla3lJVmVubTB0Yk92aUY1bllURS94akRndWRvUzhjSk0KWW9JNkRwL0J5elQ4WmY3aTQrNFRYWFpNbWR1ak1vM1lUTUIxVy9GRWxHeWhraDh0NEtlVXF0Y3JlVUdJaFNpZgowVE9jcHpJZWhFWkdneVpMUTdqVlJMOXU1YmEwdFpOeHU2OWZTeWZQQXE5akl4THhFenBlNmVhMVlJUXM0R3pZCkdpQjltb0p2OVk0SldhMk5qeTk5dGdqUk56V0daTHlGcXRoSFo4aG1ESTRkNFVRWElnMzE3WFZDdlc1Y3NrcWwKRUdOSld6VERGTXNhQ0IyOGFuS1lxcVdHeFVrQWxvU29xVWhXOFpiRVBVR2trRTcwS0NzcTQ5K3FodnJDdmJqWgoxS0lxV3pITW1Hb3cweS9QUVFJUXdGa3NmYURGL0c3cUxVZWVUR1FzREJkZXdEQjlXYmkzN0xFZm1SMGF6VURRCjNJbE5nSnBxUEhpbzNlWlU4UGdXK1loeVNKaXpqNUtNalRYMUtVWkoyOUJxenRwNUE4a1liS3hrVGZGaWQzeWsKQ0N0VllKbkphdTFJcFYraWRuUlRwdEZqbVhTVkZwMGQzdFBsUnMweWtxamhmWDhQekx6V3N6ZW5weUhKVU1ITgpQRmVERG9wRlRsVGhVVzJidUMrZUt3NHZWeGVoT2dMOVIvTXZaa3o5T0ZMcVBJRUcrMEd0UFFuMlBoRGl5STFQCnJITTZzNDJVSU9WSGt2R0FsTW8xSlllcjNPdkI5eTJ1Rk1sdk8xZ2hpeG5wTHhwSXFuQ0IzMTYxYzV5YUs1VncKUlNkRExtRFVLRVhIdllISEFYYlRYc1RqV0YrVEJ4RzhjTkpwbEozZ2pnYVVrU0NqanVCaEdoaVptY0FNV2NWcgprN1pSQWdNQkFBR2pnWTh3Z1l3d0hRWURWUjBPQkJZRUZENHpQVVd3dzkvbnhEdDRYcGsvSFdOUWI1VGVNQjhHCkExVWRJd1FZTUJhQUZENHpQVVd3dzkvbnhEdDRYcGsvSFdOUWI1VGVNQThHQTFVZEV3RUIvd1FGTUFNQkFmOHcKT1FZRFZSMFJCREl3TUlJUFZHRnNMVmxwZEhwb1lXc3RRV3gwZ2hjcUxtbHVkR1Z5Ym1Gc0xteHBaMmgwY25WdQpMbU52YlljRUNqSUJkekFOQmdrcWhraUc5dzBCQVFzRkFBT0NBZ0VBcm9tM1VtUHV2a2J3WWJjTm5UZjZuSjBWCnUvZllQdFhHaXlrNU8vWklEL1Z6VTFlMmdCUGkrK3RYQm0wTHVEWGpkMUtnMk1JMkJuY1UyMHc3Smp3YWwvbXMKZm50T1RoUkE3ajg3OG9nNUNFV1dGS3M0RDZRR1V6SmZYOFkxOGVhcVJSNm91MVYxaUNrc2hqSW5WTkJkSzhvQQp3bEx6Z1ZPdVhseXB5a2NYSWFGL1ZOd3ptakk2cy9VQmtlaGR2cUt1TlFkM0RLWGlkUDBaSVFVa241QUpJcFNTClUrMjRuYVhhYkdMOVZ2QTcrcHZJeXE2UTNJUEtFQU5sTlUyM05uU3VwQkRkd2t1dHRKZWVHWC93ak93Z3oySWUKQnhyZjRFL3k3cWkyaGtxdmJiY3dzQVEwbG94MzFtdFVGYUYvTzFWOHdzK0RUOFptbTNJMyt3c084WFJkSkFoawpmTHFQaisxTkNFVXNqNGRyOUhYcFJGL09xSmxjaVZJK1dmTTNzRTRWZjdGN3JxRDdnZm5hb0c2RW56RVk3d2NiCjBVWHpubFZPeW9ORnZSMldFMEZlaFQ5c0NJSVNzQTF6UzFJeUljSHQvMm9VM0kwQy9Ubm5iOThNSnlmTFcvaE4KYStURGtHdnQxL2hPVjAvMjRjbjN4VGg3d1VqNHhGMXcwWXZYL2lJdTRGNTBZR01UZUxnWitEM1Q0Z01pT2NkVQpXSGluVHU4L0hpWmpCTXdoY0I0T0R1UWpMU0x4d241UDNza2ZiZUpaQTFDNnh6eXltOUxHSWlUdHRodmJ3bHdtCkxSTWJiK3REbStOZWFjbkxRTXd5Y3hSaDRPL1ZMSWZabFEvaHkrU1RPZUxnaEd3dnh5dGdEa2k3T3QzR0dwL0cKOHY5OGZUbkpxeDZBcXd5ZndMTT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="
+    key: "LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUpRZ0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQ1N3d2dna29BZ0VBQW9JQ0FRQytSdlJrWHBNaUZYcDUKdExXenI0aGVaMkV4UDhZdzRMbmFFdkhDVEdLQ09nNmZ3Y3MwL0dYKzR1UHVFMTEyVEpuYm96S04yRXpBZFZ2eApSSlJzb1pJZkxlQ25sS3JYSzNsQmlJVW9uOUV6bktjeUhvUkdSb01tUzBPNDFVUy9idVcydExXVGNidXZYMHNuCnp3S3ZZeU1TOFJNNlh1bm10V0NFTE9CczJCb2dmWnFDYi9XT0NWbXRqWTh2ZmJZSTBUYzFobVM4aGFyWVIyZkkKWmd5T0hlRkVGeUlOOWUxMVFyMXVYTEpLcFJCalNWczB3eFRMR2dnZHZHcHltS3FsaHNWSkFKYUVxS2xJVnZHVwp4RDFCcEpCTzlDZ3JLdVBmcW9iNndyMjQyZFNpS2xzeHpKaHFNTk12ejBFQ0VNQlpMSDJneGZ4dTZpMUhua3hrCkxBd1hYc0F3ZlZtNHQreXhINWtkR3MxQTBOeUpUWUNhYWp4NHFOM21WUEQ0RnZtSWNraVlzNCtTakkwMTlTbEcKU2R2UWFzN2FlUVBKR0d5c1pFM3hZbmQ4cEFnclZXQ1p5V3J0U0tWZm9uWjBVNmJSWTVsMGxSYWRIZDdUNVViTgpNcEtvNFgxL0Q4eTgxck0zcDZjaHlWREJ6VHhYZ3c2S1JVNVU0VkZ0bTdndm5pc09MMWNYb1RvQy9VZnpMMlpNCi9UaFM2anlCQnZ0QnJUMEo5ajRRNHNpTlQ2eHpPck9ObENEbFI1THhnSlRLTlNXSHE5enJ3ZmN0cmhUSmJ6dFkKSVlzWjZTOGFTS3B3Z2Q5ZXRYT2NtaXVWY0VVblF5NWcxQ2hGeDcyQnh3RjIwMTdFNDFoZmt3Y1J2SERTYVpTZAo0STRHbEpFZ280N2dZUm9ZbVpuQURGbkZhNU8yVVFJREFRQUJBb0lCLzJzSGZuRDJ3Y3hxU0hvdExBZm10TTVsCldFWmJtUi9sU0tWaUFwdElYQ0RraDFWVnJQZ2hBVDVlWWRlSkRRbCtEUTErdnZFS3VpR0g0aS9VWTZpM09YcFEKVkEzdmtpbDJTcjZTREZUTmtOOTNQcFR5bFhUeU5OTlZnc0oxTkRaNktyeWE2WWdHY1l3MERoSldYeXhJbDNJUQpLTUNzb3VVaklTYzRGd1VpaVkrOUZ5eEh6ZGdYYWxvMVJsVndZUFNVdW5saEgwanI1eTNBL0orOHgxTXBlNHpSCmRsWmoveTMyWEplM2pKSndSc2VTZTdzeUFJQStKRktWcVVyTWxUQ0dubkp4NGppOHBud0thOXBpaUJKa2ZzZnEKanEyNWNuUmRkNCtWK3lIL1padlNOM25MbS9BZmhxdGQ2VE5BT1BId0ZMcGFvNlBBRmJnelVzVUdBY2NqaFBiSAptakE4OEhBV2kyODQybGJtUjN1NEdidFdlOVNlcjM1RFdwNjEwK0JqMXFIODZwTnU5d1A5YmQweHREZThGcG5UCmRsck50UlBVZW8vTnQza0Z6SkNqNGFTdytybStycGJ0VEdqMDdneUhrbWh5WUVsTWZETXpvTFNlbjBNLzlKTisKZ25CdGcrTm9rbW1EWnZUakRwS0x0cXRYMGlkVUtmRWthTW5WYzVJblZhRXZuVVVUcnpYcitnTG00TTRXUWQrSgpBYXQ4a1ZLUWsxdEdwREZEL0x1UU5Td29wc1QvSzBqYUFLOTJOVm5CamhvUXBWY2xZWjZ5ekhrNFNDMTVJOVdHCjIvVzlSWEpUdmZCZjlRcHM3NC9OanEyaXo4eFVPa1NOb2ZVWU5VeXBpbXk0dEFiZDFHMldPb3R4UFowY2psWDMKYmdmSVk3cXFQS3BPRXkzeCtFRUNnZ0VCQVBlbnE3U1Jla0tQcmViMlFnLzlKTGJMMDV5cncrOFI3NjRkS2R1RgozbFF6TzlyQzJjZXd3OG92dmF3V0JkdTZrbDNlT0JtNHE0YlZ3MGlodGhPbUdxWGdXZWIvajhXU1VjYmw5SHVICmJDa055aDVXSjdia09ETVM5UTI0MmprNFM0RHMyYXIzQzN0UzBLc2tzMjJidHJjdERGNys0U0JqNE9WZWhQS2IKdGEySU4zc3AwVU1BRHNHSzZ2US9KRVNmRVJFUXc2bUZzZUxERjNhZ3Rqek1pZmV2UWZGSWZxWjdLMlZwSWdYMApxR2p2KzkvYVFxNHNENm00c1dMR3N1dGMxeGVFNEFSU281L1NkYXBmaTYwR0VyNXFCZ2Zkak9xK01sVEhLVDE2CkpaSHk2TGxVOHRXS1lrMDA5Zmt2UXJEVHhQK1M0UzdYRFF6UVhsZDJuNEowanJjQ2dnRUJBTVN3VkdoMmRRbUQKTEEvRi96R003MEljM1NLRDlsSEVwcjQxeW8vOVNic0k0TFlMdUNXdGJPb3ZJR1dtMWprenIxNlhCZHNKakZxego3WmxYRCtxUkJUenQ5OEZQOVIwRVBNWnVIMlAyZnhRYnh1QUdSRFBVWTEwczVlMG9QUnR3TFd6eHlKMllEaFl0CmhreTVjV3BGSlE3dGpjeU15cGxBbjdsSUF5QjNnK0F5MFFCTDFBM3E3OHUvRHJJUENXQXJ1djhFeTF3dXkyVncKY3BORk9zdHhzU3dDL01Nb2gwRXp0OWpoMEQ5aE5LaHRNSThCaDlCblhTOXV5a1NKQjIxQnQxY0dlaGZPTFpPRQpQQS83VEtOSnhQdXFuRHRydW1RUUJ2Sm5uaElMQ0cvbkZtSmJkUUFMUDE3QytrUXlPSmpGYzVtOEFKaWdXM1AxClBUQUVFSXFpV3pjQ2dnRUJBSXloVXRpcmo1Q0NoRTdWNGZld1dRdlFQSzhIdnJCZ01BbGdHQ2ZISWRRUWI5bXUKc2ZvNlAwUHR6amdOSFhDRHhwKzFFNGhQbkY5cHZZWGVCa1dzR2crOWtXK2lDYU00am1WeXFWMElMbncxajJPZwpxdGFwUzl4ODFGamhjbEh4ekxZK1NQQlRidHF0MFQ2T0RiR2RMYWxnMUZpUlJZZWVEOVJQMHhEdEtNS015bXlPCjkzeWphTDJ3dy9ERWRqVGRXdFNrLzJhaE83MDM2WGY4bE45N2lwRHluWENGS1I0aWJTY2VCeXI0bmpWUXFXZVoKU2lvYmJSMkVlbjVMdE1nQUpVZit0VExmTm5rSUNyY2ZvSEkxTTZtYkRTZWtRR1FBY3hZL0xnVHgrcW1oRlZSQQpqOUNBejRkbUhwTk1xZ005amUxUEc3Mzhjaldua1JyN2ltS0xDNHNDZ2dFQVN0S1ZXYVB1Zys3ZGZTYWlITlJ6ClZDQXMwMnVGOGJjd2cxMXRNSGQzYStwRnFac3RzMCtWQmtWbE9xWk1DamlxTnY2V29LdXlNL01NcU8rZ3cyZmwKcVRjUnIvMWR6bXNGUDZzMno4MCtySVNnbENwdUdaVnJNMC9ZSys3SnlEMVZXb05rQU9lT1BFdVhNbXE5UldNRwpaUFpqb2ZQUlFwbDk2WHNHalh4SnM2bEJMcTZwL1oxcEdZWVY3aENnVFhCMVUzd2NiSFgwdENNaHd2cHNFbWF1CnNvSjBhejFvcnBvaER5VmdGaXhCWHUwaXN0UXZPVTJJK25sWUF0aHA5ZHN4QnE4VkZTYysyVVpObnZySFBicmIKYjYySWYyWk00ckhpSXFiZVVCallYZEY0QjNTcFBwb0l3bUREMmR1TkFqamk4QkcvM0Uvc1dtRnBwSEYzWlhXNwo0d0tDQVFFQTRxYzFrbk9BL3lRVS9QK3RkT3d3aGxoT056NXllUzlya3o1cEpaaUV0R3V3ZEZqeGliUVNyWXpzCkZtcmxIQW54bUdaMmlqa2s0amVHRjlOajg3MjMvaGZFYTNKMEFsOGl1a1o1V0dyejRORTlmQk1BcGI1MzJ2bUgKV1VqZDJueUQ4eGxoYktaWFV4SEVUaEg5WGVJVmJhMmxPZGo5eGgvQzRoS2NqQ2lHWXB1dnNOTGhRVDlLeENCLwpnZ05oamw0YmJVMHhJWHJ4dTk3ZG1qd2hBUVhxeittNGJjS2hmNkRybUJpVTlHMi9CUk9NRkw2aWtwY0MyNjhICmRXTDFCbjBXV0ExRmErWW5WZjc4Y1JQYlg4QVZBYjRCYkIxRllMU2tRWkNjZ0hYZ0NRSjVaVEQ4N1Q5dEtyaDUKTmNtS3VGSjI0UGxnZm5pcjB6RExpcWJ2NmxnRVlnPT0KLS0tLS1FTkQgUFJJVkFURSBLRVktLS0tLQo="
+secrets:
+  name: lightrun-certificates
+  keycloak:
+    password: "password"
+  db:
+    user: "admin"
+    password: "ggg111222333444"
+  mq:
+    user: "admin"
+    password: "1231assadfghgasd"
+  license:
+    content: "ewogICJjb21wYW55IjogIkxpZ2h0cnVuIiwKICAiZXhwaXJhdGlvbiI6ICIyMDI1LTEyLTMxVDIzOjU5OjU5WiIsCiAgIm1heEFnZW50cyI6IDEwMDAsCiAgIm1heFVzZXJzIjogMTAwMAp9Cg=="
+    signature: "Tz1IwoWwEFpK3nRxq3O7UrEOfJv7GBM4Wl/X97QedImTYx7Cy01XWkzaqnQhchXHdd6VWsdYxxYNfssDg+t5yRVzHTeRX79v/VnQpv3o3vijR987NrzAphV1SDG24AOWXHwIkvgT3TXyouo2xSxxyv6LWu371cyiNyA1TvbxzZoVc4Hgs1mdsBMOKXtflMDAHVV84UrhV8zw2Uo5WgPnLsltiUFoau31VGPRjpabk7juwWA8uFzoxQyVU/8hvYx3EP70Cxr3WCrGoN0+mjPL3t38+FnRUleGynahbenBzfzK6JZzHgzB7YNDXK8Ds7lDoW4misNQ+mG5VORZWVntsNRJzc0tb0wk9/0DuSp/lliiiZqOmF49KoT+7VOZF7knKik9XcXN5X70Rb8OkBycGGpmzWI9YduCYSJhZQ0KXdM/5vjuryapruTizrBriWZenViOlCs2QzYTTrUWeatnluvgNO89C6yyc2iPYBRbBzwqStzqmPMRsOLQV72yY3VsopeM0PFM3XHrfEibnuGn5wx3ZK5qKwFaZn4+YQX96g4/fUszL1cVKwt70THkVsoFJSC+caKTTPRU5fFxqBOTqs4Rzgtyl/C7zIUdhmjaPGYsN3HhGheHsyCoOn1DYPneGYVPsuZfL+CIcRUpvyoHKSTIF78Kj5zyBwHggORcEPQ="
+  defaults:
+    google_sso:
+      client_id: "1052858128591-mknf4gk8o60u1dr7sm55jkcdcja69jgh.apps.googleusercontent.com"
+      client_secret: "ZC1qxcmofpxmXpqPg9OGKo7z"
+    mail_password: "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"
+    datadog_api_key:  ""
+    keystore_password: "password"
+    dockerhub_config:
+      existingSecret: ""
+      configContent: "eyJhdXRocyI6eyJodHRwczovL2luZGV4LmRvY2tlci5pby92MS8iOnsidXNlcm5hbWUiOiJsaWdodHJ1bmNsaWVudCIsInBhc3N3b3JkIjoiOTgzNzA1OTgtNzUxZi00ZDkwLWIxMGEtMjc2MWM5M2ExOWNkIiwiYXV0aCI6ImJHbG5hSFJ5ZFc1amJHbGxiblE2T1Rnek56QTFPVGd0TnpVeFppMDBaRGt3TFdJeE1HRXRNamMyTVdNNU0yRXhPV05rIn19fQ=="
+    mixpanel_token: ""
+    hubspot_token: ""
+deployments:
+  frontend:
+    replicas: 1
+    image:
+      repository: lightruncom/webapp
+      tag: "1.57.2-release.b6e255c052"
+  backend:
+    artifacts:
+      enable: false
+    replicas: 1
+    image:
+      repository: lightruncom/server
+      tag: "1.57.2-release.b6e255c052"
+    initContainers:
+      wait_for_keycloak:
+        image:
+          repository: lightruncom/chart-helper
+      p12_creator:
+        image:
+          repository: lightruncom/chart-helper
+      wait_for_rabbitmq:
+        image:
+          repository: lightruncom/chart-helper
+    extraEnvs:
+      - name: LOGGING_LEVEL_IO_ATHENA_TECH_SERVER
+        value: "DEBUG"
+    resources:
+      cpu: 1500m
+      memory: 7Gi
+  keycloak:
+    clusterMode: true
+    replicas: 1
+    image:
+      repository: lightruncom/keycloak
+      tag: "1.57.2-release.b6e255c052"
+    resources:
+      cpu: 1000m
+      memory: 1Gi
+  redis:
+    image:
+      repository: lightruncom/redis
+    resources:
+      cpu: 1000m
+      memory: 3000Mi
+  rabbitmq:
+    image:
+      repository: lightruncom/rabbitmq
+    initContainers:
+      rabbitmq_config:
+        image:
+          repository: lightruncom/chart-helper
+    resources:
+      cpu: 200m
+      memory: 512Mi
+  mysql:
+    image:
+      repository: mysql
+    resources:
+      cpu: 2000m
+      memory: 8Gi
+  artifacts:
+    image:
+      repository: lightruncom/artifacts
+      tag: "1.57.2-release.b6e255c052"
