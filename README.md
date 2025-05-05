@@ -1,4 +1,3 @@
-
 # Lightrun Helm Chart 
 The `lightrun` Helm chart provides a reliable and efficient way to deploy and manage Lightrun on Kubernetes. It includes all the essential components for a smooth setup and can scale seamlessly to support large deployments.
 ## Architecture Overview
@@ -36,56 +35,56 @@ To ensure a smooth and secure production deployment of Lightrun, follow these ke
 
 - Review the Compatibility matrix for the supported tools.
     [More info on Compatibility](docs/installation/compatibility_matrix.md)
-#### **2. Secrets**
+#### **3. Secrets**
 
 - Decide whether to use Helm-managed secrets or an external secrets manager.
     [More info on Secrets Management](docs/installation/secrets.md)
-#### **3. Lightrun Certificate**
+#### **4. Lightrun Certificate**
 
 - Plan how Lightrun certificate will be issued and managed for secure communications.
     [More info on Certificate](docs/installation/certificate.md)
-#### **4. Database**
+#### **5. Database**
 
 > [!TIP]
-> Use external database
+> Use external managed database
 
 - Choose between a local or external database.
     [More info on Database Setup](docs/components/database.md)
 
-#### **5. Router**
+#### **6. Router**
 
 - Decide how external traffic will reach the Lightrun router (Ingress, Service, OpenShift Route).
     [More info on Router](docs/components/router/index.md)
 
-#### **6. Container Images Registry**
+#### **7. Container Images Registry**
 
 - Choose where to store and manage container images (e.g., private registry, Docker Hub, Azure Container Registry, AWS ECR).
     [More info on Container Image Registry](docs/installation/container_image_registry.md)
 
-#### **7. Redis**
+#### **8. Redis**
 > [!TIP] 
-> Use external redis
+> Use external managed redis
 - Determine if Redis will be local or external.
     [More info on Redis Setup](docs/components/redis.md)
 
-#### **8. (Optional)RabbitMQ**
+#### **9. (Optional)RabbitMQ**
 
 - Determine if RabbitMQ is needed for sending telemetry to Lightrun.
     [More info on RabbitMQ](docs/components/rabbitmq.md)
 
-#### **9. (Optional)Network Policy**
+#### **10. (Optional)Network Policy**
 
 - Establish network policies to restrict access between services and prevent unauthorized communication.
     [More info on Network Policy](docs/advanced/network_policy.md)
 
-#### **10. (Optional)Internal TLS Communication**
+#### **11. (Optional)Internal TLS Communication**
 
 - Decide whether internal TLS is necessary for secure component communication.
     [More info on Internal TLS](docs/advanced/internal_tls.md)
 
-#### **11. Choose Your Deployment Option**
+#### **12. Choose Your Deployment Option**
 
-Decide where to run your Kubernetes cluster based on your infrastructure needs. Consider whether you’ll deploy all services locally (including RabbitMQ, Redis, and MySQL) or use managed cloud services.
+Decide where to run your Kubernetes cluster based on your infrastructure needs. Consider whether you'll deploy all services locally (including RabbitMQ, Redis, and MySQL) or use managed cloud services.
 ##### **Supported Kubernetes Platforms:**
 
 Select your preferred cloud provider for deployment:
@@ -95,8 +94,6 @@ Select your preferred cloud provider for deployment:
 - **[Google Kubernetes Engine (GKE)](docs/installation/cloud/gke.md)**
 - **[OpenShift](docs/installation/cloud/openshift.md)**
 ## Known Issues and Limitations
-
-Review the [Known Limitations](docs/limitations.md) before deployment.
 
 ## Release Notes
 

@@ -12,6 +12,10 @@ There are two modes:
 > [!NOTE]
 >  When using external Redis, ensure that the provided endpoints are reachable. Also, if using replicated architecture, the list of node addresses must be correctly provided.
 
+> [!IMPORTANT]
+> - Supported Redis versions: 7.1 and 7.2
+> - Minimum size requirements: 2 vCPU, 6GB memory
+> - Supported HA configurations: Only replication mode is supported (cluster mode is not supported)
 
 ### Configuration Options
 
@@ -62,7 +66,7 @@ When using a local Redis deployment (i.e., `deployments.redis.external.enabled: 
 - **Single Replica Only**: The local deployment always uses one replica.
 - All deployment settings (image, resources, persistence, and health probes) apply.
 
-configuration is defined under **`deployments.redis`** in the **`values.yaml`**
+configuration is defined under **`deployments.redis`** in the **`values.yaml`**
 ```yaml
 deployments:
   redis:

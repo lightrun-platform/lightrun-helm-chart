@@ -16,10 +16,10 @@ Before using an external MySQL database, you MUST configure the following server
 
 | System Variable                                                                                                                                        | Required Value                                 | Description                                                                     |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------- | ------------------------------------------------------------------------------- |
-| [`sql_generate_invisible_primary_key`](https://dev.mysql.com/doc/refman/8.4/en/server-system-variables.html#sysvar_sql_generate_invisible_primary_key) | `0`                                            | Must be **OFF** to avoid invisible primary keys.                                |
-| [`lower_case_table_names`](https://dev.mysql.com/doc/refman/8.4/en/server-system-variables.html#sysvar_lower_case_table_names)                         | `1`                                            | Must be **ON** to ensure table name consistency.                                |
-| [`max_connections`](https://dev.mysql.com/doc/refman/8.4/en/server-system-variables.html#sysvar_max_connections)                                       | `100 * (# of backends) + 10 * (# of Keycloak)` | Must be set according to the number of backend services and Keycloak instances. |
-| [`character_set_server`](https://dev.mysql.com/doc/refman/8.4/en/server-system-variables.html#sysvar_character_set_server)                             | `utf8mb4`                                      | Must be set to `utf8mb4` for full Unicode support.                              |
+| [`sql_generate_invisible_primary_key`](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_sql_generate_invisible_primary_key) | `0`                                            | Must be **OFF** to avoid invisible primary keys.                                |
+| [`lower_case_table_names`](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_lower_case_table_names)                         | `1`                                            | Must be **ON** to ensure table name consistency.                                |
+| [`max_connections`](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_max_connections)                                       | `70 * (# of backends) + 10 * (# of Keycloak)` | Must be set according to the number of backend services and Keycloak instances. |
+| [`character_set_server`](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_character_set_server)                             | `utf8mb4`                                      | Must be set to `utf8mb4` for full Unicode support.                              |
 
 **Pre-created Database Requirement:**  
 The target MySQL database **must be created in advance** and should match the value of `general.db_database`. The application will not create the database automatically.
@@ -35,8 +35,8 @@ CREATE DATABASE lightrunserver;
 
 ### **[REQUIRED] External Database Requirements**
 
-- **MySQL Version**: `>= 8.0.37`
-- **Database Size**: CPU, Memory, and Disk must meet [**capacity table requirements**](../installation/capacity_planning.md).
+- **MySQL Version**: `>= 8.0.34`
+- **Database Size**: Minimum requirements are 2vCPU with 8GB memory & 100GB disk. Specific size according to planned capacity should be coordinated with Lightrun support engineer.
 - **Database Engine**: **Must be MySQL** (MySQL-compatible databases like **Aurora are NOT supported**).
 ---
 
@@ -66,6 +66,9 @@ general:
 In this mode, MySQL is deployed **inside the cluster** using either:  
 A **StatefulSet** with persistent storage (**Recommended**)  
 A **Deployment** with ephemeral storage (for testing purposes)
+
+> HA is not supported for MySql in local mode
+
 ### **Basic Configuration**
 ```yaml
 general:
@@ -175,7 +178,7 @@ general:
   db_database: lightrunserver
   statefulset:
     enabled: true
-    storageClassName: "gp2"
+    storageClassName: "gp3"
     storageSize: "100Gi"
 
 ```

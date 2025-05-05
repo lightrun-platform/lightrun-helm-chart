@@ -45,8 +45,11 @@ data:
         }    
       ],
       "queues": [
+        {{- $queue_names := .Values.general.mq.queue_names | default (list .Values.general.mq.queue_name) }}
+        {{- $last_index := sub (len $queue_names) 1 }}
+        {{- range $index, $queue_name := $queue_names }}
         {
-          "name": "{{ .Values.general.mq.queue_name }}.dlq",
+          "name": "{{ $queue_name }}.dlq",
           "vhost": "/",
           "durable": true,
           "auto_delete": false,
@@ -54,19 +57,20 @@ data:
             "x-queue-type": "quorum",
             "x-created-by": "lightrun-onprem-server-chart"
           }
-        },    
-         {
-          "name": {{ .Values.general.mq.queue_name | quote }},
+        },
+        {
+          "name": {{ $queue_name | quote }},
           "vhost": "/",
           "durable": true,
           "auto_delete": false,
           "arguments": {
             "x-dead-letter-exchange": "",
-            "x-dead-letter-routing-key": "{{ .Values.general.mq.queue_name }}.dlq",
+            "x-dead-letter-routing-key": "{{ $queue_name }}.dlq",
             "x-queue-type": "quorum",
             "x-created-by": "lightrun-onprem-server-chart"
           }
-        }
+        }{{ if not (eq $index $last_index) }},{{ end }}
+        {{- end }}
       ]
     }
 
