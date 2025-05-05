@@ -647,6 +647,7 @@ deployments:
       timeoutSeconds: 5
       successThreshold: 1
       failureThreshold: 3
+      path: /management/health/readiness      
     dbConnector: "mariadb" # either mysql for versions < .1.31 or mariadb (default) for versions > 1.31
     dumpsEmptyDirSizeLimit: 5Gi
     asyncProfiler:
