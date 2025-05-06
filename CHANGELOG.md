@@ -1,4 +1,44 @@
 
+<a name="v3.16.1"></a>
+## [v3.16.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.16.0...v3.16.1) - 2025-05-06
+
+
+
+### Versions
+
+| Image            | Tag                          |
+|------------------|------------------------------|
+| artifacts        | 1.57.2-release.b6e255c052    |
+| backend          | 1.57.2-release.b6e255c052    |
+| data_streamer    | 4.54.1-alpine-3.21.3-r0.lr-0 |
+| frontend         | 1.57.2-release.b6e255c052    |
+| keycloak         | 1.57.2-release.b6e255c052    |
+| mysql            | 8.0.38                       |
+| rabbitmq         | 3.12.14-alpine               |
+| redis            | 7.2.7-alpine-3.21.3-r0.lr-0  |
+| router           | 1.26.3-alpine-3.21.3-r0.lr-0 |
+| standalone_nginx | stable-alpine-slim           |
+ 
+ 
+
+
+### Changed (2 changes)
+
+- [upgrade data-streamer to 4.54.1-alpine-3.21.3-r0.… (#57)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/cd3b860)
+ 
+
+- [pod-resource-requests-of-backend-pod-to-fit-into-… (#52)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/f6bd308)
+
+
+  Co-authored-by: Tal Yitzhak <taly@lightrun.com>
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.16.0"></a>
 ## [v3.16.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.15.1...v3.16.0) - 2025-04-27
 
