@@ -171,10 +171,22 @@ spec:
           {{- end }}
           env:
             {{- if .Values.general.mq.enabled }}
-            - name: SPRING_RABBITMQ_HOST
+            - name: RABBITMQ_HOST
               value: {{ include "lightrun-mq.endpoint" . }}
-            - name: SPRING_RABBITMQ_PORT
+            - name: RABBITMQ_PORT
               value: {{ .Values.general.mq.port | quote }}
+            - name: KEYCLOAK_QUEUE_NAME
+              value: {{ include "lightrun-mq.getQueueNameByPrefix" (dict "prefix" "keycloak-events" "Values" .Values) | quote }}
+            - name: RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.backend.name" . }}
+                  key: SPRING_RABBITMQ_USERNAME
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.backend.name" . }}
+                  key: SPRING_RABBITMQ_PASSWORD
             {{- end }}          
             - name: INFO_DEPLOYMENT
             {{ if eq .Values.general.deployment_type "saas" }}
