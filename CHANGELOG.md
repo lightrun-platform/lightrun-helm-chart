@@ -1,4 +1,125 @@
 
+<a name="v3.17.0"></a>
+## [v3.17.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.16.2...v3.17.0) - 2025-05-11
+
+
+
+### Versions
+
+| Image            | Tag                          |
+|------------------|------------------------------|
+| artifacts        | 1.58.1-release.a4f3b6a620    |
+| backend          | 1.58.1-release.a4f3b6a620    |
+| data_streamer    | 4.54.1-alpine-3.21.3-r0.lr-0 |
+| frontend         | 1.58.1-release.a4f3b6a620    |
+| keycloak         | 1.58.1-release.a4f3b6a620    |
+| mysql            | 8.0.38                       |
+| rabbitmq         | 3.12.14-alpine               |
+| redis            | 7.2.7-alpine-3.21.3-r0.lr-0  |
+| router           | 1.26.3-alpine-3.21.3-r0.lr-0 |
+| standalone_nginx | stable-alpine-slim           |
+
+
+
+
+ 
+ 
+
+
+### Changed (3 changes)
+
+- [upgrade data-streamer to 4.54.1-alpine-3.21.3-r0.… (#55)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/ba4f568)
+ 
+
+- [chart docs minor fixes (#51)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2b30c51)
+ 
+
+- [pod-resource-requests-of-backend-pod-to-fit-into-… (#50)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/74d623c)
+ 
+ 
+ 
+
+
+### Added (2 changes)
+
+- [keycloak-events-queue-in-rabbitmq (#47)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2863cf3)
+ 
+
+- [Support lightrun_init_sys_api_key secret (#48)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/e9533a0)
+ 
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.16.2"></a>
+## [v3.16.2](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.16.1...v3.16.2) - 2025-05-06
+
+
+
+### Versions
+
+| Image            | Tag                          |
+|------------------|------------------------------|
+| artifacts        | 1.57.3-release.9168ae5ade    |
+| backend          | 1.57.3-release.9168ae5ade    |
+| data_streamer    | 4.54.1-alpine-3.21.3-r0.lr-0 |
+| frontend         | 1.57.3-release.9168ae5ade    |
+| keycloak         | 1.57.3-release.9168ae5ade    |
+| mysql            | 8.0.38                       |
+| rabbitmq         | 3.12.14-alpine               |
+| redis            | 7.2.7-alpine-3.21.3-r0.lr-0  |
+| router           | 1.26.3-alpine-3.21.3-r0.lr-0 |
+| standalone_nginx | stable-alpine-slim           |
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.16.1"></a>
+## [v3.16.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.16.0...v3.16.1) - 2025-05-06
+
+
+
+### Versions
+
+| Image            | Tag                          |
+|------------------|------------------------------|
+| artifacts        | 1.57.2-release.b6e255c052    |
+| backend          | 1.57.2-release.b6e255c052    |
+| data_streamer    | 4.54.1-alpine-3.21.3-r0.lr-0 |
+| frontend         | 1.57.2-release.b6e255c052    |
+| keycloak         | 1.57.2-release.b6e255c052    |
+| mysql            | 8.0.38                       |
+| rabbitmq         | 3.12.14-alpine               |
+| redis            | 7.2.7-alpine-3.21.3-r0.lr-0  |
+| router           | 1.26.3-alpine-3.21.3-r0.lr-0 |
+| standalone_nginx | stable-alpine-slim           |
+ 
+ 
+
+
+### Changed (2 changes)
+
+- [upgrade data-streamer to 4.54.1-alpine-3.21.3-r0.… (#57)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/c791396)
+ 
+
+- [pod-resource-requests-of-backend-pod-to-fit-into-… (#52)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/99dbaf3)
+
+
+  Co-authored-by: Tal Yitzhak <taly@lightrun.com>
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.16.0"></a>
 ## [v3.16.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.15.1...v3.16.0) - 2025-04-27
 
@@ -26,13 +147,13 @@
 
 ### Added (3 changes)
 
-- [Support lightrun_init_sys_api_key secret (#48) (#49)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/3e3ad0f)
+- [Support lightrun_init_sys_api_key secret (#48) (#49)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/95872b4)
  
 
-- [documentation-for-setting-up-external-redis-with-redis-ent-operator-with-openshift (#45)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/febcad9)
+- [documentation-for-setting-up-external-redis-with-redis-ent-operator-with-openshift (#45)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/83a5643)
  
 
-- [documentation-for-system-diagnostics-k8s-api-enablement (#44)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/870c17a)
+- [documentation-for-system-diagnostics-k8s-api-enablement (#44)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/1af8d5b)
  
  
  
@@ -94,28 +215,28 @@
 
 ### Changed (7 changes)
 
-- [bumped-data-streamer-version (#43)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/a9c23ea)
+- [bumped-data-streamer-version (#43)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/19c76d3)
  
 
-- [enable-the-router-nginx-stub-status (#41)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/8ded85b)
+- [enable-the-router-nginx-stub-status (#41)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2726534)
  
 
-- [wait-for-rabbitmq-initcontainer-pass-username-and-password-as-env-vars (#34)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/ad911ab)
+- [wait-for-rabbitmq-initcontainer-pass-username-and-password-as-env-vars (#34)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/9418edb)
 
 
   The chart-helper tag in the default values.yaml file was updated to 0.3.0-alpine-3.21.3-r0.lr-0 to accommodate the new changes.
  
 
-- [bump-redis-to-7-2-7-alpine-3-21-3-r-0-lr-0 (#35)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/23b6cac)
+- [bump-redis-to-7-2-7-alpine-3-21-3-r-0-lr-0 (#35)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/3e811b7)
  
 
-- [bump-router-to-1-26-3-alpine-3-21-3-r-0-lr-0 (#36)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/19d1f8e)
+- [bump-router-to-1-26-3-alpine-3-21-3-r-0-lr-0 (#36)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/e710774)
  
 
-- [bump-chart-helper-to-0-2-0-alpine-3-21-3-r-0-lr-0 (#37)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/9ed7907)
+- [bump-chart-helper-to-0-2-0-alpine-3-21-3-r-0-lr-0 (#37)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/92eb5af)
  
 
-- [bump-data-streamer-to-4-48-1-alpine-3-21-3-r-0-lr-0 (#38)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/6affb9a)
+- [bump-data-streamer-to-4-48-1-alpine-3-21-3-r-0-lr-0 (#38)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/264c753)
 
 
   Co-authored-by: eliranb <eliranb@lightrun.com>
@@ -126,7 +247,7 @@
 
 ### Added (1 change)
 
-- [http-header-to-frontend-for-clickjacking-protection (#42)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/7d86394)
+- [http-header-to-frontend-for-clickjacking-protection (#42)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/a3e2744)
  
  
  
@@ -134,7 +255,7 @@
 
 ### Documentation (1 change)
 
-- [abstract-documentation (#19)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/b180006)
+- [abstract-documentation (#19)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/be1bc38)
  
  
  
@@ -172,10 +293,10 @@
 
 ### Changed (2 changes)
 
-- [keycloak-environment-variables-to-support-keycloak-26.1.4](https://github.com/lightrun-platform/lightrun-helm-chart/commit/da7da1a)
+- [keycloak-environment-variables-to-support-keycloak-26.1.4](https://github.com/lightrun-platform/lightrun-helm-chart/commit/bc41ad9)
  
 
-- [bump-chart-helper-to-0-2-0 (#29)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/c649e78)
+- [bump-chart-helper-to-0-2-0 (#29)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/4069a60)
 
 
   Co-authored-by: eliranb <eliranb@lightrun.com>
@@ -186,7 +307,7 @@
 
 ### Added (1 change)
 
-- [override-download-endpoint-for-async-profiler-for-internal-mirror-purposes (#28)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/1578af4)
+- [override-download-endpoint-for-async-profiler-for-internal-mirror-purposes (#28)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/da34c54)
  
  
  
@@ -219,7 +340,7 @@
 
 ### Changed (1 change)
 
-- [bump-chart-helper-to-0-2-0 (#29) (#30)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/9c5ea55)
+- [bump-chart-helper-to-0-2-0 (#29) (#30)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/a8b5507)
 
 
   Co-authored-by: eliranb <eliranb@lightrun.com>
@@ -261,7 +382,7 @@
 
 ### Added (1 change)
 
-- [Propose changes to support k8s system diagnostics (#21)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/ec03d4f)
+- [Propose changes to support k8s system diagnostics (#21)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/1d03bf9)
 
 
   Having "serviceAccount.create: true" is a pre-requisite for this feature to work.
@@ -279,10 +400,10 @@
 
 ### Changed (2 changes)
 
-- [data-streamer version to 4.48.1](https://github.com/lightrun-platform/lightrun-helm-chart/commit/02984d9)
+- [data-streamer version to 4.48.1](https://github.com/lightrun-platform/lightrun-helm-chart/commit/be66647)
  
 
-- [replace-curl-with-wget-command-initcontainers](https://github.com/lightrun-platform/lightrun-helm-chart/commit/ab642dc)
+- [replace-curl-with-wget-command-initcontainers](https://github.com/lightrun-platform/lightrun-helm-chart/commit/80e561b)
  
  
  
@@ -319,7 +440,7 @@
 
 ### Added (1 change)
 
-- [name-override-support-to-override-release-name (#15)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2f8415b)
+- [name-override-support-to-override-release-name (#15)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/f52f772)
  
  
  
@@ -327,7 +448,7 @@
 
 ### Changed (1 change)
 
-- [bump-lightrun-redis-to-alpine-7-2-7-r-0 (#12)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/451e27d)
+- [bump-lightrun-redis-to-alpine-7-2-7-r-0 (#12)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/09f9953)
 
 
   Co-authored-by: eliranb <eliranb@lightrun.com>
@@ -392,7 +513,7 @@
 
 ### Changed (1 change)
 
-- [data streamer default tag to rpk-4.45.1-alpine (#7)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2797faf)
+- [data streamer default tag to rpk-4.45.1-alpine (#7)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/baf649b)
  
  
  
@@ -400,7 +521,7 @@
 
 ### Deprecated (1 change)
 
-- [api-keys-encryption (#3)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/7795d6b)
+- [api-keys-encryption (#3)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/b650b2c)
 
 
   Co-authored-by: Eliran Barooch <36511676+imeliran@users.noreply.github.com>
@@ -412,7 +533,7 @@
 
 ### Added (1 change)
 
-- [keystore-password-when-enabling-tls-on-router-level (#6)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/c3e1dad)
+- [keystore-password-when-enabling-tls-on-router-level (#6)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/5565333)
  
  
  
@@ -570,7 +691,7 @@
 
 ### Changed (1 change)
 
-- [bump-versions-in-lts-chart-version-3-9 (#24)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/e8f8605)
+- [bump-versions-in-lts-chart-version-3-9 (#24)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/0de9a93)
  
  
  
@@ -653,7 +774,7 @@
 
 ### Changed (1 change)
 
-- [bump-lightrun-redis-to-alpine-7-2-7-r-0 (#13)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/539d929)
+- [bump-lightrun-redis-to-alpine-7-2-7-r-0 (#13)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/4d4aef2)
 
 
   Co-authored-by: eliranb <eliranb@lightrun.com>
@@ -689,7 +810,7 @@
 
 ### Changed (1 change)
 
-- [bump-datastreamer-tag-to-rpk-4-45-1-alpine (#11)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/5e021a3)
+- [bump-datastreamer-tag-to-rpk-4-45-1-alpine (#11)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/d8ae605)
 
 
   Co-authored-by: eliranb <eliranb@lightrun.com>
@@ -750,7 +871,7 @@
 
 ### Changed (1 change)
 
-- [data streamer default tag to rpk-4.45.1-alpine (#7) (#10)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/6b2f1d0)
+- [data streamer default tag to rpk-4.45.1-alpine (#7) (#10)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/99d5d09)
  
  
  
