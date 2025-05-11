@@ -510,53 +510,6 @@ Usage:
 {{- end -}}
 
 
-
-{{/*
-################
-#### Nginx  ####
-################
-*/}}
-
-{{- define "nginx.name" -}}
-{{ include "lightrun.fullname" . }}-nginx
-{{- end -}}
-
-{{/*
-Create the name of the standalone nginx service account to use
-*/}}
-{{- define "nginx.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create -}}
-    {{ default (include "nginx.name" .) .Values.serviceAccount.name }}
-{{- else -}}
-    {{ default "default" .Values.serviceAccount.name }}
-{{- end -}}
-{{- end -}}
-
-{{- define "nginx.conf-cm.name" -}}
-{{ include "lightrun.fullname" . }}-nginx-conf
-{{- end -}}
-
-
-{{- define "nginx.containerSecurityContext" -}}
-{{/*Merge runAsUser to default SecurityContext*/}}
-{{- $readOnlyRootFilesystem := dict "readOnlyRootFilesystem" (.Values.general.readOnlyRootFilesystem) -}}
-{{- $baseSecurityContext := include "baseSecurityContext" . | fromYaml -}}
-{{- $localSecurityContext := mustMerge $baseSecurityContext $readOnlyRootFilesystem -}}
-{{/*If user provided values for containerSecurityContext, merge them with the baseSecurityContext*/}}
-{{/*Values passed by user will override defaults*/}}
-{{- if .Values.deployments.standalone_nginx.containerSecurityContext -}}
-{{- $mergedSecurityContext := mergeOverwrite $localSecurityContext (.Values.deployments.standalone_nginx.containerSecurityContext | default dict) -}}
-{{- $mergedSecurityContext | toYaml -}}
-{{- else if kindIs "invalid" .Values.deployments.standalone_nginx.containerSecurityContext -}}
-{{ default dict | toYaml -}}
-{{- else -}}
-{{/*use default values from baseSecurityContext*/}}
-{{- $localSecurityContext | toYaml -}}
-{{- end -}}
-{{- end -}}
-
-
-
 {{/*
 #####################
 ### JVM Heap size ###
@@ -582,35 +535,6 @@ Create the name of the standalone nginx service account to use
         {{- end }}
     {{- end }}
 {{- end }}
-
-
-{{/*
-################
-### Ingress ####
-################
-*/}}
-
-{{- define "ingress.keycloak.name" -}}
-{{ include "lightrun.fullname" . }}-keycloak-admin
-{{- end -}}
-
-{{- define "ingress.agents.name" -}}
-{{ include "lightrun.fullname" . }}-agents
-{{- end -}}
-
-{{- define "ingress.clients.name" -}}
-{{ include "lightrun.fullname" . }}-clients
-{{- end -}}
-
-{{- define "ingress.metrics.name" -}}
-{{ include "lightrun.fullname" . }}-metrics
-{{- end -}}
-
-{{- define "lightrun-ingress.name" -}}
-{{ include "lightrun.fullname" . }}-ingress
-{{- end -}}
-
-
 
 
 {{/*
