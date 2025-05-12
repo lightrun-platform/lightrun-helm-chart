@@ -1,4 +1,3 @@
-{{ if .Values.general.router.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -158,4 +157,4 @@ spec:
         emptyDir:
           sizeLimit: {{ .Values.general.readOnlyRootFilesystem_tmpfs_sizeLimit }}
       {{- end -}}
-{{end}}
+

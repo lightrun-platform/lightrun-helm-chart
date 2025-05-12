@@ -46,7 +46,7 @@ spec:
   {{- toYaml .Values.deployments.data_streamer.podDisruptionBudget | nindent 2 }}
 {{- end }}
 ---
-{{- if (and .Values.deployments.router.podDisruptionBudget .Values.general.router.enabled) }}
+{{- if .Values.deployments.router.podDisruptionBudget }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:

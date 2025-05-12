@@ -1,5 +1,3 @@
-{{ if .Values.general.router.enabled }}
-
 {{ if .Values.general.router.service.enabled }}
 apiVersion: v1
 kind: Service
@@ -33,4 +31,3 @@ spec:
   {{- end }}
 {{ end }}
 
-{{ end }}
