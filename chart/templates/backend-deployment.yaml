@@ -304,6 +304,8 @@ spec:
               value: {{ .Values.general.mq.port | quote }}
             - name: TRACKING_MIXPANEL_QUEUE_NAME
               value: {{ include "lightrun-mq.getQueueNameByPrefix" (dict "prefix" "mixpanel-events" "Values" .Values) | quote }}
+            - name: KEYCLOAK_QUEUE_NAME
+              value: {{ include "lightrun-mq.getQueueNameByPrefix" (dict "prefix" "keycloak-events" "Values" .Values) | quote }}
             {{- end }}
             {{- if .Values.deployments.backend.extraEnvs }}
               {{- toYaml .Values.deployments.backend.extraEnvs | nindent 12 }}
