@@ -656,3 +656,75 @@ Returns:
 {{- end }}
 {{- $matching_queue }}
 {{- end }}
+
+{{/*
+Get encryption key for Lightrun deployment. Handles existing keys, random generation, or user-provided values.
+*/}}
+{{- define "secrets.encryption-key" -}}
+    {{- if .Values.general.deploy_secrets.enabled }}
+        {{- if (not .Values.secrets.keysEncryption.userEncryptionKey) }}
+            {{- $secretObj := (lookup "v1" "Secret" .Release.Namespace (include "secrets.backend.name" .)) }}
+            {{/* Case 1: take existing generated key from secret */}}
+            {{- if and $secretObj (hasKey $secretObj.data ( include "secrets.encryption-key-name" . ) ) }}
+                {{- index $secretObj.data ( include "secrets.encryption-key-name" . ) | b64dec }}
+            {{/* Case 2: generate random encryption key */}}
+            {{- else }}
+                {{- randBytes 32 }}
+            {{- end }}
+        {{/* Case 3: take user provided encryption key from values */}}
+        {{- else }}
+            {{- .Values.secrets.keysEncryption.userEncryptionKey }}
+        {{- end }}
+    {{- end }}
+{{- end }}
+
+{{- define "secrets.encryption-key-name" -}}
+    {{- $rotateKey := .Values.secrets.keysEncryption.rotateKey }}
+    {{- $defaultKey := "encryption-key-0" }}
+    {{- $keyPrefix := "encryption-key-" }}
+    {{- $secret := (lookup "v1" "Secret" .Release.Namespace (include "secrets.backend.name" .)) }}
+
+    {{- $maxIndex := -1 }}
+    {{- if $secret }}
+        {{- range $k, $ := $secret.data }}
+            {{- if hasPrefix $keyPrefix $k }}
+                {{- $suffix := trimPrefix $keyPrefix $k }}
+                {{- $num := int $suffix }}
+                {{- if gt $num $maxIndex }}
+                    {{- $maxIndex = $num }}
+                {{- end }}
+            {{- end }}
+        {{- end }}
+    {{- end }}
+
+    {{- if eq $maxIndex -1 }}
+        {{- $defaultKey }}
+    {{- else if $rotateKey }}
+        {{- printf "encryption-key-%d" (add1 $maxIndex) }}
+    {{- else }}
+        {{- printf "encryption-key-%d" $maxIndex }}
+    {{- end }}
+{{- end }}
+
+{{/* Helper function to render encryption key items */}}
+{{- define "encryption.key.items" -}}
+{{- $secret := (lookup "v1" "Secret" .Release.Namespace (include "secrets.backend.name" .)) -}}
+{{- $hasEncryptionKeys := false -}}
+{{- if $secret -}}
+{{ range $key, $value := $secret.data }}
+{{ if hasPrefix "encryption-key-" $key }}
+{{- $hasEncryptionKeys = true }}
+- key: {{ $key }}
+  path: {{ $key }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{ if not $hasEncryptionKeys }}
+- key: encryption-key-0
+  path: encryption-key-0
+{{- end }}
+{{ if .Values.secrets.keysEncryption.rotateKey }}
+- key: {{ include "secrets.encryption-key-name" . }}
+  path: {{ include "secrets.encryption-key-name" . }}
+{{- end }}
+{{- end }}

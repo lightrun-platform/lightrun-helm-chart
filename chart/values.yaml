@@ -483,6 +483,25 @@ secrets:
       # 3. For private registry. If dockerhub_config is set to `null`, chart will not use any imagePullSecrets.
       existingSecret: ""
       configContent: ""
+  keysEncryption:
+    # The encryption key configuration for the backend service.
+    # PREFERRED APPROACH: External Secret
+    # - Create a Kubernetes secret containing the encryption key outside of this chart, see:
+    #   https://github.com/lightrun-platform/lightrun-helm-chart/blob/main/docs/installation/secrets.md
+    # - This is the recommended approach for all environments, especially production
+    #
+    # ALTERNATIVE APPROACH: Chart-managed Secret
+    # - Let the chart create and manage the secret (requires deploy_secrets.enabled=true)
+    # - Not recommended for production environments
+    #
+    # IMPORTANT SECURITY NOTES:
+    # - While you can provide an encryption key via userEncryptionKey, storing keys in values.yaml
+    #   is not secure for production environments. Use external secrets management solution
+    # - For GitOps environments, you MUST provide a stable encryption key externally
+    #
+    # For more details, see: https://github.com/lightrun-platform/lightrun-helm-chart/blob/main/docs/advanced/encryption_keys.md
+    userEncryptionKey: ""
+    rotateKey: false
 
 ################
 ## Deployments

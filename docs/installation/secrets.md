@@ -17,8 +17,28 @@ general:
       keycloak: ""
 ```
 - _(This is relevant only when `deploy_secrets: false`.)_
+
+### **Mandatory Secret Fields**
+
+When managing secrets externally, ensure the following fields are present in your secret (See the [secrets template](https://github.com/lightrun-platform/lightrun-helm-chart/blob/main/chart/templates/secrets.yaml#L31) for reference):
+
+| Environment Variable | Description | Value Source |
+|---------------------|-------------|--------------|
+| `SPRING_SECURITY_KEYCLOAK_CLI_PASSWORD` | Keycloak admin password | `secrets.keycloak.password` |
+| `SPRING_MAIL_PASSWORD` | Mail server password | `secrets.defaults.mail_password` |
+| `SPRING_FLYWAY_PASSWORD` | DB password | `secrets.db.password` |
+| `SPRING_FLYWAY_USER` | DB user | `secrets.db.user` |
+| `SPRING_DATASOURCE_USERNAME` | DB username | `secrets.db.user` |
+| `SPRING_DATASOURCE_PASSWORD` | DB password | `secrets.db.password` |
+| `KEYSTORE_PASSWORD` | Java Keystore password | `secrets.defaults.keystore_password` |
+| `LICENSE_CONTENT` | Lightrun license content | `secrets.license.content` |
+| `LICENSE_SIGNATURE` | Lightrun license signature | `secrets.license.signature` |
+| `SPRING_RABBITMQ_USERNAME` | RabbitMQ username | `secrets.mq.user` |
+| `SPRING_RABBITMQ_PASSWORD` | RabbitMQ password | `secrets.mq.password` |
+| `encryption-key-0` | Backend encryption key (default) | `secrets.keysEncryption.userEncryptionKey` |
+
 > [!WARNING]
-> If managing secrets externally, ensure all required fields are present. See the [secrets template](https://github.com/lightrun-platform/lightrun-helm-chart/blob/main/chart/templates/secrets.yaml#L31) for reference.
+> For encryption keys, it's strongly recommended to provide them as external secrets rather than letting the chart manage them. See [Encryption Keys Documentation](../advanced/encryption_keys.md) for details.
 
 ## **Secrets Configuration**
 ### **Authentication and Access Secrets**
