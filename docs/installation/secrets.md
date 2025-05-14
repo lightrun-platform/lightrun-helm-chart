@@ -85,7 +85,6 @@ Some secrets are used for integrating with external services.
 
     datadog_api_key: ""  # (Optional) API key for Datadog integration
     mixpanel_token: ""   # (Optional) Token for Mixpanel analytics
-    hubspot_token: ""    # (Optional) Token for HubSpot integration
 
 ```
 > **Optional Fields**: If left empty, these values **will not** be included in the Kubernetes secret.
