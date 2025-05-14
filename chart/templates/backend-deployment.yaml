@@ -63,7 +63,7 @@ spec:
         - name: encryption-keys
           secret: 
             secretName: {{ include "secrets.backend.name" . }}
-            optional: false
+            optional: true
             items: 
               # Only select items that start with encryption-key-
               {{- include "encryption.key.items" . | nindent 18 }}
