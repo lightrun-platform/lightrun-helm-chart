@@ -1,0 +1,6 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "lightrun.fullname" . }}-system-config
+data:
+  system_config.json: {{ .Values.general.system_config.content }}
