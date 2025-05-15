@@ -60,6 +60,9 @@ spec:
       {{- end }}
       serviceAccountName: {{ template "lightrun-be.serviceAccountName" . }}
       volumes:
+        - name: system-config
+          configMap:
+            name: {{ include "lightrun.fullname" . }}-system-config
         - name: encryption-keys
           secret: 
             secretName: {{ include "secrets.backend.name" . }}
@@ -130,6 +133,10 @@ spec:
             "/usr/src/lightrun/{{ .Values.deployments.backend.jar_name }}"
           ]
           volumeMounts:
+            - name: system-config
+              mountPath: {{ .Values.general.system_config.file_path }}
+              subPath: {{ base .Values.general.system_config.file_path }}
+              readOnly: true
             - name: encryption-keys
               mountPath: /encryption-keys
               readOnly: true
@@ -193,6 +200,10 @@ spec:
             - secretRef:
                 name: {{ include "secrets.backend.name" . }}
           env:
+            - name: LIGHTRUN_SYSTEM_CONFIG_JSON_FILE_PATH
+              value: {{ .Values.general.system_config.file_path }}
+            - name: LIGHTRUN_SYSTEM_CONFIG_JSON_SIGNATURE
+              value: {{ .Values.general.system_config.signature }}
             - name: SERVER_SECURITY_ENCRYPTION-KEYS-PATH
               value: file:/encryption-keys
             - name: LIGHTRUN_HOSTNAME
