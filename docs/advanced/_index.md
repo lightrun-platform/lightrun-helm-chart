@@ -2,3 +2,4 @@ This advanced guide covers in-depth configuration options for deploying Lightrun
 
 - [Internal TLS](internal_tls.md)
 - [Network Policy](network_policy.md)
+- [System Configuration](system_config.md)
