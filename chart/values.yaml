@@ -508,7 +508,7 @@ secrets:
     #
     # For more details, see: https://github.com/lightrun-platform/lightrun-helm-chart/blob/main/docs/advanced/encryption_keys.md
     userEncryptionKey: ""
-    rotateKey: false
+    rotateKey: true
 
 ################
 ## Deployments
