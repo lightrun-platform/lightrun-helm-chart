@@ -40,11 +40,18 @@ To ensure a smooth and secure production deployment of Lightrun, follow these ke
 
 - Decide whether to use Helm-managed secrets or an external secrets manager.
     [More info on Secrets Management](docs/installation/secrets.md)
-#### **3. Lightrun Certificate**
+
+#### **4. System Configuration**
+
+- Obtain the system configuration file and signature from Lightrun.
+    [More info on System Configuration](docs/advanced/system_config.md)
+
+#### **5. Lightrun Certificate**
 
 - Plan how Lightrun certificate will be issued and managed for secure communications.
     [More info on Certificate](docs/installation/certificate.md)
-#### **4. Database**
+
+#### **6. Database**
 
 > [!TIP]
 > Use external database
@@ -52,38 +59,38 @@ To ensure a smooth and secure production deployment of Lightrun, follow these ke
 - Choose between a local or external database.
     [More info on Database Setup](docs/components/database.md)
 
-#### **5. Router**
+#### **7. Router**
 
 - Decide how external traffic will reach the Lightrun router (Ingress, Service, OpenShift Route).
     [More info on Router](docs/components/router/index.md)
 
-#### **6. Container Images Registry**
+#### **8. Container Images Registry**
 
 - Choose where to store and manage container images (e.g., private registry, Docker Hub, Azure Container Registry, AWS ECR).
     [More info on Container Image Registry](docs/installation/container_image_registry.md)
 
-#### **7. Redis**
+#### **9. Redis**
 > [!TIP] 
 > Use external redis
 - Determine if Redis will be local or external.
     [More info on Redis Setup](docs/components/redis.md)
 
-#### **8. (Optional)RabbitMQ**
+#### **10. (Optional)RabbitMQ**
 
 - Determine if RabbitMQ is needed for sending telemetry to Lightrun.
     [More info on RabbitMQ](docs/components/rabbitmq.md)
 
-#### **9. (Optional)Network Policy**
+#### **11. (Optional)Network Policy**
 
 - Establish network policies to restrict access between services and prevent unauthorized communication.
     [More info on Network Policy](docs/advanced/network_policy.md)
 
-#### **10. (Optional)Internal TLS Communication**
+#### **12. (Optional)Internal TLS Communication**
 
 - Decide whether internal TLS is necessary for secure component communication.
     [More info on Internal TLS](docs/advanced/internal_tls.md)
 
-#### **11. Choose Your Deployment Option**
+#### **13. Choose Your Deployment Option**
 
 Decide where to run your Kubernetes cluster based on your infrastructure needs. Consider whether you’ll deploy all services locally (including RabbitMQ, Redis, and MySQL) or use managed cloud services.
 ##### **Supported Kubernetes Platforms:**
