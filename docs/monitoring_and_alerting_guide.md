@@ -1,6 +1,6 @@
 # Monitoring and Alerting Guide for Lightrun Application
 
-This guide outlines the essential metrics to monitor for the Lightrun application deployed in Kubernetes using Helm chart. While this guide identifies critical metrics, it is up to the customers to implement these monitoring practices using their preferred tools and configure appropriate alerting mechanisms.
+This guide highlights the key metrics that should be monitored for the Lightrun application when deployed on Kubernetes using a Helm chart. While it identifies the most critical metrics, it is the responsibility of customers to implement the monitoring using their preferred tools and to set up appropriate alerting mechanisms.
 
 ## 1. Bird's-eye View of System Health
 
@@ -21,6 +21,12 @@ Monitor the status of deployments to ensure desired pods are running and repli
 
 **2.2 Pod Restart Count**
 Track number of restarts per pod. Frequent restarts may indicate instability, errors or crashes.
+
+**2.3 Kubernetes Events (Warning/Error)**
+Monitor Kubernetes events to detect warnings or errors that may affect the cluster's stability:
+
+- Track events with type "Warning" for potential issues like unhealthy containers or resource constraints.
+- Monitor events with type "Error" for critical failures requiring immediate attention.
 
 ## 3. Resource Usage Monitoring
 
@@ -62,13 +68,7 @@ The Lightrun backend exposes custom Prometheus metrics via the `/management/prom
 **6.1 Total Connected Agents per Runtime (`connected_agents_per_runtime`)**
 Track the number of agents connected per runtime to ensure runtimes are reporting data correctly.
 
-**6.2 Total Connected Agents (`connected_agents_total`)**
-Monitor the total number of connected agents for overall system health.
-
-**6.3 Total Active Actions (`actions_count_active_total`)**
-Count the number of actions currently being executed across the system.
-
-**6.4 JVM Memory Utilization (`jvm_memory_used_bytes`)**
+**6.2 JVM Memory Utilization (`jvm_memory_used_bytes`)**
 Monitor JVM heap usage to prevent out-of-memory errors.
 
 ## 7. MySQL Database Monitoring
@@ -88,6 +88,13 @@ Track disk space usage on the database volume to prevent storage exhaustion.
 **7.5 Network Throughput**
 Monitor network traffic to and from MySQL.
 
+**7.6 Query Latency**
+Monitor query execution times to identify performance bottlenecks:
+
+- Track average query execution time across all operations
+- Identify slowest executing queries by type or table
+- Track frequency of long-running queries (>500ms) that may indicate blocking issues
+
 ## 8. Redis Cache Monitoring
 
 **8.1 CPU Utilization**
@@ -95,6 +102,14 @@ Observe CPU usage to ensure efficient processing of cache operations.
 
 **8.2 RAM Utilization**
 Track memory usage to avoid performance bottlenecks.
+
+**8.3 Query Latency**
+Monitor command execution times for cache operations:
+
+- Track average response time for common commands (GET, SET, etc.)
+- Monitor latency percentiles (p50, p95, p99) for different operation types
+- Identify slowest executing commands that may indicate memory pressure or disk I/O issues
+- Track frequency of delayed responses (>100ms) during high load periods
 
 ## 9. Backend HTTP Statistics
 
@@ -114,6 +129,4 @@ Set up alerts based on the following conditions to enable proactive issue resolu
 - **Abnormal database connection counts** - May indicate overloading.
 - **Network throughput anomalies** - Unexpected surges or drops in traffic could signal issues.
 
-By monitoring the above metrics and setting up alerts accordingly, you can proactively manage your Lightrun application's performance and reliability in a Kubernetes environment. It is recommended to regularly review and refine your monitoring and alerting strategy as your infrastructure evolves and workload demands change.
-
-Feel free to customize the alert thresholds and metrics based on your specific requirements and infrastructure setup.
+By monitoring the above metrics and setting up alerts accordingly, you can proactively manage your Lightrun application's performance and reliability in a Kubernetes environment.
