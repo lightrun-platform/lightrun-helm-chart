@@ -1,6 +1,6 @@
 ### Overview
 
-The keycloak service provides the authentication. It is deployed as a Kubernetes pod and can be configured for scaling, resource allocation, and health monitoring.
+The keycloak service provides the authentication. It is deployed as a Kubernetes StatefulSet and can be configured for scaling, resource allocation, health monitoring, and clustering.
 configuration is defined under **`deployments.keycloak`** in the **`values.yaml`**
 ### Configuration Options
 
@@ -21,11 +21,6 @@ configuration is defined under **`deployments.keycloak`** in the **`values.yaml`
   replicas: 1              # Default number of replicas
 ```
 
-#### Deployment Strategy
-
-```yaml
-  rollout_strategy: "Recreate"  # Defines the rollout strategy
-```
 
 #### Image Configuration
 
