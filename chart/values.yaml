@@ -11,6 +11,14 @@ general:
   lightrun_endpoint: "lightrun.example.com"
   ## DNS record that will be used to access the platform
   deployment_type: on-prem
+
+  system_config:
+    # Path to the system config file
+    file_path: "/opt/lightrun/system_config.json"
+    # Content of the system config file, base64 encoded
+    content: ""
+    # Signature of the system config file, base64 encoded
+    signature: ""
   ## on-prem, saas, single-tenant
   deploy_secrets:
     enabled: true
@@ -79,20 +87,22 @@ general:
     ## Changing the queue name results in a new queue (and dlq) being created
     ## Old queues will not be deleted automatically
     ## New messages will be pushed and consumed from the new queue
-    queue_name: "mixpanel-events"
+    queue_names:
+      - "mixpanel-events"
+      - "keycloak-events"
     ## RabbitMQ Policy configuration
     ## Applies on all queues that match queue_regex_pattern
     policy:
-      queue_regex_pattern: "^mixpanel-events.*"
-      # The following configuration supports a queue size of up to 2000 messages,
+      queue_regex_pattern: "^.*-events.*"
+      # The following configuration supports queues size of up to 2000 messages,
       # where each message is 500 bytes, with a message TTL (time-to-live) of one week.
       #
-      # - message_ttl: Sets the time-to-live for messages in the queue to approximately 7 days (600,000,000 ms).
-      # - max_length: Limits the queue to a maximum of 2000 messages. New messages will be rejected if this limit is reached.
-      # - overflow: Configures the queue to "reject-publish," meaning new messages are rejected when the queue hits max_length.
-      # - max_length_bytes: Restricts the total size of all messages in the queue to 1,000,000 bytes (500 bytes × 2000 messages).
+      # - message_ttl: Sets the time-to-live for messages in the queues to approximately 7 days (600,000,000 ms).
+      # - max_length: Limits the queues to a maximum of 2000 messages. New messages will be rejected if this limit is reached.
+      # - overflow: Configures the queues to "reject-publish," meaning new messages are rejected when the queue hits max_length.
+      # - max_length_bytes: Restricts the total size of all messages in the queues to 1,000,000 bytes (500 bytes × 2000 messages).
       #
-      # This configuration ensures the queue does not exceed its size or time limits and avoids overloading the system.
+      # This configuration ensures the queues does not exceed its size or time limits and avoids overloading the system.
       message_ttl: 600000000
       max_length: 2000
       overflow: "reject-publish"
@@ -190,9 +200,6 @@ general:
   ## Router ##
   ############
   router:
-    ## general.router.enabled - boolean flag, indicates whether to enable a Router (single entrypoint for Lightrun deployment).
-    ##
-    enabled: true
     tls:
       # If enabled router will expose HTTPS traffic
       # If internal_tls.enabled is set to true, SSL termination will be enabled regardless of this value
@@ -256,28 +263,6 @@ general:
     #   proxy_send_timeout      60s;
     #   proxy_read_timeout      60s;
     http_snippets: ""
-
-  ################
-  ## Ingress
-  ################
-  # Ingress deployment
-  ingress_controller: true
-  ## If set to `false`, will not create ingress objects and instead will create a deployment
-  ## of an Nginx pod with `LoadBalancer` as an entrypoint
-  ingress_class_name: "nginx"
-  ## Class name of the ingress-controller
-  ## previously was configured by annotation `kubernetes.io/ingress.class`, which is deprecated
-
-  nginx_svc:
-    ## details of nginx service deployment
-    type: LoadBalancer
-    ## `LoadBalancer`
-    ## In case of EKS or GKE, it will create a cloud load balancer.
-    ## For an on-prem k8s cluster, it should have some k8s-addon or external LB solution.
-    ## More explanation may be found here https://www.tkng.io/services/loadbalancer/
-    ## `ClusterIP` is supported only with local port 443 - `sudo kubectl port-forward service/<chart release name>-nginx 443:443`
-    ## `NodePort` is not supported due to complexity of redirect URLs with port
-    annotations: {}
 
   ################
   ## Node selection
@@ -441,7 +426,7 @@ general:
 ## Certificate
 ################
 certificate:
-  ## This Certificate will be used in ingress/standalone nginx and in the backend service's communication with IDE plugin and agents
+  ## This Certificate will be used in router's ingress and in the backend service's communication with IDE plugin and agents
   existing_cert: ""
   ## To reuse an already deployed certificate
   ## This secret has to be deployed in the same namespace as the rest of this chart
@@ -495,8 +480,8 @@ secrets:
       client_secret: "" # Optional | If empty, will not be used
     datadog_api_key: "" # Optional | If empty, will not be used
     mixpanel_token: "" # Optional | If empty, will not be used
-    hubspot_token: "" # Optional | If empty, will not be used
-
+    lightrun_initial_sys_api_key: "" # Optional | If empty, will not be used
+    open_ai_admin_api_key: "" # Optional | If empty, will not be used | OpenAI Admin API key for administrative operations (Not applicable for on premise deployments)
     dockerhub_config:
       # This secret is used as imagePullSecrets for docker registry.
       # It has 3 modes:
@@ -505,6 +490,25 @@ secrets:
       # 3. For private registry. If dockerhub_config is set to `null`, chart will not use any imagePullSecrets.
       existingSecret: ""
       configContent: ""
+  keysEncryption:
+    # The encryption key configuration for the backend service.
+    # PREFERRED APPROACH: External Secret
+    # - Create a Kubernetes secret containing the encryption key outside of this chart, see:
+    #   https://github.com/lightrun-platform/lightrun-helm-chart/blob/main/docs/installation/secrets.md
+    # - This is the recommended approach for all environments, especially production
+    #
+    # ALTERNATIVE APPROACH: Chart-managed Secret
+    # - Let the chart create and manage the secret (requires deploy_secrets.enabled=true)
+    # - Not recommended for production environments
+    #
+    # IMPORTANT SECURITY NOTES:
+    # - While you can provide an encryption key via userEncryptionKey, storing keys in values.yaml
+    #   is not secure for production environments. Use external secrets management solution
+    # - For GitOps environments, you MUST provide a stable encryption key externally
+    #
+    # For more details, see: https://github.com/lightrun-platform/lightrun-helm-chart/blob/main/docs/advanced/encryption_keys.md
+    userEncryptionKey: ""
+    rotateKey: false
 
 ################
 ## Deployments
@@ -568,7 +572,7 @@ deployments:
       pullPolicy: IfNotPresent
     resources:
       cpu: 3000m
-      memory: 7Gi
+      memory: 6Gi
     podLabels: {}
     podAnnotations: {}
     annotations: {} # deprecated in favor of podAnnotations
@@ -661,7 +665,6 @@ deployments:
     # https://www.keycloak.org/server/caching#_configuring_caches -> Configuring caches for availability
     clusterMode: true
     replicas: 1
-    rollout_strategy: "Recreate"
     image:
       repository: lightruncom/keycloak
       tag: ""
@@ -689,6 +692,11 @@ deployments:
           repository: lightruncom/chart-helper
           tag: "0.3.0-alpine-3.21.3-r0.lr-0"
           pullPolicy: ""
+      wait_for_rabbitmq:
+        image:
+          repository: lightruncom/chart-helper
+          tag: "0.3.0-alpine-3.21.3-r0.lr-0"
+          pullPolicy: ""          
     topologySpreadConstraints: []
     affinity: {}
     startupProbe:
@@ -752,7 +760,7 @@ deployments:
       enabled: false
     image:
       repository: lightruncom/redis
-      tag: 7.2.7-alpine-3.21.3-r0.lr-0
+      tag: 7.2.8-alpine-3.21.3-r0.lr-0
       pullPolicy: IfNotPresent
     resources:
       cpu: 2000m
@@ -887,7 +895,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/data-streamer
-      tag: "4.51-alpine-3.21.3-r0.lr-0"
+      tag: "4.55.0-alpine-3.21.3-r0.lr-0"
       pullPolicy: IfNotPresent
     resources:
       cpu: 100m
@@ -962,38 +970,6 @@ deployments:
       failureThreshold: 3
       path: /health
 
-  standalone_nginx:
-    replicas: 1
-    image:
-      repository: nginxinc/nginx-unprivileged
-      tag: stable-alpine-slim
-      pullPolicy: IfNotPresent
-    podSecurityContext: {}
-    containerSecurityContext: {}
-    resources:
-      cpu: 300m
-      memory: 256Mi
-    podLabels: {}
-    ports:
-      ## in case there is a need to use privileged ports such as 80/443. to make it work the image.repository should be
-      ## replaced to nginx , also podSecurityContext/containerSecurityContext should be set to null
-      http: 8080
-      https: 8443
-    topologySpreadConstraints: []
-    affinity: {}
-    livenessProbe:
-      initialDelaySeconds: 10
-      periodSeconds: 20
-      timeoutSeconds: 10
-      successThreshold: 1
-      failureThreshold: 3
-    readinessProbe:
-      initialDelaySeconds: 10
-      periodSeconds: 10
-      timeoutSeconds: 5
-      successThreshold: 1
-      failureThreshold: 3
-
   router:
     useJsonLogFormat: false
     replicas: 1 # It's always 1 if general.router.host_port.enabled is true
@@ -1037,112 +1013,3 @@ deployments:
       worker_processes: 3
       worker_connections: 10240
       worker_rlimit_nofile: 20480 # hast to be less than ulimits of the system
-
-######################
-## Ingress annotations
-######################
-## Examples below are for an ingress-nginx controller
-## https://kubernetes.github.io/ingress-nginx/deploy/
-## for any other ingress controller this section will need to be adapted - please work with your Lightrun Solution Engineer
-ingress_clients:
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-buffer-size: "1m"
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
-    # nginx.ingress.kubernetes.io/configuration-snippet: |
-    #   allow   1.2.3.4/32; # Allowed IP
-    #   # drop rest of the world
-    #   # deny    all;
-
-    ## If cluster has no access to the internet - comment out the section below
-    nginx.ingress.kubernetes.io/server-snippet: |
-      location @custom_403 {
-        return 403 "<html xmlns='http://www.w3.org/1999/xhtml'> <head> <meta charset='utf-8'> <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/> <meta name='robots' content='noindex, nofollow'> <title>Not allowed</title> <link href='https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/css/errors-page.css' rel='stylesheet'/> </head> <body> <div class='login-content' style=\"background-image: url('https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/img/background.svg');\"> <div class='box'> <div class='form-container'> <img src='https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/img/logo.svg' alt='Logo' style='width: 97px; height: 50px; object-fit: contain;'> </div><div class='form-container'> <span class='message-text'>You're not allowed to get this page</span> </div></div></div></body></html>";
-      }
-      location @custom_503 {
-        return 503 "<html xmlns='http://www.w3.org/1999/xhtml'> <head> <meta charset='utf-8'> <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/> <meta name='robots' content='noindex, nofollow'> <title>Service Unavailable</title> <link href='https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/css/errors-page.css' rel='stylesheet'/> </head> <body> <div class='login-content' style=\"background-image: url('https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/img/background.svg');\"> <div class='box'> <div class='form-container'> <img src='https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/img/logo.svg' alt='Logo' style='width: 97px; height: 50px; object-fit: contain;'> </div><div class='form-container'> <span class='message-text'>Oops... Something went wrong - please try again later.</span> </div></div></div></body></html>";
-      }
-      location @custom_429 {
-        return 429 "<html xmlns='http://www.w3.org/1999/xhtml'> <head> <meta charset='utf-8'> <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/> <meta name='robots' content='noindex, nofollow'> <title>Too Many Requests</title> <link href='https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/css/errors-page.css' rel='stylesheet'/> </head> <body> <div class='login-content' style=\"background-image: url('https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/img/background.svg');\"> <div class='box'> <div class='form-container'> <img src='https://lightrun-public.s3.amazonaws.com/HACustomErrors/resources/img/logo.svg' alt='Logo' style='width: 97px; height: 50px; object-fit: contain;'> </div><div class='form-container'> <span class='message-text'>Sorry, but you're sending too many requests - please slow down</span> </div></div></div></body></html>";
-      }
-      error_page 503 @custom_503;
-      error_page 403 @custom_403;
-      error_page 429 @custom_429;
-      limit_req_status 429;
-      limit_conn_status 429;
-    # Optional load throttling configuration options
-    # The limit is based on the formula: period * rps + burst-window, e.g. 1 second * 150 rps + 150 = 300 rps in practice
-    # nginx.ingress.kubernetes.io/limit-rps: "150" # Number of requests per second from any given IP;
-    # nginx.ingress.kubernetes.io/limit-connections: "30" # Concurent connections from any given IP
-    # nginx.ingress.kubernetes.io/limit-burst-multiplier: "1" # for 5 rps, burst window = rps * 1 = 5
-
-ingress_agents:
-  annotations:
-    ## As above, for any other ingress controller this section will need to be adapted - please work with your Lightrun Solution Engineer
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-buffer-size: "1m"
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
-    # nginx.ingress.kubernetes.io/configuration-snippet: |
-    #   allow   1.2.3.4/32; # Allowed IP
-    #   # drop rest of the world
-    #   deny    all;
-    # nginx.ingress.kubernetes.io/server-snippet: |
-    #   limit_req_status 429;
-    #   limit_conn_status 429;
-    # Optional load throttling configuration options
-    # The limit is based on the formula: period * rps + burst-window, e.g. 1 second * 150 rps + 150 = 300 rps in practice
-    # nginx.ingress.kubernetes.io/limit-rps: "150" # Number of requests per second from any given IP;
-    # nginx.ingress.kubernetes.io/limit-connections: "30" # Concurent connections from any given IP
-    # nginx.ingress.kubernetes.io/limit-burst-multiplier: "1" # for 5 rps, burst window = rps * 1 = 5
-
-ingress_keycloak_admin:
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-buffer-size: "1m"
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
-    # nginx.ingress.kubernetes.io/configuration-snippet: |
-    #   allow   1.2.3.4/32; # Allowed IP
-    #   #drop rest of the world
-    #   #deny    all;
-    # nginx.ingress.kubernetes.io/server-snippet: |
-    #   limit_req_status 429;
-    #   limit_conn_status 429;
-    # Optional load throttling configuration options
-    # The limit is based on the formula: period * rps + burst-window, e.g. 1 second * 150 rps + 150 = 300 rps in practice
-    # nginx.ingress.kubernetes.io/limit-rps: "150" # Number of requests per second from any given IP;
-    # nginx.ingress.kubernetes.io/limit-connections: "30" # Concurent connections from any given IP
-    # nginx.ingress.kubernetes.io/limit-burst-multiplier: "1" # for 5 rps, burst window = rps * 1 = 5
-ingress_metrics:
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/backend-protocol: HTTP
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-buffer-size: "1m"
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
-    #    nginx.ingress.kubernetes.io/configuration-snippet: |
-    #      #allow   1.2.3.4/32; # Allowed IP
-    #      #drop rest of the world
-    #      #deny    all;
-    nginx.ingress.kubernetes.io/limit-rps: "150" # Number of requests per second from givven ip; formula = period * rps + burst-window = 1 second * 150 rps + 150 = 300 rps in practice
-    nginx.ingress.kubernetes.io/limit-connections: "30" # Concurent connections from given ip
-    nginx.ingress.kubernetes.io/limit-burst-multiplier: "1" # It means that for 5 rps, burst window = rps * 1 = 5

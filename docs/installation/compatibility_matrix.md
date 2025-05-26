@@ -19,8 +19,10 @@ This page provides a compatibility overview for Kubernetes and OpenShift version
 
 ## OpenShift Compatibility
 
-| OpenShift Version | Compatibility | Comments                                                                 |
-| ----------------- | ------------- | ------------------------------------------------------------------------ |
-| 4.17.7            | Compatible    | Tested with chart version 3.9.0 and LR version 1.47.1-release.d4424d8dee |
-| 4.14.42           | Compatible    | Tested with chart version 3.9.0 and LR version 1.47.1-release.d4424d8dee |
+| OpenShift Version | Compatibility | Comments |
+| ----------------- | ------------- | -------- |
+| 4.14              | Compatible    |          |
+| 4.15              | Compatible    |          |
+| 4.16              | Compatible    |          |
+| 4.17              | Compatible    |          |
 

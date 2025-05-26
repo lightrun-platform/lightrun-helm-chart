@@ -1,5 +1,5 @@
-
 # Lightrun Helm Chart
+
 The `lightrun` Helm chart provides a reliable and efficient way to deploy and manage Lightrun on Kubernetes. It includes all the essential components for a smooth setup and can scale seamlessly to support large deployments.
 ## Architecture Overview
 ### Diagram
@@ -28,62 +28,76 @@ For a **production-ready deployment**, refer to the [Step-by-Step Planning for P
 ### **Step-by-Step Planning for Production**
 
 To ensure a smooth and secure production deployment of Lightrun, follow these key planning steps:
+
 #### **1. Capacity Planning**
 
 - Assess expected resource usage (CPU, memory, storage) and plan for scalability.
     For more information, see [Capacity Planning](docs/installation/capacity_planning.md).
+    
 #### **2. Compatibility**
 
 - Review the Compatibility matrix for the supported tools.
-    For more information, see [Compatibility](docs/installation/compatibility_matrix.md).
+  For more information, see [Compatibility](docs/installation/compatibility_matrix.md).
+ 
 #### **3. Secrets**
 
 - Decide whether to use Helm-managed secrets or an external secrets manager.
     For more information, see [Secrets Management](docs/installation/secrets.md).
+    
 #### **4. Lightrun Certificate**
 
 - Plan how Lightrun certificate will be issued and managed for secure communications.
     For more information, see [Certificate](docs/installation/certificate.md).
+    
 #### **5. Database**
+    [More info on Compatibility](docs/installation/compatibility_matrix.md)
+    
+#### **4. System Configuration**
+
+- Obtain the system configuration file and signature from Lightrun.
+    [More info on System Configuration](docs/advanced/system_config.md)
+
+#### **6. Database**
 
 > [!TIP]
-> Use external database
+> Use external managed database
 
 - Choose a local or an external database.
     For more information, see [Database Setup](docs/components/database.md).
-
-#### **6. Router**
+    
+#### **7. Router**
 
 - Decide how external traffic will reach the Lightrun router (Ingress, Service, OpenShift Route).
     For more information, see [Router](docs/components/router/index.md).
 
-#### **7. Container Images Registry**
+#### **8. Container Images Registry**
 
 - Choose where to store and manage container images (e.g., private registry, Docker Hub, Azure Container Registry, AWS ECR).
     For more information, see [Container Image Registry](docs/installation/container_image_registry.md).
 
-#### **8. Redis**
+#### **9. Redis**
+
 > [!TIP] 
-> Use external redis
+> Use external managed redis
 - Determine if Redis will be local or external.
     For more information, see [Redis Setup](docs/components/redis.md).
 
-#### **9. [Optional] RabbitMQ**
+#### **10. [Optional] RabbitMQ**
 
 - Determine if RabbitMQ is needed for sending telemetry to Lightrun.
     For more information, see [RabbitMQ](docs/components/rabbitmq.md).
 
-#### **10. [Optional] Network Policy**
+#### **11. [Optional] Network Policy**
 
 - Establish network policies to restrict access between services and prevent unauthorized communication.
     For more information, see [Network Policy](docs/advanced/network_policy.md).
 
-#### **11. [Optional} Internal TLS Communication**
+#### **12. [Optional} Internal TLS Communication**
 
 - Decide whether internal TLS is necessary for secure component communication.
     For more information, see [Internal TLS](docs/advanced/internal_tls.md).
 
-#### **12. Choose Your Deployment Option**
+#### **13. Choose Your Deployment Option**
 
 Decide where to run your Kubernetes cluster based on your infrastructure needs. Consider whether you’ll deploy all services locally (including RabbitMQ, Redis, and MySQL) or use managed cloud services.
 ##### **Supported Kubernetes Platforms**
@@ -94,9 +108,8 @@ Select your preferred cloud provider for deployment:
 - **[Amazon EKS](docs/installation/cloud/eks.md)**
 - **[Google Kubernetes Engine (GKE)](docs/installation/cloud/gke.md)**
 - **[OpenShift](docs/installation/cloud/openshift.md)**
-## Known Issues and Limitations
 
-Review the [Known Limitations](docs/limitations.md) before deployment.
+## Known Issues and Limitations
 
 ## Release Notes
 

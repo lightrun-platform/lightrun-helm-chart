@@ -1,0 +1,8 @@
+{{- if and .Values.general.system_config.content .Values.general.system_config.signature }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "lightrun.fullname" . }}-system-config
+data:
+  system_config.json: {{ .Values.general.system_config.content | b64dec | quote }}
+{{- end }}

@@ -148,10 +148,10 @@ Container SecurityContext of lightrun keycloak
 {{/*
 helper that return the semver of `deplyoments.keycloak.image.tag`
 In case of invalid semver it return 1.38.0
-We then use the version to set Keycloak properties accordingly in file - templates/keycloak-deployment.yaml
+We then use the version to set Keycloak properties accordingly in file - templates/keycloak-statefulset.yaml
 We need this helper as Keycloak in version 25 onwards introduced hostname:v2 and we want to keep backwards compatability
 More info here - https://www.keycloak.org/docs/25.0.2/upgrading/#migrating-to-25-0-0
-Currently, here is what we do in file templates/keycloak-deployment.yaml:
+Currently, here is what we do in file templates/keycloak-statefulset.yaml:
             {{- $version := include "lightrun-keycloak.getParsedVersion" .Values.deployments.keycloak.image.tag -}}
             {{- if semverCompare ">=1.38.0" $version }}
             - name: KC_HOSTNAME
@@ -510,53 +510,6 @@ Usage:
 {{- end -}}
 
 
-
-{{/*
-################
-#### Nginx  ####
-################
-*/}}
-
-{{- define "nginx.name" -}}
-{{ include "lightrun.fullname" . }}-nginx
-{{- end -}}
-
-{{/*
-Create the name of the standalone nginx service account to use
-*/}}
-{{- define "nginx.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create -}}
-    {{ default (include "nginx.name" .) .Values.serviceAccount.name }}
-{{- else -}}
-    {{ default "default" .Values.serviceAccount.name }}
-{{- end -}}
-{{- end -}}
-
-{{- define "nginx.conf-cm.name" -}}
-{{ include "lightrun.fullname" . }}-nginx-conf
-{{- end -}}
-
-
-{{- define "nginx.containerSecurityContext" -}}
-{{/*Merge runAsUser to default SecurityContext*/}}
-{{- $readOnlyRootFilesystem := dict "readOnlyRootFilesystem" (.Values.general.readOnlyRootFilesystem) -}}
-{{- $baseSecurityContext := include "baseSecurityContext" . | fromYaml -}}
-{{- $localSecurityContext := mustMerge $baseSecurityContext $readOnlyRootFilesystem -}}
-{{/*If user provided values for containerSecurityContext, merge them with the baseSecurityContext*/}}
-{{/*Values passed by user will override defaults*/}}
-{{- if .Values.deployments.standalone_nginx.containerSecurityContext -}}
-{{- $mergedSecurityContext := mergeOverwrite $localSecurityContext (.Values.deployments.standalone_nginx.containerSecurityContext | default dict) -}}
-{{- $mergedSecurityContext | toYaml -}}
-{{- else if kindIs "invalid" .Values.deployments.standalone_nginx.containerSecurityContext -}}
-{{ default dict | toYaml -}}
-{{- else -}}
-{{/*use default values from baseSecurityContext*/}}
-{{- $localSecurityContext | toYaml -}}
-{{- end -}}
-{{- end -}}
-
-
-
 {{/*
 #####################
 ### JVM Heap size ###
@@ -582,35 +535,6 @@ Create the name of the standalone nginx service account to use
         {{- end }}
     {{- end }}
 {{- end }}
-
-
-{{/*
-################
-### Ingress ####
-################
-*/}}
-
-{{- define "ingress.keycloak.name" -}}
-{{ include "lightrun.fullname" . }}-keycloak-admin
-{{- end -}}
-
-{{- define "ingress.agents.name" -}}
-{{ include "lightrun.fullname" . }}-agents
-{{- end -}}
-
-{{- define "ingress.clients.name" -}}
-{{ include "lightrun.fullname" . }}-clients
-{{- end -}}
-
-{{- define "ingress.metrics.name" -}}
-{{ include "lightrun.fullname" . }}-metrics
-{{- end -}}
-
-{{- define "lightrun-ingress.name" -}}
-{{ include "lightrun.fullname" . }}-ingress
-{{- end -}}
-
-
 
 
 {{/*
@@ -703,4 +627,104 @@ Container SecurityContext of lightrun artifacts
 {{- end -}}
 {{- end -}}
 
+{{/*
+Get queue name by prefix from the queue_names list.
 
+Parameters:
+- prefix: The prefix to match against queue names
+- Values: The chart values context
+
+Returns:
+- The first queue name that matches the prefix
+- Fails if no matching queue is found
+*/}}
+{{- define "lightrun-mq.getQueueNameByPrefix" -}}
+{{- $queue_names := .Values.general.mq.queue_names | default (list .Values.general.mq.queue_name) }}
+{{- if not $queue_names }}
+{{- fail "No queue names defined in general.mq.queue_names or general.mq.queue_name" }}
+{{- end }}
+{{- $prefix := .prefix | default "" | lower }}
+{{- $matching_queue := "" }}
+{{- range $queue_names }}
+{{- if and . (hasPrefix $prefix (. | lower)) }}
+{{- $matching_queue = . }}
+{{- break }}
+{{- end }}
+{{- end }}
+{{- if eq $matching_queue "" }}
+{{- fail (printf "No queue found with prefix '%s' in queue_names list" $prefix) }}
+{{- end }}
+{{- $matching_queue }}
+{{- end }}
+
+{{/*
+Get encryption key for Lightrun deployment. Handles existing keys, random generation, or user-provided values.
+*/}}
+{{- define "secrets.encryption-key" -}}
+    {{- if .Values.general.deploy_secrets.enabled }}
+        {{- if (not .Values.secrets.keysEncryption.userEncryptionKey) }}
+            {{- $secretObj := (lookup "v1" "Secret" .Release.Namespace (include "secrets.backend.name" .)) }}
+            {{/* Case 1: take existing generated key from secret */}}
+            {{- if and $secretObj (hasKey $secretObj.data ( include "secrets.encryption-key-name" . ) ) }}
+                {{- index $secretObj.data ( include "secrets.encryption-key-name" . ) | b64dec }}
+            {{/* Case 2: generate random encryption key */}}
+            {{- else }}
+                {{- randBytes 32 }}
+            {{- end }}
+        {{/* Case 3: take user provided encryption key from values */}}
+        {{- else }}
+            {{- .Values.secrets.keysEncryption.userEncryptionKey }}
+        {{- end }}
+    {{- end }}
+{{- end }}
+
+{{- define "secrets.encryption-key-name" -}}
+    {{- $rotateKey := .Values.secrets.keysEncryption.rotateKey }}
+    {{- $defaultKey := "encryption-key-0" }}
+    {{- $keyPrefix := "encryption-key-" }}
+    {{- $secret := (lookup "v1" "Secret" .Release.Namespace (include "secrets.backend.name" .)) }}
+
+    {{- $maxIndex := -1 }}
+    {{- if $secret }}
+        {{- range $k, $ := $secret.data }}
+            {{- if hasPrefix $keyPrefix $k }}
+                {{- $suffix := trimPrefix $keyPrefix $k }}
+                {{- $num := int $suffix }}
+                {{- if gt $num $maxIndex }}
+                    {{- $maxIndex = $num }}
+                {{- end }}
+            {{- end }}
+        {{- end }}
+    {{- end }}
+
+    {{- if eq $maxIndex -1 }}
+        {{- $defaultKey }}
+    {{- else if $rotateKey }}
+        {{- printf "encryption-key-%d" (add1 $maxIndex) }}
+    {{- else }}
+        {{- printf "encryption-key-%d" $maxIndex }}
+    {{- end }}
+{{- end }}
+
+{{/* Helper function to render encryption key items */}}
+{{- define "encryption.key.items" -}}
+{{- $secret := (lookup "v1" "Secret" .Release.Namespace (include "secrets.backend.name" .)) -}}
+{{- $hasEncryptionKeys := false -}}
+{{- if $secret -}}
+{{ range $key, $value := $secret.data }}
+{{ if hasPrefix "encryption-key-" $key }}
+{{- $hasEncryptionKeys = true }}
+- key: {{ $key }}
+  path: {{ $key }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{ if not $hasEncryptionKeys }}
+- key: encryption-key-0
+  path: encryption-key-0
+{{- end }}
+{{ if .Values.secrets.keysEncryption.rotateKey }}
+- key: {{ include "secrets.encryption-key-name" . }}
+  path: {{ include "secrets.encryption-key-name" . }}
+{{- end }}
+{{- end }}

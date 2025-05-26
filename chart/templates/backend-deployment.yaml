@@ -60,6 +60,18 @@ spec:
       {{- end }}
       serviceAccountName: {{ template "lightrun-be.serviceAccountName" . }}
       volumes:
+        {{- if and .Values.general.system_config.content .Values.general.system_config.signature }}
+        - name: system-config
+          configMap:
+            name: {{ include "lightrun.fullname" . }}-system-config
+        {{- end }}
+        - name: encryption-keys
+          secret: 
+            secretName: {{ include "secrets.backend.name" . }}
+            optional: true
+            items: 
+              # Only select items that start with encryption-key-
+              {{- include "encryption.key.items" . | nindent 18 }}
       {{- include "lightrun-backend.volumes.asyncProfiler" . | nindent 8 }}
       {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name  }}  
         - name: ca-cert
@@ -123,6 +135,15 @@ spec:
             "/usr/src/lightrun/{{ .Values.deployments.backend.jar_name }}"
           ]
           volumeMounts:
+          {{- if and .Values.general.system_config.content .Values.general.system_config.signature }}
+            - name: system-config
+              mountPath: {{ .Values.general.system_config.file_path }}
+              subPath: {{ base .Values.general.system_config.file_path }}
+              readOnly: true
+          {{- end }}
+            - name: encryption-keys
+              mountPath: /encryption-keys
+              readOnly: true
           {{- include "lightrun-backend.volumeMounts.asyncProfiler" . | nindent 12 }}
             - name: jcache-config
               mountPath: "/jcache-config"
@@ -183,6 +204,14 @@ spec:
             - secretRef:
                 name: {{ include "secrets.backend.name" . }}
           env:
+          {{- if and .Values.general.system_config.content .Values.general.system_config.signature }}
+            - name: LIGHTRUN_SYSTEM_CONFIG_JSON_FILE_PATH
+              value: {{ .Values.general.system_config.file_path }}
+            - name: LIGHTRUN_SYSTEM_CONFIG_JSON_SIGNATURE
+              value: {{ .Values.general.system_config.signature }}
+          {{- end }}
+            - name: SERVER_SECURITY_ENCRYPTION-KEYS-PATH
+              value: file:/encryption-keys
             - name: LIGHTRUN_HOSTNAME
               value: {{ .Values.general.name }}
             - name: POD_NAME
@@ -303,7 +332,9 @@ spec:
             - name: SPRING_RABBITMQ_PORT
               value: {{ .Values.general.mq.port | quote }}
             - name: TRACKING_MIXPANEL_QUEUE_NAME
-              value: {{ .Values.general.mq.queue_name | quote }}
+              value: {{ include "lightrun-mq.getQueueNameByPrefix" (dict "prefix" "mixpanel-events" "Values" .Values) | quote }}
+            - name: KEYCLOAK_QUEUE_NAME
+              value: {{ include "lightrun-mq.getQueueNameByPrefix" (dict "prefix" "keycloak-events" "Values" .Values) | quote }}
             {{- end }}
             {{- if .Values.deployments.backend.extraEnvs }}
               {{- toYaml .Values.deployments.backend.extraEnvs | nindent 12 }}
@@ -322,7 +353,7 @@ spec:
               value: "{{ include "http.scheme" . }}://{{ include "data_streamer.name" . }}:8080/events/post"
             {{- end }}
 
-      # waiting for mysql and keycloak initialization
+      # waiting for mysql, rabbitmq and keycloak initialization
       initContainers:
       {{- include "lightrun-backend.initContainer.download-async-profiler" . | nindent 6 }}
 
@@ -345,39 +376,7 @@ spec:
             value: {{ include "http.scheme" . }}://{{ include "lightrun-keycloak.name" . }}:9000/auth/health/started {{ if .Values.general.internal_tls.enabled }}--no-check-certificate{{ end }}
 
       {{ if .Values.general.mq.enabled }}
-      - name: wait-for-rabbitmq
-        image: "{{ .Values.deployments.backend.initContainers.wait_for_rabbitmq.image.repository }}:{{ .Values.deployments.backend.initContainers.wait_for_rabbitmq.image.tag }}"
-        imagePullPolicy: {{ .Values.deployments.backend.initContainers.wait_for_rabbitmq.image.pullPolicy }}
-        securityContext: {{ include "lightrun-be.containerSecurityContext" . | indent 10 }}
-        command:
-          - sh
-          - /scripts/wait-for-200.sh
-        resources:
-          limits:
-            memory: "100Mi"
-            cpu: "100m"
-          requests:
-            memory: "100Mi"
-            cpu: "100m"
-        env:
-          - name: MY_POD_NAMESPACE
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.namespace
-          - name: AUTH_USER
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "secrets.backend.name" . }}
-                key: SPRING_RABBITMQ_USERNAME
-          - name: AUTH_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "secrets.backend.name" . }}
-                key: SPRING_RABBITMQ_PASSWORD
-          - name: RABBITMQ_TCP_PORT
-            value: "15672"
-          - name: URL
-            value: {{ include "http.scheme" . }}://{{ include "lightrun-mq.endpoint" . }}:$(RABBITMQ_TCP_PORT)/api/overview {{ if .Values.general.internal_tls.enabled }}--no-check-certificate{{ end }}
+      {{- include "lightrun-mq.initContainer.wait-for-rabbitmq" (merge (dict "imageConfig" .Values.deployments.backend.initContainers.wait_for_rabbitmq "securityContext" "lightrun-be.containerSecurityContext") .) | nindent 6 }}
       {{- end }}
       - name: p12-creator
         image: "{{ .Values.deployments.backend.initContainers.p12_creator.image.repository }}:{{ .Values.deployments.backend.initContainers.p12_creator.image.tag }}"

@@ -4,6 +4,8 @@ This page configures **RabbitMQ** as the message queue. You can either:
 - Deploy a **local RabbitMQ instance** inside the cluster (`general.mq.local: true`) 
 - Connect to an **external RabbitMQ instance** (`general.mq.local: false`).
 
+> [!NOTE]
+> When using an external RabbitMQ instance, we support RabbitMQ versions 3.12.x.
 
 ### **Basic Configuration**
 | Property                                             | Description                                                                                               |

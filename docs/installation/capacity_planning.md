@@ -32,3 +32,6 @@ The following table outlines resource allocations based on different agent count
 | **20K**  | 2 (0.3 vCPU, 256Mb) | 2 (0.1 vCPU, 128Mb) | 7 (3 vCPU, 7GB)  | 2 (1 vCPU, 2GB) | 2 (0.1 vCPU, 128MB) | 3 (0.5 vCPU, 1GB) | 9 (4 vCPU, 8GB, 10 GB disk)        | db.m7g.xlarge (AWS), Standard_D4as_v5 (Azure), n2-standard-4 (GCP)  | cache.m7g.large (AWS), Standard_D2s_v3 (Azure), n2-standard-2 (GCP) |
 | **25K**  | 2 (0.3 vCPU, 256Mb) | 2 (0.1 vCPU, 128Mb) | 9 (3 vCPU, 7GB)  | 2 (1 vCPU, 2GB) | 2 (0.1 vCPU, 128MB) | 3 (0.5 vCPU, 1GB) | 11 (4 vCPU, 8GB, 10 GB disk)       | db.m7g.2xlarge (AWS), Standard_D8as_v5 (Azure), n2-standard-8 (GCP) | cache.m7g.large (AWS), Standard_D2s_v3 (Azure), n2-standard-2 (GCP) |
 | **30K**  | 2 (0.3 vCPU, 256Mb) | 2 (0.1 vCPU, 128Mb) | 10 (3 vCPU, 7GB) | 2 (1 vCPU, 2GB) | 2 (0.1 vCPU, 128MB) | 3 (0.5 vCPU, 1GB) | 12 (4 vCPU, 8GB, 10 GB disk)       | db.m7g.2xlarge (AWS), Standard_D8as_v5 (Azure), n2-standard-8 (GCP) | cache.m7g.large (AWS), Standard_D2s_v3 (Azure), n2-standard-2 (GCP) |
+
+Capacity planning should be done in coordination with Lightrun Support Engineers.
+

@@ -57,7 +57,7 @@ secrets:
     
 - **Docker images** are pulled from the Lightrun private repository on DockerHub (`lightruncom`).
     
-- **Router** is exposed without SSL, relying on an Nginx ingress controller for SSL termination.
+- **Router** is exposed without SSL, relying on an ingress controller (such as Nginx) for SSL termination.
     
 
 For a self-signed certificate, see the **"Generating a Self-Signed TLS Certificate"** section in the [Certificate Overview](docs/installation/certificate).

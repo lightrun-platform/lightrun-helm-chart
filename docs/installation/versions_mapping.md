@@ -1,6 +1,12 @@
 
 | Chart version | Lightrun version          |
 |---------------|---------------------------|
+| 3.17.0        | 1.58.1-release.a4f3b6a620 |
+| 3.16.3        | 1.57.3-release.9168ae5ade |
+| 3.16.2        | 1.57.3-release.9168ae5ade |
+| 3.16.1        | 1.57.2-release.b6e255c052 |
+| 3.16.0        | 1.57.1-release.e5e0c8e7c4 |
+| 3.15.1        | 1.56.2-release.36f0cd23dc |
 | 3.15.0        | 1.56.1-release.2b70fb9fe6 |
 | 3.14.0        | 1.55.1-release.6f1f87ac95 |
 | 3.13.1        | 1.54.2-release.c4f1e2daa7 |
@@ -11,6 +17,7 @@
 | 3.10.2        | 1.51.3-release.840a48f088 |
 | 3.10.1        | 1.51.0-release.05d1da7dcc |
 | 3.10.0        | 1.51.0-release.05d1da7dcc |
+| 3.9.13        | 1.50.7-release.846df2025e |
 | 3.9.12        | 1.50.6-release.09f2987522 |
 | 3.9.11        | 1.50.5-release.946fe1c442 |
 | 3.9.10        | 1.50.5-release.946fe1c442 |

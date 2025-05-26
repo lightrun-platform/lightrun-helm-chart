@@ -1,6 +1,6 @@
 {{- $version := include "lightrun-keycloak.getSemanticVersion" .Values.deployments.keycloak.image.tag -}}
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ include "lightrun-keycloak.name" . }}
   labels:
@@ -10,8 +10,9 @@ metadata:
     {{ toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  strategy:
-    type: {{ .Values.deployments.keycloak.rollout_strategy }}
+  serviceName: {{ include "lightrun-keycloak.name" . }}
+  updateStrategy: 
+    type: RollingUpdate
   # For clusters with more than 3 pods, consider changing the number of "owner nodes" as described in
   # https://www.keycloak.org/server/caching#_configuring_caches -> Configuring caches for availability
   replicas: {{ .Values.deployments.keycloak.replicas }}
@@ -170,6 +171,24 @@ spec:
               port: 9080
           {{- end }}
           env:
+            {{- if .Values.general.mq.enabled }}
+            - name: RABBITMQ_HOST
+              value: {{ include "lightrun-mq.endpoint" . }}
+            - name: RABBITMQ_PORT
+              value: {{ .Values.general.mq.port | quote }}
+            - name: KEYCLOAK_QUEUE_NAME
+              value: {{ include "lightrun-mq.getQueueNameByPrefix" (dict "prefix" "keycloak-events" "Values" .Values) | quote }}
+            - name: RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.backend.name" . }}
+                  key: SPRING_RABBITMQ_USERNAME
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.backend.name" . }}
+                  key: SPRING_RABBITMQ_PASSWORD
+            {{- end }}          
             - name: INFO_DEPLOYMENT
             {{ if eq .Values.general.deployment_type "saas" }}
               value: "SaaS"
@@ -293,6 +312,9 @@ spec:
     }}
       initContainers:
       {{- include "lightrun-keycloak.initContainer.download-async-profiler" . | nindent 6 }}
+      {{ if .Values.general.mq.enabled }}
+      {{- include "lightrun-mq.initContainer.wait-for-rabbitmq" (merge (dict "imageConfig" .Values.deployments.keycloak.initContainers.wait_for_rabbitmq "securityContext" "lightrun-keycloak.containerSecurityContext") .) | nindent 6 }}
+      {{- end }}      
     {{- end -}}
     {{- if .Values.general.readOnlyRootFilesystem }}
         {{- include "lightrun-keycloak.initContainer.read-only-rootfs" . }}
