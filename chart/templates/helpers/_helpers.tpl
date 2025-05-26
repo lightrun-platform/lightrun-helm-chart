@@ -148,10 +148,10 @@ Container SecurityContext of lightrun keycloak
 {{/*
 helper that return the semver of `deplyoments.keycloak.image.tag`
 In case of invalid semver it return 1.38.0
-We then use the version to set Keycloak properties accordingly in file - templates/keycloak-deployment.yaml
+We then use the version to set Keycloak properties accordingly in file - templates/keycloak-statefulset.yaml
 We need this helper as Keycloak in version 25 onwards introduced hostname:v2 and we want to keep backwards compatability
 More info here - https://www.keycloak.org/docs/25.0.2/upgrading/#migrating-to-25-0-0
-Currently, here is what we do in file templates/keycloak-deployment.yaml:
+Currently, here is what we do in file templates/keycloak-statefulset.yaml:
             {{- $version := include "lightrun-keycloak.getParsedVersion" .Values.deployments.keycloak.image.tag -}}
             {{- if semverCompare ">=1.38.0" $version }}
             - name: KC_HOSTNAME

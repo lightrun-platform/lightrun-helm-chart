@@ -639,7 +639,6 @@ deployments:
     # https://www.keycloak.org/server/caching#_configuring_caches -> Configuring caches for availability
     clusterMode: true
     replicas: 1
-    rollout_strategy: "Recreate"
     image:
       repository: lightruncom/keycloak
       tag: "1.57.3-release.9168ae5ade"
