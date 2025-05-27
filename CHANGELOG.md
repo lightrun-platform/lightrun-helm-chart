@@ -1,4 +1,95 @@
 
+<a name="v3.18.0"></a>
+## [v3.18.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.17.0...v3.18.0) - 2025-05-27
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.59.0-release.50ad36cad6    |
+| backend       | 1.59.0-release.50ad36cad6    |
+| data_streamer | 4.54.1-alpine-3.21.3-r0.lr-0 |
+| frontend      | 1.59.0-release.50ad36cad6    |
+| keycloak      | 1.59.0-release.50ad36cad6    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 3.12.14-alpine               |
+| redis         | 7.2.8-alpine-3.21.3-r0.lr-0  |
+| router        | 1.26.3-alpine-3.21.3-r0.lr-0 |
+
+
+
+
+
+
+ 
+ 
+
+
+### Changed (2 changes)
+
+- [bump-redis-to-7.2.8-alpine-3.21.3-r0.lr-0 (#77) (#79)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/c8c3d80)
+ 
+
+- [encryption-key-logic-to-be-optional-in-all-cases … (#66)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/baa25c2)
+ 
+ 
+ 
+
+
+### Fixed (1 change)
+
+- [not-create-system-configuration-if-content-and-signature-empty](https://github.com/lightrun-platform/lightrun-helm-chart/commit/cafa544)
+ 
+ 
+ 
+
+
+### Added (5 changes)
+
+- [system-config (#70)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/4c7fe5e)
+
+
+  Add System Configuration feature
+  
+  Introduce system configuration support for advanced Lightrun server settings. The feature allows providing a signed JSON config file through ConfigMap. Documentation available at docs/advanced/system_config.md
+ 
+
+- [openai-admin-api-key-support (#67) (#68)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/7127c0d)
+ 
+
+- [keycloak-queue-name-to-backend-deployment-for-keycloak-events-feature (#62)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/c8d0f51)
+ 
+
+- [support-for-user-key-encryption (#58)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/a42004d)
+ 
+
+- [missing-params-for-supporting-keycloak-events-queue (#59)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/7c5764a)
+ 
+ 
+ 
+
+
+### Removed (1 change)
+
+- [hubspot-integration (#63)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/4a12292)
+ 
+ 
+ 
+
+
+### Deprecated (1 change)
+
+- [standalone-nginx-and-old-approach-of-ingress-per-svc (#60)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2d9d378)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.17.0"></a>
 ## [v3.17.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.16.3...v3.17.0) - 2025-05-11
 
