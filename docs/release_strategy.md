@@ -1,4 +1,6 @@
-This document outlines the versioning strategy for major, minor, and patch releases of the chart and Lightrun, detailing how and when version numbers should be updated.
+# Lightrun Versioning Strategy
+
+This page outlines the versioning strategy for major, minor, and patch releases of the chart and Lightrun, detailing how and when version numbers should be updated.
 
 ## Major Releases
 

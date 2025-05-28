@@ -1,4 +1,4 @@
-### Overview
+# Frontend Service
 
 The frontend service provides the user interface and interacts with backend services. It is deployed as a Kubernetes pod and can be configured for scaling, resource allocation, and health monitoring.
 configuration is defined under **`deployments.frontend`** in the **`values.yaml`**

@@ -1,3 +1,5 @@
+# Lightrun Deployment Using HelM Quick Start Guide
+
 This guide walks you through deploying Lightrun using Helm with a minimal configuration.
 
 ## Step 1: Pull the Helm Chart
@@ -6,7 +8,7 @@ Download the latest Lightrun Helm chart:
 ```bash
 helm pull oci://registry-1.docker.io/lightruncom/lightrun-helm-chart --version <VERSION> --destination ./
 ```
-Replace `<VERSION>` with the desired chart version. This will save the Helm chart as a `.tgz` file in the current directory. refer to the [Versions Mapping](../installation/versions_mapping.md) to find latest version.
+Replace `<VERSION>` with the desired chart version. This will save the Helm chart as a `.tgz` file in the current directory. Refer to the [Versions Mapping](../installation/versions_mapping.md) to find the latest version.
 
 ## Step 2: Configure `values.yaml`
 
@@ -58,7 +60,7 @@ secrets:
 - **Router** is exposed without SSL, relying on an ingress controller (such as Nginx) for SSL termination.
     
 
-For a self-signed certificate, see **"Generating a Self-Signed TLS Certificate"** section in the [Certificate Overview](docs/installation/certificate)
+For a self-signed certificate, see the **"Generating a Self-Signed TLS Certificate"** section in the [Certificate Overview](docs/installation/certificate).
 
 ## Step 3: Install Lightrun
 

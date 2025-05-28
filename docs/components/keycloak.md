@@ -1,7 +1,8 @@
-### Overview
+# Keycloak Service
 
-The keycloak service provides the authentication. It is deployed as a Kubernetes StatefulSet and can be configured for scaling, resource allocation, health monitoring, and clustering.
-configuration is defined under **`deployments.keycloak`** in the **`values.yaml`**
+The Keycloak service provides authentication. It is deployed as a Kubernetes pod and can be configured for scaling, resource allocation, and health monitoring.
+Configuration is defined under **`deployments.keycloak`** in the **`values.yaml`** file.
+
 ### Configuration Options
 
 #### General Settings
@@ -11,11 +12,11 @@ configuration is defined under **`deployments.keycloak`** in the **`values.yaml`
   clusterMode: true 
 ```
 
-#### Horizontal Pod Autoscaling (HPA) And Replicas
+#### Horizontal Pod Autoscaling (HPA) and Replicas
 
 ```yaml
   hpa:
-    enabled: false          # Enables or disables HPA
+    enabled: false         # Enables or disables HPA
     cpu: 70                # Target CPU utilization percentage
     maxReplicas: 5         # Maximum number of replicas
   replicas: 1              # Default number of replicas
@@ -82,7 +83,7 @@ initContainers:
       tag: latest
       pullPolicy: ""
 ```
-> **Note:** The `cluster_cert` init container is used only with internal_tls and keycloak cluster mode.
+> **Note:** The `cluster_cert` init container is used only with `internal_tls` and keycloak cluster mode.
 
 #### Pod Disruption Budget & Scheduling
 

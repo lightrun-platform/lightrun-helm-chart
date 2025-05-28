@@ -1,9 +1,9 @@
-## **Overview**
+# Managing the TLS Certificate (Mandatory)
 
 Lightrun requires a **mandatory TLS certificate** for securing:
 
-1. **Backend Service** – This is crucial for **certificate pinning**, ensuring secure communication between the Lightrun server and IDE plugins or agents.
-2. **Lightrun Router** – If **SSL termination** happens at the router level, this certificate is required.
+- **Backend Service**: This is crucial for **certificate pinning**, ensuring secure communication between the Lightrun server and IDE plugins or agents.
+- **Lightrun Router**: If **SSL termination** happens at the router level, this certificate is required.
 
 > [!NOTE] 
 > Certificate requirements:
@@ -11,11 +11,11 @@ Lightrun requires a **mandatory TLS certificate** for securing:
 > - **Format:** PKCS#1 or PKCS#8
 
 > [!IMPORTANT]
-> Unlike Internal TLS (`internal_tls`),  which is an optional feature that encrypts internal communication between Lightrun services. **This TLS certificate is mandatory** for backend security and router-level SSL termination.
+> Unlike Internal TLS (`internal_tls`),  which is an optional feature that encrypts internal communication between Lightrun services, **This TLS certificate is mandatory** for backend security and router-level SSL termination.
 
 ## **Providing Certificate**
 
-Lightrun allows certificate to be provided in two ways:
+Lightrun allows the certificate to be provided in two ways:
 
 ### **1️) Using an Existing Kubernetes Secret**
 
@@ -64,12 +64,15 @@ cat my-cert.key | base64
 ```
 **⚠️ Important Notes:**
 
-- If using a **certificate chain**, encode the **full chain** (certificate → intermediate → root) instead of just the certificate.
+- When using a **certificate chain**, encode the **full chain** (certificate → intermediate → root) instead of just the certificate.
 - Encoding a misordered chain may result in TLS errors.
 - The **Base64-encoded values must be placed in `values.yaml`** under `certificate.tls`.
 ## **Generating a Self-Signed TLS Certificate (Optional)**
 
-If you don’t already have a TLS certificate, you can generate a self‑signed certificate for testing or development purposes. **Note:** Lightrun requires a TLS certificate for secure backend and router communication. While a self‑signed certificate works for non‑production use, for production environments, you should use a certificate issued by a trusted CA.
+If you don’t already have a TLS certificate, you can generate a self‑signed certificate for testing or development purposes. 
+
+> [!NOTE]
+Lightrun requires a TLS certificate for secure backend and router communication. While a self‑signed certificate works for non‑production use, for production environments, you should use a certificate issued by a trusted CA.
 
 ### **Using OpenSSL**
 
@@ -82,8 +85,8 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 ```
 This command creates two files:
 
-- **`my-tls.key`** – Your private key.
-- **`my-tls.crt`** – Your self‑signed certificate.
+- **`my-tls.key`**:Your private key.
+- **`my-tls.crt`**: Your self‑signed certificate.
 
 ## **Example Deployment Configuration**
 

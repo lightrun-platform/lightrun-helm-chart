@@ -1,11 +1,11 @@
-### Overview
+# Internal TLS
 
 By default, internal communication between pods within the cluster is not encrypted, as SSL operations can be computationally expensive. Typically, SSL termination occurs at the client-facing load balancer. However, certain security policies may require SSL encryption for all internal communications. While service mesh proxies often handle this requirement, there are cases where encryption must be enforced at the pod level.
 
 > [!WARNING]
 > Enabling internal TLS increases resource consumption, as additional computational power is required for SSL operations.
 
-### Enabling Internal TLS
+### Enable Internal TLS
 
 To activate internal TLS, set the `enabled` flag to `true`:
 
@@ -15,7 +15,7 @@ general:
     enabled: true
 ```
 
-### Providing TLS Certificates
+### Provide TLS Certificates
 
 There are two ways to supply certificates to pods:
 
@@ -47,7 +47,7 @@ This prevents secrets from being recreated during `helm upgrade` operations.
 
 If you prefer to use externally generated certificates, specify the Kubernetes secret names containing them. Each secret must include the `tls.crt` and `tls.key` keys.
 
-example of a secret:
+Example of a secret:
 
 ```yaml
 apiVersion: v1

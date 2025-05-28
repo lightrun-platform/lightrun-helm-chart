@@ -1,4 +1,6 @@
-The **network policy** controls how pods communicate with each other and external networks. It defines ingress (incoming) and egress (outgoing) rules to regulate traffic based on namespaces, pods, IP addresses, and ports
+# Network Policy
+
+The **network policy** controls how pods communicate with each other and external networks. It defines ingress (incoming) and egress (outgoing) rules to regulate traffic based on namespaces, pods, IP addresses, and ports.
 
 ## Enabling Network Policies
 
@@ -21,14 +23,14 @@ general:
 | Defined `networkPolicy.egress` rules                 | The service can **only access allowed destinations**. |
 ## Ingress Rules (Incoming Traffic)
 Defines which external sources can access the pods.
-- **`networkPolicy.ingress.enabled: false`** → No restrictions (all traffic allowed).
-- **`networkPolicy.ingress.enabled: true` but no rules defined** → **All incoming traffic is denied.**
+- **`networkPolicy.ingress.enabled: false`**: No restrictions (all traffic allowed).
+- **`networkPolicy.ingress.enabled: true` but no rules defined**: **All incoming traffic is denied.**
 - To allow traffic, define one or more of:
-    - **`namespacesSelector`** → Allow traffic from specific namespaces.
-    - **`ipBlock`** → Allow traffic from specific IP ranges.
-    - **`podSelector`** → Allow traffic from specific pods in the same namespace.
-    - **`namespacePodSelector`** → Allow traffic from specific pods in specific namespaces.
-    - **`ports`** → Allow traffic only on specific protocols and ports.
+    - **`namespacesSelector`**: Allow traffic from specific namespaces.
+    - **`ipBlock`**: Allow traffic from specific IP ranges.
+    - **`podSelector`**: Allow traffic from specific pods in the same namespace.
+    - **`namespacePodSelector`**: Allow traffic from specific pods in specific namespaces.
+    - **`ports`**: Allow traffic only on specific protocols and ports.
 ```yaml
 general:
   networkPolicy:
@@ -53,14 +55,14 @@ general:
 ## Egress Rules (Outgoing Traffic)
 Defines where pods can send outbound traffic.
 
-- **`networkPolicy.egress.enabled: false`** → No restrictions (all traffic allowed).
-- **`networkPolicy.egress.enabled: true` but no rules defined** → **All outgoing traffic is denied.**
+- **`networkPolicy.egress.enabled: false`**: No restrictions (all traffic allowed).
+- **`networkPolicy.egress.enabled: true` but no rules defined**: **All outgoing traffic is denied.**
 - To allow traffic, define one or more of:
-    - **`namespacesSelector`** → Allow traffic to specific namespaces.
-    - **`ipBlock`** → Allow traffic to specific IP ranges.
-    - **`podSelector`** → Allow traffic to specific pods in the same namespace.
-    - **`namespacePodSelector`** → Allow traffic to specific pods in specific namespaces.
-    - **`ports`** → Allow traffic only on specific protocols and ports.
+    - **`namespacesSelector`**: Allow traffic to specific namespaces.
+    - **`ipBlock`**: Allow traffic to specific IP ranges.
+    - **`podSelector`**: Allow traffic to specific pods in the same namespace.
+    - **`namespacePodSelector`**: Allow traffic to specific pods in specific namespaces.
+    - **`ports`**: Allow traffic only on specific protocols and ports.
 ```yaml
 general:
   networkPolicy:
