@@ -1,0 +1,26 @@
+name: Validate Helm Chart Templates
+
+on:
+  pull_request:
+    paths:
+      - 'chart/**'
+      - '.github/workflows/helm-template-validate.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: validate-helm-templates
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.13.3
+
+      - name: Validate Helm Chart Templates
+        run: |
+          cd chart
+          helm template . > /dev/null
+          echo "Helm chart templates are valid" 
