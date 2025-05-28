@@ -1,4 +1,49 @@
 
+<a name="v3.16.4"></a>
+## [v3.16.4](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.16.3...v3.16.4) - 2025-05-28
+
+
+
+### Versions
+
+| Image            | Tag                          |
+|------------------|------------------------------|
+| artifacts        | 1.57.4-release.55788b7735    |
+| backend          | 1.57.4-release.55788b7735    |
+| data_streamer    | 4.55.0-alpine-3.21.3-r0.lr-0 |
+| frontend         | 1.57.4-release.55788b7735    |
+| keycloak         | 1.57.4-release.55788b7735    |
+| mysql            | 8.0.38                       |
+| rabbitmq         | 3.12.14-alpine               |
+| redis            | 7.2.8-alpine-3.21.3-r0.lr-0  |
+| router           | 1.26.3-alpine-3.21.3-r0.lr-0 |
+| standalone_nginx | stable-alpine-slim           |
+ 
+ 
+
+
+### Changed (2 changes)
+
+- [keycloak-switch-to-statefulset (#81)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/c9ce235)
+ 
+
+- [bump-redis-to-7.2.8-alpine-3.21.3-r0.lr-0 (#77) (#78)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/6c2f377)
+ 
+ 
+ 
+
+
+### Fixed (1 change)
+
+- [cves-in-data-streamer-by-bumping-version-to-4.55.0-cp (#76)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2999495)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.16.3"></a>
 ## [v3.16.3](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.16.2...v3.16.3) - 2025-05-19
 
