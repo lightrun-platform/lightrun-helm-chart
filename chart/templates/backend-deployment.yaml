@@ -64,6 +64,7 @@ spec:
         - name: system-config
           configMap:
             name: {{ include "lightrun.fullname" . }}-system-config
+        {{- end }}
       {{- include "lightrun-backend.volumes.asyncProfiler" . | nindent 8 }}
       {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name  }}  
         - name: ca-cert
@@ -132,6 +133,7 @@ spec:
               mountPath: {{ .Values.general.system_config.file_path }}
               subPath: {{ base .Values.general.system_config.file_path }}
               readOnly: true
+          {{- end }}
           {{- include "lightrun-backend.volumeMounts.asyncProfiler" . | nindent 12 }}
             - name: jcache-config
               mountPath: "/jcache-config"
@@ -197,6 +199,7 @@ spec:
               value: {{ .Values.general.system_config.file_path }}
             - name: LIGHTRUN_SYSTEM_CONFIG_JSON_SIGNATURE
               value: {{ .Values.general.system_config.signature }}
+          {{- end }}
             - name: LIGHTRUN_HOSTNAME
               value: {{ .Values.general.name }}
             - name: POD_NAME
