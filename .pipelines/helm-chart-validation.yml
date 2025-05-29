@@ -1,3 +1,4 @@
+name:  'Lightrun Helm Chart Sanity Validation'
 trigger: none
 
 pr:
@@ -194,18 +195,25 @@ steps:
   displayName: 'Run Chart Tests'
 
 - script: |
-    # Install lightrun system-diagnostics tool
+    # Install Lightrun system-diagnostics tool
     curl -sSL https://artifacts.lightrun.com/lightrun-diagnostics/releases/install.sh | bash
-    lightrun-diagnostics sysdump
-  displayName: 'Collect Debug Info'
-  condition: failed()
+
+    # Run the diagnostics tool and save output filename
+    output=$(lightrun-diagnostics sysdump | tee /dev/stderr)
+
+    # Extract the filename from the output (adjust if format changes)
+    filename=$(echo "$output" | grep -o 'lightrun-sysdump-[^ ]*.zip')
+
+    echo "##vso[task.setvariable variable=sysdumpFile]$filename"
+  displayName: 'Collect Lightrun Diagnostics Sysdump'
+
 
 # upload sysdump as artifact
 - task: PublishPipelineArtifact@1
   displayName: 'Publish Lightrun Diagnostics Sysdump'
   inputs:
-    targetPath: 'lightrun-sysdump-*.zip'
-    artifactName: 'lightrun-diagnostics-sysdump-$(BUILD_BUILDID)'
+    targetPath: '$(sysdumpFile)'
+    artifactName: 'lightrun-diagnostics-sysdump'
     publishLocation: 'pipeline'
 
 - script: |
