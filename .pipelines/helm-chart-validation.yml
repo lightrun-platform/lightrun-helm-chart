@@ -9,6 +9,8 @@ pr:
     include:
       - 'chart/**'
       - '.pipelines/helm-chart-validation.yml'
+pool:
+  name: 'Azure VMSS'
 
 variables:
   - group: lightrun-helm-chart-variables
@@ -195,16 +197,58 @@ steps:
   displayName: 'Run Chart Tests'
 
 - script: |
-    # Install Lightrun system-diagnostics tool
-    curl -sSL https://artifacts.internal.lightrun.com/lightrun-diagnostics/releases/install.sh | bash
-
-    # Run the diagnostics tool and save output filename
-    output=$(lightrun-diagnostics sysdump | tee /dev/stderr)
-
+    echo "Starting Lightrun diagnostics collection..."
+    
+    # Install Lightrun system-diagnostics tool with verbose output
+    echo "Downloading and installing Lightrun diagnostics tool..."
+    curl -L https://artifacts.internal.lightrun.com/lightrun-diagnostics/releases/install.sh | bash
+    
+    # Verify installation
+    echo "Verifying installation..."
+    which lightrun-diagnostics || echo "lightrun-diagnostics not found in PATH"
+    
+    echo "Running system diagnostics dump..."
+    # Run the diagnostics tool with explicit output handling
+    set -o pipefail
+    output=$(lightrun-diagnostics sysdump 2>&1 | tee /dev/stderr)
+    exit_code=$?
+    
+    echo "Diagnostics command exit code: $exit_code"
+    echo "Raw output: $output"
+    
+    if [ $exit_code -ne 0 ]; then
+      echo "Diagnostics command failed with exit code $exit_code"
+      exit $exit_code
+    fi
+    
     # Extract the filename from the output (adjust if format changes)
-    filename=$(echo "$output" | grep -o 'lightrun-sysdump-[^ ]*.zip')
-
+    filename=$(echo "$output" | grep -o 'lightrun-sysdump-[^ ]*.zip' | head -1)
+    
+    if [ -z "$filename" ]; then
+      echo "Failed to extract filename from output"
+      echo "Looking for any .zip files in current directory:"
+      ls -la *.zip 2>/dev/null || echo "No .zip files found"
+      # Try to find any sysdump files
+      filename=$(ls lightrun-sysdump-*.zip 2>/dev/null | head -1)
+      if [ -n "$filename" ]; then
+        echo "Found sysdump file: $filename"
+      else
+        echo "No sysdump files found"
+        exit 1
+      fi
+    fi
+    
+    echo "Setting sysdumpFile variable to: $filename"
     echo "##vso[task.setvariable variable=sysdumpFile]$filename"
+    
+    # Verify the file exists and show its size
+    if [ -f "$filename" ]; then
+      echo "Sysdump file created successfully: $filename"
+      ls -lh "$filename"
+    else
+      echo "ERROR: Sysdump file not found: $filename"
+      exit 1
+    fi
   displayName: 'Collect Lightrun Diagnostics Sysdump'
 
 
