@@ -18,8 +18,6 @@ variables:
     value: 'lightrun'
   - name: NAMESPACE
     value: 'lightrun'
-  - name: HELM_VERSION
-    value: '3.13.2'  # Specify a fixed version for stability
 
 steps:
 - script: |
@@ -132,11 +130,13 @@ steps:
     EOF
   displayName: 'Create Values File'
 
-- task: HelmInstaller@0
-  displayName: 'Install Helm'
-  inputs:
-    helmVersion: $(HELM_VERSION)
-    installKubectl: true
+- script: |
+    # Verify Helm is available and show version
+    helm version
+    
+    # Verify kubectl is available
+    kubectl version --client
+  displayName: 'Verify Tools'
 
 - script: |
     wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
@@ -196,7 +196,7 @@ steps:
 
 - script: |
     # Install Lightrun system-diagnostics tool
-    curl -sSL https://artifacts.lightrun.com/lightrun-diagnostics/releases/install.sh | bash
+    curl -sSL https://artifacts.internal.lightrun.com/lightrun-diagnostics/releases/install.sh | bash
 
     # Run the diagnostics tool and save output filename
     output=$(lightrun-diagnostics sysdump | tee /dev/stderr)
