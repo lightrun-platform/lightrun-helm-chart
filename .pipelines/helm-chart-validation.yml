@@ -21,12 +21,14 @@ variables:
 
 steps:
 - script: |
+    set -euo pipefail
     # Cleanup any existing k3d cluster
     k3d cluster delete chart-testing || true
   displayName: 'Cleanup Previous Cluster'
   continueOnError: true
 
 - script: |
+    set -euo pipefail
     # Install required tools
     sudo apt-get update && sudo apt-get install -y gawk
     
@@ -131,6 +133,7 @@ steps:
   displayName: 'Create Values File'
 
 - script: |
+    set -euo pipefail
     # Verify Helm is available and show version
     helm version
     
@@ -139,15 +142,18 @@ steps:
   displayName: 'Verify Tools'
 
 - script: |
+    set -euo pipefail
     wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
     k3d cluster create chart-testing --wait --timeout 120s
   displayName: 'Create k3d Cluster'
 
 - script: |
+    set -euo pipefail
     helm lint $(CHART_PATH) -f values.yaml 2>&1 | grep -v "SECRET" || exit ${PIPESTATUS[0]}
   displayName: 'Lint Helm Chart'
   
 - script: |
+    set -euo pipefail
     # Redirect output to file
     helm template $(RELEASE_NAME) $(CHART_PATH) -f values.yaml --namespace $(NAMESPACE) > template_output.yaml 2>&1
     
@@ -167,10 +173,12 @@ steps:
   displayName: 'Validate Templates'
 
 - script: |
+    set -euo pipefail
     kubectl create namespace $(NAMESPACE)
   displayName: 'Create Namespace'
 
 - script: |
+    set -euo pipefail
     helm install $(RELEASE_NAME) $(CHART_PATH) \
       -f values.yaml \
       --namespace $(NAMESPACE) \
@@ -180,6 +188,7 @@ steps:
   displayName: 'Install Chart'
 
 - script: |
+    set -euo pipefail
     kubectl get all -n $(NAMESPACE)
     
     # Check if all pods are running
@@ -190,11 +199,13 @@ steps:
   displayName: 'Verify Deployment'
 
 - script: |
+    set -euo pipefail
     # Run helm test and capture the pod names
     helm test $(RELEASE_NAME) -n $(NAMESPACE)    
   displayName: 'Run Chart Tests'
 
 - script: |
+    set -euo pipefail
     helm uninstall $(RELEASE_NAME) -n $(NAMESPACE)
   displayName: 'Cleanup'
   condition: always() 
