@@ -57,6 +57,9 @@ steps:
         enabled: false
     
     secrets:
+      license:
+        content: $(LICENSE_CONTENT)
+        signature: $(LICENSE_SIGNATURE)
       keycloak:
         password: test123
       db:
