@@ -2,7 +2,7 @@
 The `lightrun` Helm chart provides a reliable and efficient way to deploy and manage Lightrun on Kubernetes. It includes all the essential components for a smooth setup and can scale seamlessly to support large deployments.
 ## Architecture Overview
 ### Diagram
-![Diagram](docs/images/architecture-diagram.png "diagram")
+![Diagram](<architecture-diagram.excalidraw.png "diagram">)
 ### Components
 
 | Component                                           | Description                                                                                                    |
@@ -10,6 +10,7 @@ The `lightrun` Helm chart provides a reliable and efficient way to deploy and ma
 | [**Router**](docs/components/router/index.md)       | Directs traffic into the cluster.                                                                              |
 | [**Frontend**](docs/components/frontend.md)         | Serves the user interface.                                                                                     |
 | [**Backend**](docs/components/backend.md)           | Acts as the control plane for Lightrun.                                                                        |
+| [**Artifacts**](docs/components/artifacts.md)       | Serves Lightrun agent artifacts and binaries to connected agents.                                              |
 | [**Keycloak**](docs/components/keycloak.md)         | Manages authentication.                                                                                        |
 | [**Redis**](docs/components/redis.md)               | Handles caching and pub/sub channels (can be local or external).                                               |
 | [**MySQL**](docs/components/database.md)            | Stores application data (can be local or external).                                                            |
