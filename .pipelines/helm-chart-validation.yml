@@ -191,8 +191,8 @@ steps:
     set -euo pipefail
     kubectl get all -n $(NAMESPACE)
     
-    # Check if all pods are running
-    kubectl wait --for=condition=ready pod -l app.kubernetes.io/instance=$(RELEASE_NAME) -n $(NAMESPACE) --timeout=2m
+    # Wait for all pods in the namespace to be ready
+    kubectl wait --for=condition=ready pod --all -n $(NAMESPACE) --timeout=5m
     
     # Get deployment status
     kubectl get deployments -n $(NAMESPACE) -o wide
