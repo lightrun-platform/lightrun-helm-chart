@@ -70,9 +70,6 @@ steps:
         password: test123
       redis:
         password: test123
-      license:
-        content: test123
-        signature: test123
       defaults:
         dockerhub_config:
           configContent: $(DOCKERHUB_CONFIG)
