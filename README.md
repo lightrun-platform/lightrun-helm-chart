@@ -2,7 +2,7 @@
 The `lightrun` Helm chart provides a reliable and efficient way to deploy and manage Lightrun on Kubernetes. It includes all the essential components for a smooth setup and can scale seamlessly to support large deployments.
 ## Architecture Overview
 ### Diagram
-![Diagram](<architecture-diagram.excalidraw.png "diagram">)
+![Diagram](docs/images/architecture-diagram.excalidraw.png "diagram")
 ### Components
 
 | Component                                           | Description                                                                                                    |
