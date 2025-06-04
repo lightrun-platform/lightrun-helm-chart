@@ -72,7 +72,7 @@ cat my-cert.key | base64
 If you don’t already have a TLS certificate, you can generate a self‑signed certificate for testing or development purposes. 
 
 > [!NOTE]
-Lightrun requires a TLS certificate for secure backend and router communication. While a self‑signed certificate works for non‑production use, for production environments, you should use a certificate issued by a trusted CA.
+Lightrun requires a TLS certificate for secured backend and router communication. While a self‑signed certificate works for non‑production use, for production environments, you should use a certificate issued by a trusted CA.
 
 ### **Using OpenSSL**
 

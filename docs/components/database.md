@@ -44,7 +44,7 @@ CREATE DATABASE lightrunserver;
 
 While **not required**, the following HA settings are **recommended** for production:
 
-- **Multi-AZ Deployment** for redundancy  
+- **-Primary-Standby Deployment** for redundancy  
 - **Source-Replica Replication** (not cluster mode)  
 - **No Cluster Mode** (Avoid Galera, InnoDB Cluster, etc.)
 

@@ -1,7 +1,7 @@
 # Managing Secrets
 
 Lightrun requires various secrets for authentication, database access, message queues, and integrations. These secrets are managed under `secrets` and can either be deployed as part of this chart or managed externally.
-### **Secret Deployment Options**
+### **Secrets Deployment Options**
 
 - If `deploy_secrets: true`, the Helm chart will create and manage secrets.
 - If `deploy_secrets: false`, secrets **must be pre-created** in Kubernetes. The chart will look for an existing secret named:
