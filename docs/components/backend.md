@@ -53,15 +53,6 @@ backend:
   annotations: {}  # Deprecated in favor of podAnnotations
 ```
 
-#### Artifact Management
-
-```yaml
-  artifacts:
-    enable: true
-    repository_url: https://artifacts.lightrun.com/
-    supported_versions_url: https://artifacts.lightrun.com/supported-versions.json
-    resolution_mode: latest
-```
 #### Extra Environment Variables
 ```yaml
 extraEnvs: []
