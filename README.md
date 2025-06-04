@@ -72,31 +72,32 @@ To ensure a smooth and secure production deployment of Lightrun, follow these ke
 - Choose where to store and manage container images (e.g., private registry, Docker Hub, Azure Container Registry, AWS ECR).
    For more information, see [Container Image Registry](docs/installation/container_image_registry.md).
 
-#### **10. Redis**
+#### **9. Redis**
 
 > [!TIP] 
 > Use external managed redis
 - Determine if Redis will be local or external.
-    For more information, see [Redis Setup](docs/components/redis.md).
+  For more information, see [Redis Setup](docs/components/redis.md).
 
-#### **11. [Optional] RabbitMQ**
+#### **10. [Optional] RabbitMQ**
 
 - Determine if RabbitMQ is needed for sending telemetry to Lightrun.
-    For more information, see [RabbitMQ](docs/components/rabbitmq.md).
+  For more information, see [RabbitMQ](docs/components/rabbitmq.md).
 
-#### **12. [Optional] Network Policy**
+#### **11. [Optional] Network Policy**
 
 - Establish network policies to restrict access between services and prevent unauthorized communication.
-    For more information, see [Network Policy](docs/advanced/network_policy.md).
+  For more information, see [Network Policy](docs/advanced/network_policy.md).
 
-#### **13. [Optional} Internal TLS Communication**
+#### **12. [Optional} Internal TLS Communication**
 
 - Decide whether internal TLS is necessary for secure component communication.
-    For more information, see [Internal TLS](docs/advanced/internal_tls.md).
+  For more information, see [Internal TLS](docs/advanced/internal_tls.md).
 
-#### **14. Choose Your Deployment Option**
+#### **13. Choose Your Deployment Option**
 
 Decide where to run your Kubernetes cluster based on your infrastructure needs. Consider whether you’ll deploy all services locally (including RabbitMQ, Redis, and MySQL) or use managed cloud services.
+
 ##### **Supported Kubernetes Platforms**
 
 Select your preferred cloud provider for deployment:
