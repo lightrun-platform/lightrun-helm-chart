@@ -15,7 +15,7 @@ There are two modes:
 > [!IMPORTANT]
 > - Supported Redis versions: 7.1 and 7.2
 > - Minimum size requirements: 2 vCPU, 6GB memory
-> - Supported HA configurations: Only replication mode is supported (cluster mode is not supported)
+> - Supported HA configurations: Only replication mode is supported (cluster mode is not supported).
 
 ### Configuration Options
 
