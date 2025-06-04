@@ -31,7 +31,7 @@ artifacts:
 ```yaml
   image:
     repository: lightruncom/artifacts  # Docker image repository
-    tag: ""                           # Image tag (defaults to chart version if empty)
+    tag: ""
     pullPolicy: IfNotPresent          # Image pull policy
 ```
 
