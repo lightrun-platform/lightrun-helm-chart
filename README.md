@@ -32,7 +32,7 @@ To ensure a smooth and secure production deployment of Lightrun, follow these ke
 #### **1. Capacity Planning**
 
 - Assess expected resource usage (CPU, memory, storage) and plan for scalability.
-    For more information, see [Capacity Planning](docs/installation/capacity_planning.md).
+  For more information, see [Capacity Planning](docs/installation/capacity_planning.md).
     
 #### **2. Compatibility**
 
@@ -42,62 +42,59 @@ To ensure a smooth and secure production deployment of Lightrun, follow these ke
 #### **3. Secrets**
 
 - Decide whether to use Helm-managed secrets or an external secrets manager.
-    For more information, see [Secrets Management](docs/installation/secrets.md).
-    
-#### **4. Lightrun Certificate**
+  For more information, see [Secrets Management](docs/installation/secrets.md).
 
-- Plan how Lightrun certificate will be issued and managed for secure communications.
-    For more information, see [Certificate](docs/installation/certificate.md).
-    
-#### **5. Database**
-    [More info on Compatibility](docs/installation/compatibility_matrix.md)
-    
 #### **4. System Configuration**
 
 - Obtain the system configuration file and signature from Lightrun.
-    [More info on System Configuration](docs/advanced/system_config.md)
+  [More info on System Configuration](docs/advanced/system_config.md)
+    
+#### **5. Lightrun Certificate**
 
-#### **6. Database**
+- Plan how Lightrun certificate will be issued and managed for secure communications.
+  For more information, see [Certificate](docs/installation/certificate.md).
+    
+#### **6 Database**
 
 > [!TIP]
 > Use external managed database
 
 - Choose a local or an external database.
-    For more information, see [Database Setup](docs/components/database.md).
+  For more information, see [Database Setup](docs/components/database.md).
     
 #### **7. Router**
 
 - Decide how external traffic will reach the Lightrun router (Ingress, Service, OpenShift Route).
-    For more information, see [Router](docs/components/router/index.md).
+  For more information, see [Router](docs/components/router/index.md).
 
 #### **8. Container Images Registry**
 
 - Choose where to store and manage container images (e.g., private registry, Docker Hub, Azure Container Registry, AWS ECR).
-    For more information, see [Container Image Registry](docs/installation/container_image_registry.md).
+   For more information, see [Container Image Registry](docs/installation/container_image_registry.md).
 
-#### **9. Redis**
+#### **10. Redis**
 
 > [!TIP] 
 > Use external managed redis
 - Determine if Redis will be local or external.
     For more information, see [Redis Setup](docs/components/redis.md).
 
-#### **10. [Optional] RabbitMQ**
+#### **11. [Optional] RabbitMQ**
 
 - Determine if RabbitMQ is needed for sending telemetry to Lightrun.
     For more information, see [RabbitMQ](docs/components/rabbitmq.md).
 
-#### **11. [Optional] Network Policy**
+#### **12. [Optional] Network Policy**
 
 - Establish network policies to restrict access between services and prevent unauthorized communication.
     For more information, see [Network Policy](docs/advanced/network_policy.md).
 
-#### **12. [Optional} Internal TLS Communication**
+#### **13. [Optional} Internal TLS Communication**
 
 - Decide whether internal TLS is necessary for secure component communication.
     For more information, see [Internal TLS](docs/advanced/internal_tls.md).
 
-#### **13. Choose Your Deployment Option**
+#### **14. Choose Your Deployment Option**
 
 Decide where to run your Kubernetes cluster based on your infrastructure needs. Consider whether you’ll deploy all services locally (including RabbitMQ, Redis, and MySQL) or use managed cloud services.
 ##### **Supported Kubernetes Platforms**
