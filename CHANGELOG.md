@@ -1,4 +1,77 @@
 
+<a name="v3.19.0"></a>
+## [v3.19.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.18.0...v3.19.0) - 2025-06-09
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.60.0-release.209dd9d600    |
+| backend       | 1.60.0-release.209dd9d600    |
+| data_streamer | 4.55.0-alpine-3.21.3-r0.lr-0 |
+| frontend      | 1.60.0-release.209dd9d600    |
+| keycloak      | 1.60.0-release.209dd9d600    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 3.12.14-alpine               |
+| redis         | 7.2.8-alpine-3.21.3-r0.lr-0  |
+| router        | 1.26.3-alpine-3.21.3-r0.lr-0 |
+
+
+ 
+ 
+
+
+### Changed (4 changes)
+
+- [keycloak-switch-to-statefulset (#80)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/9d80955)
+ 
+
+- [bump-redis-to-7.2.8-alpine-3.21.3-r0.lr-0 (#77)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/4808155)
+ 
+
+- [encryption-key-logic-to-be-optional-in-all-cases (#65)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/5d1d456)
+ 
+
+- [encryption-key-logic-to-not-fail-when-key-does-not-exist (#64)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/719cf2a)
+ 
+ 
+ 
+
+
+### Fixed (2 changes)
+
+- [cves-in-data-streamer-by-bumping-version-to-4.55.0 (#74)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/eb781e6)
+ 
+
+- [not-create-system-configuration-if-content-and-signature-empty (#71)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/db1bcc7)
+ 
+ 
+ 
+
+
+### Added (2 changes)
+
+- [system-config (#69)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/47cc7d1)
+
+
+  Add System Configuration feature
+  
+  Introduce system configuration support for advanced Lightrun server settings.
+  The feature allows providing a signed JSON config file through ConfigMap.
+  Documentation available at docs/advanced/system_config.md
+ 
+
+- [openai-admin-api-key-support (#67)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/f9a9b85)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.18.0"></a>
 ## [v3.18.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.17.0...v3.18.0) - 2025-05-27
 
