@@ -95,7 +95,7 @@ spec:
             - name: BACKEND_URI
               value: {{ include "lightrun-be.name" . }}
             - name: KEYCLOAK_URI
-              value: {{ include "lightrun-keycloak.name" . }}
+              value: {{ include "lightrun-keycloak.serviceName" . }}
             {{- if .Values.deployments.frontend.extraEnvs }}
           
               {{- toYaml .Values.deployments.frontend.extraEnvs | nindent 12 }}

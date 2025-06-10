@@ -661,6 +661,7 @@ deployments:
 
   keycloak:
     useJsonLogFormat: false
+    useKeycloakOperator: true # Set to true to use Keycloak Operator CR, false for legacy StatefulSet
     # For clusters with more than 3 pods, consider changing the number of "owner nodes" as described in
     # https://www.keycloak.org/server/caching#_configuring_caches -> Configuring caches for availability
     clusterMode: true
