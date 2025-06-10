@@ -107,6 +107,10 @@ Select your preferred cloud provider for deployment:
 - **[Google Kubernetes Engine (GKE)](docs/installation/cloud/gke.md)**
 - **[OpenShift](docs/installation/cloud/openshift.md)**
 
+#### **13. Set up Monitoring and Alerting system**
+
+Review the [Monitoring and Alerting guide](docs/monitoring_and_alerting_guide.md).
+
 ## Known Issues and Limitations
 
 ## Release Notes
@@ -114,3 +118,4 @@ Select your preferred cloud provider for deployment:
 - Check the [versions mapping documentation](docs/installation/versions_mapping.md) for version compatibility.  
 - Check the [release strategy](docs/release_strategy.md) for the meaning of major, minor, and patch versions.
 - See the [changelog](CHANGELOG.md) for a detailed history of changes and improvements in each release.
+
