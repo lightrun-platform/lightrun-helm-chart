@@ -1,0 +1,11 @@
+apiVersion: v2
+name: lightrun-helm-chart
+description: Unlock real-time code-level observability with Lightrun
+version: 3.18.0
+appVersion: main
+
+dependencies:
+  - name: lightrun-keycloak-operator
+    version: "0.1.0"
+    repository: "file://../lightrun-keycloak-operator"
+    condition: deployments.keycloakOperator.enabled

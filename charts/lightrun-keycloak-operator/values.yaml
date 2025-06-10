@@ -1,0 +1,32 @@
+# Default values for lightrun-keycloak-operator.
+# This chart installs Keycloak CRDs and optionally the Keycloak Operator.
+# CRDs are always installed (located in crds/ folder).
+
+# Keycloak Operator deployment
+operator:
+  enabled: true
+  
+  # Operator image configuration
+  image:
+    repository: talyitzhak/lightrun-keycloak-operator
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  
+  # Resource limits and requests
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  
+  # Security context
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault

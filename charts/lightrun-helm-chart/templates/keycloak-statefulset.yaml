@@ -1,4 +1,5 @@
 {{- $version := include "lightrun-keycloak.getSemanticVersion" .Values.deployments.keycloak.image.tag -}}
+{{- if not .Values.deployments.keycloakOperator.enabled }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -376,3 +377,4 @@ spec:
           {{- range .Values.deployments.keycloak.extraVolumes }}
         {{- end }}
         {{- end }}
+{{- end }}

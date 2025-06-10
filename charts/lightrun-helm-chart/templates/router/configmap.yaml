@@ -85,7 +85,7 @@ data:
       }
 
       upstream {{ include "lightrun-keycloak.name" . }} {
-        server {{ include "lightrun-keycloak.name" . }}:8080 max_fails=0;
+        server {{ include "lightrun-keycloak.serviceName" . }}:8080 max_fails=0;
       }
       
       upstream {{ include "lightrun-fe.name" . }} {

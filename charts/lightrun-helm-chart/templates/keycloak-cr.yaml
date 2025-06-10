@@ -1,0 +1,338 @@
+{{- $version := include "lightrun-keycloak.getSemanticVersion" .Values.deployments.keycloak.image.tag -}}
+{{- if .Values.deployments.keycloakOperator.enabled }}
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  name: {{ include "lightrun-keycloak.name" . }}
+  labels:
+    app: {{ include "lightrun-keycloak.name" . }}
+  {{- with .Values.deployments.keycloak.annotations }}
+  annotations:
+    {{ toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  instances: 2
+  image: "{{ .Values.deployments.keycloak.image.repository }}:{{ .Values.deployments.keycloak.image.tag }}"
+  imagePullPolicy: {{ .Values.deployments.keycloak.image.pullPolicy }}
+  {{- if .Values.secrets.defaults.dockerhub_config }}
+  imagePullSecrets:
+  {{- if .Values.secrets.defaults.dockerhub_config.existingSecret }}
+    - name: {{ .Values.secrets.defaults.dockerhub_config.existingSecret }}
+  {{- else }}
+    - name: {{ include "secrets.dockerhub.name" . }}
+  {{- end -}}
+  {{- end }}
+  unsupported:
+    podTemplate:
+      spec:
+        initContainers:
+          - name: wait-for-rabbitmq
+            image: "lightruncom/chart-helper:0.3.0-alpine-3.21.3-r0.lr-0"
+            imagePullPolicy: 
+            securityContext:           
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              readOnlyRootFilesystem: false
+              runAsNonRoot: true
+              runAsUser: 1000000
+              seccompProfile:
+                type: RuntimeDefault
+            command:
+              - sh
+              - /scripts/wait-for-200.sh
+            resources:
+              limits:
+                memory: "100Mi"
+                cpu: "100m"
+              requests:
+                memory: "100Mi"
+                cpu: "100m"
+            env:
+              - name: MY_POD_NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
+              - name: AUTH_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ include "secrets.backend.name" . }}
+                    key: SPRING_RABBITMQ_USERNAME
+              - name: AUTH_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ include "secrets.backend.name" . }}
+                    key: SPRING_RABBITMQ_PASSWORD
+              - name: RABBITMQ_TCP_PORT
+                value: "15672"
+              - name: URL
+                value: http://{{ include "lightrun-mq.endpoint" . }}:$(RABBITMQ_TCP_PORT)/api/overview
+          - name: wait-for-mysql
+            image: mysql:8.0.38
+            imagePullPolicy: IfNotPresent
+            securityContext:            
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              runAsNonRoot: true
+              runAsUser: 1000000
+              seccompProfile:
+                type: RuntimeDefault
+            resources:
+              limits:
+                memory: "100Mi"
+                cpu: "100m"
+              requests:
+                memory: "100Mi"
+                cpu: "100m"
+            command: ["sh", "-c"]
+            args: 
+              - while ! mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" -h {{ include "mysql.db_endpoint" . }} -e "SELECT 1" --ssl-mode=DISABLED --connect-timeout 2; do sleep 1; done
+            env:
+              - name: MYSQL_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ include "secrets.keycloak.name" . }}
+                    key: DB_USER
+              - name: MYSQL_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ include "secrets.keycloak.name" . }}
+                    key: DB_PASSWORD
+              - name: MYSQL_TCP_PORT
+                value: "3306"
+        containers:
+          - name: keycloak
+            env:
+              {{- if .Values.general.mq.enabled }}
+              - name: RABBITMQ_HOST
+                value: {{ include "lightrun-mq.endpoint" . }}
+              - name: RABBITMQ_PORT
+                value: {{ .Values.general.mq.port | quote }}
+              - name: KEYCLOAK_QUEUE_NAME
+                value: {{ include "lightrun-mq.getQueueNameByPrefix" (dict "prefix" "keycloak-events" "Values" .Values) | quote }}
+              - name: RABBITMQ_USERNAME
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ include "secrets.backend.name" . }}
+                    key: SPRING_RABBITMQ_USERNAME
+              - name: RABBITMQ_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ include "secrets.backend.name" . }}
+                    key: SPRING_RABBITMQ_PASSWORD
+              {{- end }}
+              - name: INFO_DEPLOYMENT
+                {{ if eq .Values.general.deployment_type "saas" }}
+                value: "SaaS"
+                {{ else if eq .Values.general.deployment_type "single-tenant" }}
+                value: "single-tenant"
+                {{ else }}
+                value: "on-prem"
+                {{ end }}
+              - name: KC_PROXY_HEADERS
+                value: "xforwarded"
+              - name: KEYCLOAK_ADMIN
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ include "secrets.keycloak.name" . }}
+                    key: KEYCLOAK_USER
+              - name: KEYCLOAK_ADMIN_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ include "secrets.keycloak.name" . }}
+                    key: KEYCLOAK_PASSWORD
+              - name: KC_PROXY_HEADERS
+                value: "xforwarded"
+              - name: KC_BOOTSTRAP_ADMIN_USERNAME
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ include "secrets.keycloak.name" . }}
+                    key: KEYCLOAK_USER
+              - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ include "secrets.keycloak.name" . }}
+                    key: KEYCLOAK_PASSWORD                    
+              {{- if .Values.general.internal_tls.enabled }}
+              - name: KC_HTTPS_CERTIFICATE_FILE
+                value: /etc/x509/https/tls.crt
+              - name: KC_HTTPS_CERTIFICATE_KEY_FILE
+                value: /etc/x509/https/tls.key
+              - name: KC_CACHE_EMBEDDED_MTLS_ENABLED
+                value: "true"
+              - name: KC_CACHE_EMBEDDED_MTLS_KEY_STORE_FILE
+                value: /p12/cluster.p12
+              - name: KC_CACHE_EMBEDDED_MTLS_KEY_STORE_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ include "secrets.backend.name" . }}
+                    key: KEYSTORE_PASSWORD
+              - name: KC_CACHE_EMBEDDED_MTLS_TRUST_STORE_FILE
+                value: /p12/cluster-ca.p12
+              - name: KC_CACHE_EMBEDDED_MTLS_TRUST_STORE_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ include "secrets.backend.name" . }}
+                    key: KEYSTORE_PASSWORD
+              {{- else }}
+              - name: KC_HTTPS_CERTIFICATE_FILE
+              - name: KC_HTTPS_CERTIFICATE_KEY_FILE
+              - name: KC_HTTP_ENABLED
+                value: "true"
+              {{- end }}
+              - name: KC_DB
+                value: mysql
+              - name: KC_DB_URL
+                {{- if eq .Values.deployments.keycloak.dbConnector "mysql" }}
+                value: jdbc:mysql://{{ include "mysql.db_endpoint" . }}:3306/{{ .Values.general.db_database }}?useSSL={{ .Values.general.db_require_secure_transport }}&allowPublicKeyRetrieval=true&trustServerCertificate=true&serverTimezone=UTC
+                {{- else if eq .Values.deployments.keycloak.dbConnector "mariadb" }}
+                value: jdbc:mariadb://{{ include "mysql.db_endpoint" . }}:3306/{{ .Values.general.db_database }}?useSSL={{ .Values.general.db_require_secure_transport }}&allowPublicKeyRetrieval=true&trustServerCertificate=true&serverTimezone=UTC
+                {{- end }}
+              - name: KC_DB_USERNAME
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ include "secrets.keycloak.name" . }}
+                    key: DB_USER
+              - name: KC_DB_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ include "secrets.keycloak.name" . }}
+                    key: DB_PASSWORD
+              - name: DB_ADDR
+                value: {{ include "mysql.db_endpoint" . }}
+              - name: DB_PORT
+                value: "3306"
+              - name: DB_DATABASE
+                value: {{ .Values.general.db_database }}
+              - name: JDBC_PARAMS
+                value: "useSSL={{ .Values.general.db_require_secure_transport }}&allowPublicKeyRetrieval=true"
+              - name: KEYCLOAK_STATISTICS
+                value: "db,{{ include "http.scheme" . }}"
+              {{- if .Values.deployments.keycloak.clusterMode }}
+              - name: KC_CACHE
+                value: ispn
+              - name: KC_CACHE_STACK
+                value: kubernetes
+              - name: JAVA_OPTS_APPEND
+                value: "-Djgroups.dns.query={{ include "lightrun-keycloak.name" . }}-headless {{ include "lightrun-keycloak.java.argument.asyncProfiler" . }}"
+              {{- else }}
+              - name: JAVA_OPTS_APPEND
+                value: "{{- include "lightrun-keycloak.java.argument.asyncProfiler" . -}}"
+              {{- end }}
+              - name: JAVASCRIPT_FILES
+                value: js/keycloak.js
+              {{- if .Values.deployments.keycloak.extraEnvs }}
+                {{- toYaml .Values.deployments.keycloak.extraEnvs | nindent 14 }}
+              {{- end }}
+              {{- if not (include "list-of-maps-contains" (list .Values.deployments.keycloak.extraEnvs "_JAVA_OPTIONS") ) }}
+              - name: "_JAVA_OPTIONS"
+                value: {{- toYaml (include "calculate-heap-size" .Values.deployments.keycloak) | nindent 21 }}
+              {{- end }}
+              {{- if not (include "list-of-maps-contains" (list .Values.deployments.keycloak.extraEnvs "KC_HOSTNAME") ) }}
+                {{- if semverCompare ">=1.38.0" $version }}
+              - name: KC_HOSTNAME
+                value: 'https://{{ .Values.general.lightrun_endpoint }}/auth'
+                {{- else }}
+              - name: KC_HOSTNAME_URL
+                value: 'https://{{ .Values.general.lightrun_endpoint }}/auth'
+                {{- end }}
+              {{- end }}
+            readinessProbe:
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 5
+              successThreshold: 1
+              failureThreshold: 3
+              httpGet:
+                path: /auth/health/ready
+                port: 9000
+            livenessProbe:
+              initialDelaySeconds: 200
+              periodSeconds: 50
+              timeoutSeconds: 30
+              successThreshold: 1
+              failureThreshold: 3
+              httpGet:
+                path: /auth/health/live
+                port: 9000
+            startupProbe:
+              initialDelaySeconds: 10
+              periodSeconds: 10
+              timeoutSeconds: 1
+              successThreshold: 1
+              failureThreshold: 30
+              httpGet:
+                path: /auth/health/started
+                port: 9000
+  db:
+    vendor: mysql
+    host: {{ include "mysql.db_endpoint" . }}
+    port: 3306
+    database: {{ .Values.general.db_database }}
+    usernameSecret:
+      name: {{ include "secrets.keycloak.name" . }}
+      key: DB_USER
+    passwordSecret:
+      name: {{ include "secrets.keycloak.name" . }}
+      key: DB_PASSWORD    
+    url: "jdbc:mariadb://{{ include "mysql.db_endpoint" . }}:3306/{{ .Values.general.db_database }}?useSSL={{ .Values.general.db_require_secure_transport }}&allowPublicKeyRetrieval=true&trustServerCertificate=true&serverTimezone=UTC"
+    pool:
+      initialSize: 5
+      maxSize: 20
+      minSize: 5
+    transaction:
+      xaEnabled: false
+  http:
+    httpEnabled: {{ if .Values.general.internal_tls.enabled }}false{{ else }}true{{ end }}
+    httpPort: 8080
+    httpsPort: 9443
+    healthPort: 9000
+    {{- if .Values.general.internal_tls.enabled }}
+    tlsSecret: {{ include "secrets.certificate.name" . }}
+    {{- end }}
+  hostname:
+    hostname: "https://{{ .Values.general.lightrun_endpoint }}/auth"
+    admin: "https://{{ .Values.general.lightrun_endpoint }}/auth"
+    strict: false
+    backchannelDynamic: true
+  transaction:
+    xaEnabled: false
+  resources:
+    requests:
+      cpu: {{ .Values.deployments.keycloak.resources.cpu }}
+      memory: {{ .Values.deployments.keycloak.resources.memory }}
+    limits:
+      cpu: {{ .Values.deployments.keycloak.resources.cpu }}
+      memory: {{ .Values.deployments.keycloak.resources.memory }}
+  {{- if .Values.deployments.keycloak.podSecurityContext }}
+  podSecurityContext:
+    {{- toYaml .Values.deployments.keycloak.podSecurityContext | nindent 4 }}
+  {{- end }}
+  {{- if .Values.deployments.keycloak.topologySpreadConstraints }}
+  topologySpreadConstraints:
+    {{ toYaml .Values.deployments.keycloak.topologySpreadConstraints | nindent 4 }}
+  {{- end }}
+  {{- if .Values.general.tolerations }}
+  tolerations:
+    {{ toYaml .Values.general.tolerations | nindent 4 }}
+  {{- end }}
+  {{- if .Values.general.nodeSelector }}
+  nodeSelector:
+    {{ toYaml .Values.general.nodeSelector | nindent 4 }}
+  {{- end }}
+  {{- if .Values.deployments.keycloak.affinity }}
+  affinity:
+    {{ toYaml .Values.deployments.keycloak.affinity | nindent 4 }}
+  {{- end }}
+  update:
+    strategy: {{- if eq .Values.general.deployment_type "on-prem" }}
+      Auto # When the image field changes, the Operator scales down the StatefulSet before applying the new image.
+    {{- else if or (eq .Values.general.deployment_type "saas") (eq .Values.general.deployment_type "single-tenant") }}
+      Auto # The Keycloak Operator detects if a rolling or recreate update is possible.
+      # In the current version, Keycloak performs a rolling update if the Keycloak version is the same for the old and the new image.
+      # Future versions of Keycloak will change that behavior and use additional information from the configuration, the image and the version to determine if a rolling update is possible to reduce downtimes.
+    {{- end }}
+{{- end }} 

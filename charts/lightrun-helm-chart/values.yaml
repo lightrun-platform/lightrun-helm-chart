@@ -659,6 +659,10 @@ deployments:
         # deployments.backend.asyncProfiler.persistence.existingClaim -- Name of an existing PersistentVolumeClaim to use.
         existingClaim: ""
 
+  #######################
+  ## Keycloak StatefulSet Mode (Legacy)
+  #######################
+  ## Traditional StatefulSet deployment - used when keycloakOperator.enabled=false (default)
   keycloak:
     useJsonLogFormat: false
     # For clusters with more than 3 pods, consider changing the number of "owner nodes" as described in
@@ -733,6 +737,13 @@ deployments:
         enabled: false
         # deployments.keycloak.asyncProfiler.persistence.existingClaim -- Name of an existing PersistentVolumeClaim to use.
         existingClaim: ""
+
+  #######################
+  ## Keycloak Operator Mode (Recommended)
+  #######################
+  ## Uses Keycloak Operator and Custom Resources - requires lightrun-keycloak-operator chart
+  keycloakOperator:
+    enabled: true
 
   redis:
     architecture: single # (single|replicated) control the jcache profile passed to backend
