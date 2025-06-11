@@ -248,6 +248,9 @@ general:
       metrics:
         allow_ips: []
         deny_ips: ["all"]
+      router_status:
+        allow_ips: ["127.0.0.1/32"]
+        deny_ips: ["all"]
 
     rate_limit:
       # Global rate limit for all requests to the router
