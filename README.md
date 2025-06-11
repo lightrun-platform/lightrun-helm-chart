@@ -107,7 +107,7 @@ Select your preferred cloud provider for deployment:
 - **[Google Kubernetes Engine (GKE)](docs/installation/cloud/gke.md)**
 - **[OpenShift](docs/installation/cloud/openshift.md)**
 
-#### **13. Set up Monitoring and Alerting system**
+#### **14. Set up Monitoring and Alerting system**
 
 Review the [Monitoring and Alerting guide](docs/monitoring_and_alerting_guide.md).
 
