@@ -1,6 +1,6 @@
-### Overview
+### Artifacts service
 
-The **Artifacts** service is an nginx-based proxy that serves Lightrun artifacts. This service acts as an internal artifact repository for the backend server. The service supports both HTTP and HTTPS protocols depending on the internal TLS configuration.
+The Artifacts service is an NGINX-based proxy that serves Lightrun artifacts. It functions as an internal artifact repository for the backend server and supports both HTTP and HTTPS protocols, depending on the internal TLS configuration.
 
 Configuration is defined under **`deployments.artifacts`** in the **`values.yaml`**
 
@@ -10,7 +10,7 @@ Configuration is defined under **`deployments.artifacts`** in the **`values.yaml
 
 ```yaml
 artifacts:
-  loglevel: notice          # Nginx log level (emerg, alert, crit, error, warn, notice, info, debug)
+  loglevel: notice          # NGINX log level (emerg, alert, crit, error, warn, notice, info, debug)
   useJsonLogFormat: false   # Enables structured JSON logging
 ```
 
