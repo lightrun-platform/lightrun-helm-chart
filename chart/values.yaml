@@ -493,6 +493,12 @@ secrets:
       # 3. For private registry. If dockerhub_config is set to `null`, chart will not use any imagePullSecrets.
       existingSecret: ""
       configContent: ""
+    salesforce:
+      username: "" # Optional | If empty, will not be used
+      client_id: "" # Optional | If empty, will not be used
+      login_url: "" # Optional | If empty, will not be used
+      oauth_url: "" # Optional | If empty, will not be used
+      jwt_private_key: "" # Optional | If empty, will not be used
   keysEncryption:
     # The encryption key configuration for the backend service.
     # PREFERRED APPROACH: External Secret
