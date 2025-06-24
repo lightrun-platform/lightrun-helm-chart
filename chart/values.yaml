@@ -12,8 +12,6 @@ general:
   ## DNS record that will be used to access the platform
   deployment_type: on-prem
   system_config:
-    # Path to the system config file
-    file_path: "/opt/lightrun/system_config.json"
     # Content of the system config file, base64 encoded
     content: ""
     # Signature of the system config file, base64 encoded
