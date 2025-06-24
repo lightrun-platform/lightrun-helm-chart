@@ -12,7 +12,6 @@ To use the System Configuration feature, you need to provide:
 
 1. **Content**: The base64-encoded JSON configuration content (provided by Lightrun)
 2. **Signature**: A base64-encoded signature of the JSON content (provided by Lightrun)
-3. **File Path**: The location where the configuration file will be mounted in the container (default: `/opt/lightrun/system_config.json`)
 
 ### Values.yaml Configuration
 
@@ -21,8 +20,6 @@ Add the following configuration to your `values.yaml` file or override the value
 ```yaml
 general:
   system_config:
-    # Path to the system config file
-    file_path: "/opt/lightrun/system_config.json"
     # Content of the system config file, base64 encoded
     content: "ewogICJzb21lQ29uZmlndXJhdGlvbkZpZWxkIjogdHJ1ZSwKICAiYW5vdGhlckNvbmZpZ3VyYXRpb25GaWVsZCI6IDEyMwp9Cg=="
     # Signature of the system config file, base64 encoded (provided by Lightrun)
@@ -38,7 +35,7 @@ general:
 
 When the Lightrun backend starts:
 
-1. The backend reads the system configuration file from the specified path
+1. The backend reads the system configuration file
 2. It validates the file's signature against the provided signature value
 3. If valid, the configuration is applied to modify the backend's behavior
 4. If invalid, the backend will log an error and may use default settings instead
