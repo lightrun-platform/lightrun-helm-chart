@@ -1,0 +1,211 @@
+name:  'Lightrun Helm Chart Validation'
+trigger: none
+
+pr:
+  branches:
+    include:
+      - '*'
+  paths:
+    include:
+      - 'chart/**'
+      - '.pipelines/helm-chart-validation.yml'
+
+variables:
+  - group: lightrun-helm-chart-variables
+  - name: CHART_PATH
+    value: './chart'
+  - name: RELEASE_NAME
+    value: 'lightrun'
+  - name: NAMESPACE
+    value: 'lightrun'
+
+steps:
+- script: |
+    set -euo pipefail
+    # Cleanup any existing k3d cluster
+    k3d cluster delete chart-testing || true
+  displayName: 'Cleanup Previous Cluster'
+  continueOnError: true
+
+- script: |
+    set -euo pipefail
+    # Install required tools
+    sudo apt-get update && sudo apt-get install -y gawk
+    
+    # Read the version from versions_mapping.md
+    # Skip header and separator, get first data row with actual version numbers
+    CHART_VERSION=$(awk -F'|' 'NR > 2 && $2 !~ /^[[:space:]]*-+[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$2); if ($2 != "") {print $2; exit}}' docs/installation/versions_mapping.md)
+    APP_VERSION=$(awk -F'|' 'NR > 2 && $3 !~ /^[[:space:]]*-+[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$3); if ($3 != "") {print $3; exit}}' docs/installation/versions_mapping.md)
+    
+    # Verify that we got the versions
+    if [ -z "$CHART_VERSION" ] || [ -z "$APP_VERSION" ]; then
+      echo "Failed to extract versions from versions_mapping.md"
+      cat docs/installation/versions_mapping.md
+      exit 1
+    fi
+    
+    echo "Chart version: $CHART_VERSION"
+    echo "App version: $APP_VERSION"
+
+    # Create values.yaml file
+    cat > values.yaml << EOF
+    general:
+      lightrun_endpoint: test.example.com
+      name: test-client
+      deployment_type: on-prem
+      statefulset:
+        enabled: false
+    
+    secrets:
+      license:
+        content: $(LICENSE_CONTENT)
+        signature: $(LICENSE_SIGNATURE)
+      keycloak:
+        password: test123
+      db:
+        user: test_user
+        password: test123
+      mq:
+        user: test_user
+        password: test123
+      redis:
+        password: test123
+      defaults:
+        dockerhub_config:
+          configContent: $(DOCKERHUB_CONFIG)
+        mail_password: test123
+        keystore_password: test123
+    
+    certificate:
+      tls:
+        crt: $(CERTIFICATE_CRT)
+        key: $(CERTIFICATE_KEY)
+    
+    deployments:
+      frontend:
+        resources:
+          cpu: "0m"
+          memory: "0Mi"
+        image:
+          tag: ${APP_VERSION}
+      backend:
+        resources:
+          cpu: "0m"
+          memory: "0Mi"
+        extraEnvs:
+          - name: "_JAVA_OPTIONS"
+            value: ""
+        image:
+          tag: ${APP_VERSION}
+      keycloak:
+        resources:
+          cpu: "0m"
+          memory: "0Mi"
+        extraEnvs:
+          - name: "_JAVA_OPTIONS"
+            value: ""
+        image:
+          tag: ${APP_VERSION}
+      redis:
+        resources:
+          cpu: "0m"
+          memory: "0Mi"
+      mysql:
+        resources:
+          cpu: "0m"
+          memory: "0Mi"
+      rabbitmq:
+        resources:
+          cpu: "0m"
+          memory: "0Mi"
+      data_streamer:
+        resources:
+          cpu: "0m"
+          memory: "0Mi"
+      router:
+        resources:
+          cpu: "0m"
+          memory: "0Mi"
+      artifacts:
+        image:
+          tag: ${APP_VERSION}
+    EOF
+  displayName: 'Create Values File'
+
+- script: |
+    set -euo pipefail
+    # Verify Helm is available and show version
+    helm version
+    
+    # Verify kubectl is available
+    kubectl version --client
+  displayName: 'Verify Tools'
+
+- script: |
+    set -euo pipefail
+    wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+    k3d cluster create chart-testing --wait --timeout 120s
+  displayName: 'Create k3d Cluster'
+
+- script: |
+    set -euo pipefail
+    helm lint $(CHART_PATH) -f values.yaml 2>&1 | grep -v "SECRET" || exit ${PIPESTATUS[0]}
+  displayName: 'Lint Helm Chart'
+  
+- script: |
+    set -euo pipefail
+    # Redirect output to file
+    helm template $(RELEASE_NAME) $(CHART_PATH) -f values.yaml --namespace $(NAMESPACE) > template_output.yaml 2>&1
+    
+    # Filter sensitive data and display
+    cat template_output.yaml | grep -v "password:\|secret:\|token:\|key:" || true
+    
+    # Check if template command was successful
+    if [ -s template_output.yaml ]; then
+      echo "Template validation successful"
+      rm template_output.yaml
+      exit 0
+    else
+      echo "Template validation failed"
+      rm template_output.yaml
+      exit 1
+    fi
+  displayName: 'Validate Templates'
+
+- script: |
+    set -euo pipefail
+    kubectl create namespace $(NAMESPACE)
+  displayName: 'Create Namespace'
+
+- script: |
+    set -euo pipefail
+    helm install $(RELEASE_NAME) $(CHART_PATH) \
+      -f values.yaml \
+      --namespace $(NAMESPACE) \
+      --wait \
+      --timeout 10m \
+      --debug
+  displayName: 'Install Chart'
+
+- script: |
+    set -euo pipefail
+    kubectl get all -n $(NAMESPACE)
+    
+    # Wait for all pods in the namespace to be ready
+    kubectl wait --for=condition=ready pod --all -n $(NAMESPACE) --timeout=5m
+    
+    # Get deployment status
+    kubectl get deployments -n $(NAMESPACE) -o wide
+  displayName: 'Verify Deployment'
+
+- script: |
+    set -euo pipefail
+    # Run helm test and capture the pod names
+    helm test $(RELEASE_NAME) -n $(NAMESPACE)    
+  displayName: 'Run Chart Tests'
+
+- script: |
+    set -euo pipefail
+    helm uninstall $(RELEASE_NAME) -n $(NAMESPACE)
+  displayName: 'Cleanup'
+  condition: always() 
