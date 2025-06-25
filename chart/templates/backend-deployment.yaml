@@ -130,8 +130,8 @@ spec:
           volumeMounts:
           {{- if and .Values.general.system_config.content .Values.general.system_config.signature }}
             - name: system-config
-              mountPath: {{ .Values.general.system_config.file_path }}
-              subPath: {{ base .Values.general.system_config.file_path }}
+              mountPath: "/opt/lightrun/system_config.json"
+              subPath: "system_config.json"
               readOnly: true
           {{- end }}
           {{- include "lightrun-backend.volumeMounts.asyncProfiler" . | nindent 12 }}
@@ -196,7 +196,7 @@ spec:
           env:
           {{- if and .Values.general.system_config.content .Values.general.system_config.signature }}
             - name: LIGHTRUN_SYSTEM_CONFIG_JSON_FILE_PATH
-              value: {{ .Values.general.system_config.file_path }}
+              value: "/opt/lightrun/system_config.json"
             - name: LIGHTRUN_SYSTEM_CONFIG_JSON_SIGNATURE
               value: {{ .Values.general.system_config.signature }}
           {{- end }}
