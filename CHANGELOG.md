@@ -1,4 +1,62 @@
 
+<a name="v3.21.0"></a>
+## [v3.21.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.20.0...v3.21.0) - 2025-06-30
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.62.0-release.3e937ac76a    |
+| backend       | 1.62.0-release.3e937ac76a    |
+| data_streamer | 4.56.0-alpine-3.21.3-r0.lr-0 |
+| frontend      | 1.62.0-release.3e937ac76a    |
+| keycloak      | 1.62.0-release.3e937ac76a    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 3.12.14-alpine               |
+| redis         | 7.2.9-alpine-3.21.3-r0.lr-0  |
+| router        | 1.26.3-alpine-3.21.3-r0.lr-0 |
+
+
+ 
+ 
+
+
+### Removed (1 change)
+
+- [the-option-to-configure-general-system-config-file-path (#92)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/04f938d)
+
+
+  Co-authored-by: eliranb <eliranb@lightrun.com>
+ 
+ 
+ 
+
+
+### Added (3 changes)
+
+- [salesforce-environment-variables-for-backend (#93)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/ddc29c8)
+ 
+
+- [artifacts-service-to-lightrun-helm-chart-docs](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2d28a04)
+
+
+  Co-authored-by: eliranb <eliranb@lightrun.com>
+ 
+
+- [acl-for-router-status-endpoint (#91)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2312ae2)
+
+
+  Co-authored-by: eliranb <eliranb@lightrun.com>
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.20.0"></a>
 ## [v3.20.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.19.0...v3.20.0) - 2025-06-22
 
