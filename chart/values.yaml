@@ -141,6 +141,15 @@ general:
       ## List of response status codes upon which the data streamer will not retry
       - 403
 
+  #####################
+  ## Crons
+  #####################
+  crons:
+    enabled: false
+    ## If set to `true`, will deploy a crons service for processing crons and other background operations
+    ## This service runs the same application as the backend but with crons profiles activated
+    ## It does not expose any external ports and focuses on background processing to improve backend performance
+
   ################################################
   ## Enable TLS communication between pods
   ################################################
@@ -664,6 +673,72 @@ deployments:
         # deployments.backend.asyncProfiler.persistence.enabled -- If **true**, use existing PersistentVolumeClaim.
         enabled: false
         # deployments.backend.asyncProfiler.persistence.existingClaim -- Name of an existing PersistentVolumeClaim to use.
+        existingClaim: ""
+
+  crons:
+    image:
+      repository: "lightruncom/server"
+      tag: ""
+      pullPolicy: IfNotPresent
+    resources:
+      cpu: 1000m
+      memory: 2Gi
+    podLabels: {}
+    podAnnotations: {}
+    appMetrics:
+      exposeToDatadog: false
+      includeMetrics: []
+      #example:
+      ## includeMetrics: ["connected_agents_per_runtime","connected_agents_total","actions_count_active_total","companies_count_total"]
+    jar_name: LightrunServer.jar
+    extraEnvs: []
+    podSecurityContext: {}
+    containerSecurityContext: {}
+    extraVolumes: []
+    extraVolumeMounts: []
+    podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
+    topologySpreadConstraints: []
+    affinity: {}
+    lifecycle:
+      preStop:
+        exec:
+          command: ["sh", "-c", "sleep 10"]
+    terminationGracePeriodSeconds: 45
+    startupProbe:
+      path: /management/health/readiness
+      failureThreshold: 60
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+    livenessProbe:
+      initialDelaySeconds: 200
+      periodSeconds: 50
+      timeoutSeconds: 30
+      successThreshold: 1
+      failureThreshold: 3
+      path: /version
+    readinessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+      path: /management/health/readiness
+    dumpsEmptyDirSizeLimit: 5Gi
+    asyncProfiler:
+      # deployments.crons.asyncProfiler.enabled -- Run async-profiler on every crons pod
+      ## ref: https://github.com/async-profiler/async-profiler
+      enabled: false
+      # Download URL end point for async profiler binary, ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
+      downloadUrl: "https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz"
+      # deployments.crons.asyncProfiler.arguments -- Configure the async profiler arguments
+      ## ref: https://github.com/async-profiler/async-profiler/blob/v3.0/src/arguments.cpp#L44
+      arguments: "start,event=ctimer,loop=10m,chunksize=1m,file=/async-profiler-tmp/profile-%t.jfr,log=/tmp/asyncprofiler.log"
+      # deployments.crons.asyncProfiler.persistence -- Configure persistence for the async profiler output files
+      persistence:
+        # deployments.crons.asyncProfiler.persistence.enabled -- If **true**, use existing PersistentVolumeClaim.
+        enabled: false
+        # deployments.crons.asyncProfiler.persistence.existingClaim -- Name of an existing PersistentVolumeClaim to use.
         existingClaim: ""
 
   keycloak:

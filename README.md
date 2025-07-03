@@ -11,6 +11,7 @@ The `lightrun` Helm chart provides a reliable and efficient way to deploy and ma
 | [**Router**](docs/components/router/index.md)       | Directs traffic into the cluster.                                                                              |
 | [**Frontend**](docs/components/frontend.md)         | Serves the user interface.                                                                                     |
 | [**Backend**](docs/components/backend.md)           | Acts as the control plane for Lightrun.                                                                        |
+| [**Crons**](docs/components/crons.md)               | Handles background processing tasks such as scheduled jobs and batch operations.                |
 | [**Artifacts**](docs/components/artifacts.md)       | Serves Lightrun artifacts.                                                                                     |
 | [**Keycloak**](docs/components/keycloak.md)         | Manages authentication.                                                                                        |
 | [**Redis**](docs/components/redis.md)               | Handles caching and pub/sub channels (can be local or external).                                               |
@@ -97,7 +98,7 @@ To ensure a smooth and secure production deployment of Lightrun, follow these ke
 
 #### **13. Choose Your Deployment Option**
 
-Decide where to run your Kubernetes cluster based on your infrastructure needs. Consider whether you’ll deploy all services locally (including RabbitMQ, Redis, and MySQL) or use managed cloud services.
+Decide where to run your Kubernetes cluster based on your infrastructure needs. Consider whether you'll deploy all services locally (including RabbitMQ, Redis, and MySQL) or use managed cloud services.
 
 ##### **Supported Kubernetes Platforms**
 
