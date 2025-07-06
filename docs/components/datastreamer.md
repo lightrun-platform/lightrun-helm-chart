@@ -1,4 +1,4 @@
-### Overview
+# Data Streamer
 The **Data Streamer** is an optional component that enables integration with **SIEM (Security Information and Event Management)** systems by forwarding audit logs. Configuration is split into two sections:
 
 - **`general.data_streamer`**: Controls global settings such as enabling the component and retry policies.

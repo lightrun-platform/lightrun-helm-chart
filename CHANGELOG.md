@@ -1,4 +1,206 @@
 
+<a name="v3.21.1"></a>
+## [v3.21.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.21.0...v3.21.1) - 2025-07-06
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.62.1-release.98c1867bba    |
+| backend       | 1.62.1-release.98c1867bba    |
+| data_streamer | 4.56.0-alpine-3.21.3-r0.lr-0 |
+| frontend      | 1.62.1-release.98c1867bba    |
+| keycloak      | 1.62.1-release.98c1867bba    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 3.12.14-alpine               |
+| redis         | 7.2.9-alpine-3.21.3-r0.lr-0  |
+| router        | 1.26.3-alpine-3.21.3-r0.lr-0 |
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.21.0"></a>
+## [v3.21.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.20.0...v3.21.0) - 2025-06-30
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.62.0-release.3e937ac76a    |
+| backend       | 1.62.0-release.3e937ac76a    |
+| data_streamer | 4.56.0-alpine-3.21.3-r0.lr-0 |
+| frontend      | 1.62.0-release.3e937ac76a    |
+| keycloak      | 1.62.0-release.3e937ac76a    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 3.12.14-alpine               |
+| redis         | 7.2.9-alpine-3.21.3-r0.lr-0  |
+| router        | 1.26.3-alpine-3.21.3-r0.lr-0 |
+
+
+ 
+ 
+
+
+### Removed (1 change)
+
+- [the-option-to-configure-general-system-config-file-path (#92)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/04f938d)
+
+
+  Co-authored-by: eliranb <eliranb@lightrun.com>
+ 
+ 
+ 
+
+
+### Added (3 changes)
+
+- [salesforce-environment-variables-for-backend (#93)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/ddc29c8)
+ 
+
+- [artifacts-service-to-lightrun-helm-chart-docs](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2d28a04)
+
+
+  Co-authored-by: eliranb <eliranb@lightrun.com>
+ 
+
+- [acl-for-router-status-endpoint (#91)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2312ae2)
+
+
+  Co-authored-by: eliranb <eliranb@lightrun.com>
+ 
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.20.0"></a>
+## [v3.20.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.19.0...v3.20.0) - 2025-06-22
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.61.0-release.de34f38011    |
+| backend       | 1.61.0-release.de34f38011    |
+| data_streamer | 4.56.0-alpine-3.21.3-r0.lr-0 |
+| frontend      | 1.61.0-release.de34f38011    |
+| keycloak      | 1.61.0-release.de34f38011    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 3.12.14-alpine               |
+| redis         | 7.2.9-alpine-3.21.3-r0.lr-0  |
+| router        | 1.26.3-alpine-3.21.3-r0.lr-0 |
+
+
+ 
+ 
+
+
+### Changed (2 changes)
+
+- [data-streamer-version-to-4.56.0-alpine-3.21.3-r0.lr-0 (#88)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/fa48e4b)
+ 
+
+- [upgrade redis to 7.2.9-r0 (#86)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/309d93f)
+ 
+ 
+ 
+
+
+### Added (1 change)
+
+- [monitoring-and-alerting-guide (#61)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/861addd)
+ 
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.19.0"></a>
+## [v3.19.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.18.0...v3.19.0) - 2025-06-09
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.60.0-release.209dd9d600    |
+| backend       | 1.60.0-release.209dd9d600    |
+| data_streamer | 4.55.0-alpine-3.21.3-r0.lr-0 |
+| frontend      | 1.60.0-release.209dd9d600    |
+| keycloak      | 1.60.0-release.209dd9d600    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 3.12.14-alpine               |
+| redis         | 7.2.8-alpine-3.21.3-r0.lr-0  |
+| router        | 1.26.3-alpine-3.21.3-r0.lr-0 |
+
+
+ 
+ 
+
+
+### Changed (4 changes)
+
+- [keycloak-switch-to-statefulset (#80)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/9d80955)
+ 
+
+- [bump-redis-to-7.2.8-alpine-3.21.3-r0.lr-0 (#77)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/4808155)
+ 
+
+- [encryption-key-logic-to-be-optional-in-all-cases (#65)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/5d1d456)
+ 
+
+- [encryption-key-logic-to-not-fail-when-key-does-not-exist (#64)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/719cf2a)
+ 
+ 
+ 
+
+
+### Fixed (2 changes)
+
+- [cves-in-data-streamer-by-bumping-version-to-4.55.0 (#74)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/eb781e6)
+ 
+
+- [not-create-system-configuration-if-content-and-signature-empty (#71)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/db1bcc7)
+ 
+ 
+ 
+
+
+### Added (2 changes)
+
+- [system-config (#69)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/47cc7d1)
+
+
+  Add System Configuration feature
+  
+  Introduce system configuration support for advanced Lightrun server settings.
+  The feature allows providing a signed JSON config file through ConfigMap.
+  Documentation available at docs/advanced/system_config.md
+ 
+
+- [openai-admin-api-key-support (#67)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/f9a9b85)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.18.0"></a>
 ## [v3.18.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.17.0...v3.18.0) - 2025-05-27
 

@@ -1,4 +1,4 @@
-### Overview
+# Backend Service
 
 The backend component is responsible for handling core application logic and interactions with the database, message queues, and other services. This document outlines the configurable parameters available for backend deployment.
 configuration is defined under **`deployments.backend`** in the **`values.yaml`**
@@ -53,15 +53,6 @@ backend:
   annotations: {}  # Deprecated in favor of podAnnotations
 ```
 
-#### Artifact Management
-
-```yaml
-  artifacts:
-    enable: true
-    repository_url: https://artifacts.lightrun.com/
-    supported_versions_url: https://artifacts.lightrun.com/supported-versions.json
-    resolution_mode: latest
-```
 #### Extra Environment Variables
 ```yaml
 extraEnvs: []

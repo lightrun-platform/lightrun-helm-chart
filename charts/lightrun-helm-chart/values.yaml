@@ -13,8 +13,6 @@ general:
   deployment_type: on-prem
 
   system_config:
-    # Path to the system config file
-    file_path: "/opt/lightrun/system_config.json"
     # Content of the system config file, base64 encoded
     content: ""
     # Signature of the system config file, base64 encoded
@@ -247,6 +245,9 @@ general:
         deny_ips: ["all"]
       metrics:
         allow_ips: []
+        deny_ips: ["all"]
+      router_status:
+        allow_ips: ["127.0.0.1/32"]
         deny_ips: ["all"]
 
     rate_limit:
@@ -490,6 +491,12 @@ secrets:
       # 3. For private registry. If dockerhub_config is set to `null`, chart will not use any imagePullSecrets.
       existingSecret: ""
       configContent: ""
+    salesforce:
+      username: "" # Optional | If empty, will not be used
+      client_id: "" # Optional | If empty, will not be used
+      login_url: "" # Optional | If empty, will not be used
+      oauth_url: "" # Optional | If empty, will not be used
+      jwt_private_key: "" # Optional | If empty, will not be used
   keysEncryption:
     # The encryption key configuration for the backend service.
     # PREFERRED APPROACH: External Secret
@@ -771,7 +778,7 @@ deployments:
       enabled: false
     image:
       repository: lightruncom/redis
-      tag: 7.2.8-alpine-3.21.3-r0.lr-0
+      tag: 7.2.9-alpine-3.21.3-r0.lr-0
       pullPolicy: IfNotPresent
     resources:
       cpu: 2000m
@@ -906,7 +913,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/data-streamer
-      tag: "4.55.0-alpine-3.21.3-r0.lr-0"
+      tag: "4.56.0-alpine-3.21.3-r0.lr-0"
       pullPolicy: IfNotPresent
     resources:
       cpu: 100m

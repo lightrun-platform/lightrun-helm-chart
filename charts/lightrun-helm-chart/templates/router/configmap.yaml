@@ -286,6 +286,12 @@ data:
         }
 
         location /router_status {
+        {{- range .Values.general.router.acl.router_status.allow_ips }}
+          allow {{ . }};
+        {{- end }}
+        {{- range .Values.general.router.acl.router_status.deny_ips }}
+          deny {{ . }};
+        {{- end }}
           stub_status;
           access_log off;
         }
