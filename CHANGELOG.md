@@ -1,4 +1,52 @@
 
+<a name="v3.16.6"></a>
+## [v3.16.6](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.16.5...v3.16.6) - 2025-07-06
+
+
+
+### Versions
+
+| Image            | Tag                          |
+|------------------|------------------------------|
+| artifacts        | 1.57.5-release.8e2c9a0d3d    |
+| backend          | 1.57.5-release.8e2c9a0d3d    |
+| data_streamer    | 4.55.0-alpine-3.21.3-r0.lr-0 |
+| frontend         | 1.57.5-release.8e2c9a0d3d    |
+| keycloak         | 1.57.5-release.8e2c9a0d3d    |
+| mysql            | 8.0.38                       |
+| rabbitmq         | 3.12.14-alpine               |
+| redis            | 7.2.8-alpine-3.21.3-r0.lr-0  |
+| router           | 1.26.3-alpine-3.21.3-r0.lr-0 |
+| standalone_nginx | stable-alpine-slim           |
+ 
+ 
+
+
+### Removed (1 change)
+
+- [the-option-to-configure-general-system-config-file-path](https://github.com/lightrun-platform/lightrun-helm-chart/commit/774a216)
+
+
+  Co-authored-by: eliranb <eliranb@lightrun.com>
+ 
+ 
+ 
+
+
+### Added (1 change)
+
+- [helm-chart-validation-pipeline](https://github.com/lightrun-platform/lightrun-helm-chart/commit/6664cd9)
+
+
+  Co-authored-by: eliranb <eliranb@lightrun.com>
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.16.5"></a>
 ## [v3.16.5](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.16.4...v3.16.5) - 2025-05-28
 
