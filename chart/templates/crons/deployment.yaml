@@ -150,7 +150,7 @@ spec:
           env:
           {{- include "lightrun-backend-crons.environmentVariables" . | nindent 12 }}
             - name: SPRING_PROFILES_ACTIVE
-              value: "prod,swagger,cluster,crons"
+              value: "prod,swagger,cluster,cron"
             {{- $mergedExtraEnvs := include "lightrun-crons.mergedExtraEnvs" . }}
             {{- if $mergedExtraEnvs }}
 {{ $mergedExtraEnvs | nindent 12 }}
