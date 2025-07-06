@@ -248,9 +248,9 @@ spec:
             - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI
               value: "https://{{ .Values.general.lightrun_endpoint }}/auth/realms/lightrun"
             - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI
-              value: "{{ include "http.scheme" . }}://{{ include "lightrun-keycloak.name" . }}:8080/auth/realms/lightrun/protocol/openid-connect/certs"
+              value: "{{ include "http.scheme" . }}://{{ include "lightrun-keycloak.serviceName" . }}:8080/auth/realms/lightrun/protocol/openid-connect/certs"
             - name: SPRING_SECURITY_KEYCLOAK_URL
-              value: "{{ include "http.scheme" . }}://{{ include "lightrun-keycloak.name" . }}:8080/auth"
+              value: "{{ include "http.scheme" . }}://{{ include "lightrun-keycloak.serviceName" . }}:8080/auth"
             {{ if or .Values.general.internal_tls.enabled .Values.deployments.redis.encryption.enabled }}
             - name: SPRING_REDIS_SSL
               value: "true"
@@ -373,7 +373,7 @@ spec:
             cpu: "100m"
         env:
           - name: URL
-            value: {{ include "http.scheme" . }}://{{ include "lightrun-keycloak.name" . }}:9000/auth/health/started {{ if .Values.general.internal_tls.enabled }}--no-check-certificate{{ end }}
+            value: {{ include "http.scheme" . }}://{{ include "lightrun-keycloak.serviceName" . }}:9000/auth/health/started {{ if .Values.general.internal_tls.enabled }}--no-check-certificate{{ end }}
 
       {{ if .Values.general.mq.enabled }}
       {{- include "lightrun-mq.initContainer.wait-for-rabbitmq" (merge (dict "imageConfig" .Values.deployments.backend.initContainers.wait_for_rabbitmq "securityContext" "lightrun-be.containerSecurityContext") .) | nindent 6 }}

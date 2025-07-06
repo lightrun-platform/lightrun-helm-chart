@@ -1,0 +1,8 @@
+apiVersion: v2
+name: lightrun-keycloak-operator
+description: Keycloak Operator and Custom Resource Definitions (CRDs)
+type: application
+version: 0.1.0
+appVersion: "26.2.5"
+sources:
+  - https://www.keycloak.org/operator/installation#_installing_by_using_kubectl_without_operator_lifecycle_manager

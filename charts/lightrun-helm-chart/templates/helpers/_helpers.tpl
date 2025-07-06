@@ -113,6 +113,14 @@ Container SecurityContext of lightrun frontend
 {{ include "lightrun.fullname" . }}-keycloak
 {{- end -}}
 
+{{- define "lightrun-keycloak.serviceName" -}}
+{{- if .Values.deployments.keycloakOperator.enabled -}}
+{{ include "lightrun-keycloak.name" . }}-service
+{{- else -}}
+{{ include "lightrun-keycloak.name" . }}
+{{- end -}}
+{{- end -}}
+
 {{/*
 Create the name of the lightrun keycloak service account to use
 */}}

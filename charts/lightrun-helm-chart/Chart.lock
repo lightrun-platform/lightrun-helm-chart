@@ -1,0 +1,6 @@
+dependencies:
+- name: lightrun-keycloak-operator
+  repository: file://../lightrun-keycloak-operator
+  version: 0.1.0
+digest: sha256:7549732d1dcdf3d2ce2cd43e5e2a1adc2722b408f9e5226981fa31ad181be457
+generated: "2025-06-20T23:00:11.691147+03:00"
