@@ -841,20 +841,6 @@ Merge extraEnvs from backend and crons with crons taking precedence for duplicat
 {{- end -}}
 
 {{/*
-Check if merged extraEnvs contain _JAVA_OPTIONS
-Usage: {{ include "lightrun-crons.hasJavaOptions" $mergedExtraEnvs }}
-*/}}
-{{- define "lightrun-crons.hasJavaOptions" -}}
-{{- $mergedEnvs := . | fromYaml -}}
-{{- range $mergedEnvs -}}
-{{- if eq .name "_JAVA_OPTIONS" -}}
-true
-{{- break -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 ################
 ### Datadog  ###
 ################

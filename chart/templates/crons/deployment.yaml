@@ -129,7 +129,7 @@ spec:
             {{- if $mergedExtraEnvs }}
 {{ $mergedExtraEnvs | nindent 12 }}
             {{- end }}
-            {{- if not (include "lightrun-crons.hasJavaOptions" $mergedExtraEnvs) }}
+            {{- if and (not (include "list-of-maps-contains" (list .Values.deployments.crons.extraEnvs "_JAVA_OPTIONS"))) (not (include "list-of-maps-contains" (list .Values.deployments.backend.extraEnvs "_JAVA_OPTIONS"))) }}
             - name: "_JAVA_OPTIONS"
               value: {{- toYaml (include "calculate-heap-size" .Values.deployments.crons) | nindent 21  }}
             {{- end }}
