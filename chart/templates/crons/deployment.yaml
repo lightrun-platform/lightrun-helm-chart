@@ -19,29 +19,7 @@ spec:
         {{- with .Values.deployments.crons.podAnnotations }}
         {{ toYaml . | nindent 8 }}
         {{- end }}
-{{- if .Values.deployments.crons.appMetrics.exposeToDatadog }}
-{{- $last := sub (len .Values.deployments.crons.appMetrics.includeMetrics ) 1 }}
-        ad.datadoghq.com/{{ include "lightrun-crons.name" . }}.checks: |
-          {
-            "openmetrics": {
-              "instances": [
-                {
-                  "openmetrics_endpoint": "http://%%host%%:%%port%%/management/prometheus",
-                  "namespace": "lightrun",
-                  "metrics": [
-          {{- range $index ,$metricName:= .Values.deployments.crons.appMetrics.includeMetrics }}
-          {{- if ne $index $last }}
-                      {"{{ $metricName }}": "crons.{{ $metricName }}"},
-          {{- else }}
-                      {"{{ $metricName }}": "crons.{{ $metricName }}"}
-          {{- end }}
-          {{- end }}
-                    ]
-                }
-              ]
-            }
-          }
-{{- end }}
+{{- include "lightrun.datadogAnnotations" (dict "serviceName" (include "lightrun-crons.name" .) "metricPrefix" "crons" "deployment" .Values.deployments.crons "context" .) }}
 {{- end }}
       labels:
         app: {{ include "lightrun-crons.name" . }}
@@ -49,10 +27,6 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- if .Values.deployments.crons.topologySpreadConstraints }}
-      topologySpreadConstraints:
-        {{ toYaml .Values.deployments.crons.topologySpreadConstraints | nindent 8 }}
-      {{- end }}
       serviceAccountName: {{ template "lightrun-crons.serviceAccountName" . }}
       volumes:
         {{- include "lightrun-backend-crons.volumes" . | nindent 8 }}
@@ -155,7 +129,7 @@ spec:
             {{- if $mergedExtraEnvs }}
 {{ $mergedExtraEnvs | nindent 12 }}
             {{- end }}
-            {{- if not (include "lightrun-crons.hasJavaOptions" .) }}
+            {{- if not (include "lightrun-crons.hasJavaOptions" $mergedExtraEnvs) }}
             - name: "_JAVA_OPTIONS"
               value: {{- toYaml (include "calculate-heap-size" .Values.deployments.crons) | nindent 21  }}
             {{- end }}

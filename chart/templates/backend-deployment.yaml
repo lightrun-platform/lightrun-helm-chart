@@ -24,29 +24,7 @@ spec:
         {{- with .Values.deployments.backend.podAnnotations }}
         {{ toYaml . | nindent 8 }}
         {{- end }}
-{{- if .Values.deployments.backend.appMetrics.exposeToDatadog }}
-{{- $last := sub (len .Values.deployments.backend.appMetrics.includeMetrics ) 1 }}
-        ad.datadoghq.com/{{ include "lightrun-be.name" . }}.checks: |
-          {
-            "openmetrics": {
-              "instances": [
-                {
-                  "openmetrics_endpoint": "http://%%host%%:%%port%%/management/prometheus",
-                  "namespace": "lightrun",
-                  "metrics": [
-          {{- range $index ,$metricName:= .Values.deployments.backend.appMetrics.includeMetrics }}
-          {{- if ne $index $last }}
-                      {"{{ $metricName }}": "backend.{{ $metricName }}"},
-          {{- else }}
-                      {"{{ $metricName }}": "backend.{{ $metricName }}"}
-          {{- end }}
-          {{- end }}
-                    ]
-                }
-              ]
-            }
-          }
-{{- end }}
+{{- include "lightrun.datadogAnnotations" (dict "serviceName" (include "lightrun-be.name" .) "metricPrefix" "backend" "deployment" .Values.deployments.backend "context" .) }}
 {{- end }}
       labels:
         app: {{ include "lightrun-be.name" . }}

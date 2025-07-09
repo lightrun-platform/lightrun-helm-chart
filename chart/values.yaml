@@ -681,8 +681,8 @@ deployments:
       tag: ""
       pullPolicy: IfNotPresent
     resources:
-      cpu: 1000m
-      memory: 2Gi
+      cpu: 3000m
+      memory: 6Gi
     podLabels: {}
     podAnnotations: {}
     appMetrics:
@@ -697,7 +697,6 @@ deployments:
     extraVolumes: []
     extraVolumeMounts: []
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
-    topologySpreadConstraints: []
     affinity: {}
     lifecycle:
       preStop:

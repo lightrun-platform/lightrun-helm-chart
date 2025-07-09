@@ -1,6 +1,6 @@
 # Crons Service
 
-The crons component is responsible for handling background processing tasks such as scheduled jobs, batch operations, and other background activities. This service runs the same application as the backend but with different Spring profiles activated to focus on background processing, improving overall system performance by isolating background tasks.
+The crons component is responsible for handling background processing tasks such as scheduled jobs, batch operations, and other background activities. This service runs the same application as the backend but with different configuration to focus on background tasks.
 
 Configuration is defined under **`deployments.crons`** in the **`values.yaml`**
 
@@ -38,8 +38,8 @@ When enabled, the crons service will be deployed alongside the backend service w
 
 ```yaml
   resources:
-    cpu: 1000m    # CPU limit (optimized for background processing)
-    memory: 2Gi   # Memory limit (optimized for background processing)
+    cpu: 3000m    # CPU limit (optimized for background processing)
+    memory: 6Gi   # Memory limit (optimized for background processing)
 ```
 
 #### Pod Labels & Annotations
@@ -148,7 +148,6 @@ When enabled, the crons service will be deployed alongside the backend service w
 
 ### Network Isolation
 - **No Service Object**: The crons service does not expose any Kubernetes Service
-- **No External Access**: No Ingress or external network routing
 - **Internal Processing Only**: Communicates only with shared backend services (DB, Redis, etc.)
 
 ## Architecture Integration
