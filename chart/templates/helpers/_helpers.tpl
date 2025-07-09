@@ -728,3 +728,166 @@ Get encryption key for Lightrun deployment. Handles existing keys, random genera
   path: {{ include "secrets.encryption-key-name" . }}
 {{- end }}
 {{- end }}
+
+{{/*
+####################
+### Crons Service ###
+####################
+*/}}
+
+{{- define "lightrun-crons.name" -}}
+{{ include "lightrun.fullname" . }}-crons
+{{- end -}}
+
+{{/*
+Create the name of the lightrun crons service account to use
+*/}}
+{{- define "lightrun-crons.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+    {{ default (include "lightrun-crons.name" .) .Values.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Container SecurityContext of lightrun crons
+*/}}
+{{- define "lightrun-crons.containerSecurityContext" -}}
+{{- $readOnlyRootFilesystem := dict "readOnlyRootFilesystem" (.Values.general.readOnlyRootFilesystem ) -}}
+{{- $baseSecurityContext := include "baseSecurityContext" . | fromYaml -}}
+{{- $localSecurityContext := mustMerge $baseSecurityContext $readOnlyRootFilesystem -}}
+{{/*If user provided values for containerSecurityContext, merge them with the baseSecurityContext*/}}
+{{/*Values passed by user will override defaults*/}}
+{{- if .Values.deployments.crons.containerSecurityContext -}}
+{{- $mergedSecurityContext := mergeOverwrite $localSecurityContext (.Values.deployments.crons.containerSecurityContext | default dict) -}}
+{{- $mergedSecurityContext | toYaml -}}
+{{- else if kindIs "invalid" .Values.deployments.crons.containerSecurityContext -}}
+{{ default dict | toYaml -}}
+{{- else -}}
+{{/*use default values from baseSecurityContext*/}}
+{{- $localSecurityContext | toYaml -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Cron-specific asyncProfiler helpers
+*/}}
+{{- define "lightrun-crons.volumes.asyncProfiler" -}}
+{{- if .Values.deployments.crons.asyncProfiler.enabled -}}  
+{{ include "asyncProfiler.volumes" .Values.deployments.crons.asyncProfiler }}
+{{- end -}}
+{{- end -}}
+
+{{- define "lightrun-crons.volumeMounts.asyncProfiler" -}}
+{{- if .Values.deployments.crons.asyncProfiler.enabled }} 
+{{- include "asyncProfiler.volumeMounts" . }}
+{{- end -}}
+{{- end -}}
+
+{{- define "lightrun-crons.initContainer.download-async-profiler" -}}
+{{- if .Values.deployments.crons.asyncProfiler.enabled -}}  
+{{ include "asyncProfiler.initContainer.download-async-profiler" .Values.deployments.crons.asyncProfiler }}
+  securityContext: {{- include "lightrun-crons.containerSecurityContext" . | indent 4 }}
+{{- end -}}
+{{- end -}}
+
+{{- define "lightrun-crons.container.persist-async-profiler-output-files" -}}
+{{- if and .Values.deployments.crons.asyncProfiler.enabled .Values.deployments.crons.asyncProfiler.persistence.enabled }}  
+{{ include "asyncProfiler.container.persist-async-profiler-output-files" . }}
+  securityContext: {{- include "lightrun-crons.containerSecurityContext" . | indent 4 }}
+{{- end -}}
+{{- end -}}
+
+{{- define "lightrun-crons.java.argument.asyncProfiler" -}}
+{{- if .Values.deployments.crons.asyncProfiler.enabled -}}  
+"{{- include "asyncProfiler.java.agentpath" .Values.deployments.crons.asyncProfiler -}}",
+{{- end -}}
+{{- end -}}
+
+{{/*
+Merge extraEnvs from backend and crons with crons taking precedence for duplicate keys
+*/}}
+{{- define "lightrun-crons.mergedExtraEnvs" -}}
+{{- $backendExtraEnvs := .Values.deployments.backend.extraEnvs | default list -}}
+{{- $cronsExtraEnvs := .Values.deployments.crons.extraEnvs | default list -}}
+{{- $mergedEnvs := list -}}
+
+{{/* First, add all backend extraEnvs */}}
+{{- range $backendExtraEnvs -}}
+{{- $backendEnv := . -}}
+{{- $isOverridden := false -}}
+{{/* Check if this env var is overridden in crons */}}
+{{- range $cronsExtraEnvs -}}
+{{- if eq .name $backendEnv.name -}}
+{{- $isOverridden = true -}}
+{{- end -}}
+{{- end -}}
+{{/* Only add backend env if not overridden by crons */}}
+{{- if not $isOverridden -}}
+{{- $mergedEnvs = append $mergedEnvs $backendEnv -}}
+{{- end -}}
+{{- end -}}
+
+{{/* Then, add all crons extraEnvs (these take precedence) */}}
+{{- range $cronsExtraEnvs -}}
+{{- $mergedEnvs = append $mergedEnvs . -}}
+{{- end -}}
+
+{{/* Output merged envs as YAML if any exist */}}
+{{- if $mergedEnvs -}}
+{{- toYaml $mergedEnvs -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Check if merged extraEnvs contain _JAVA_OPTIONS
+Usage: {{ include "lightrun-crons.hasJavaOptions" $mergedExtraEnvs }}
+*/}}
+{{- define "lightrun-crons.hasJavaOptions" -}}
+{{- $mergedEnvs := . | fromYaml -}}
+{{- range $mergedEnvs -}}
+{{- if eq .name "_JAVA_OPTIONS" -}}
+true
+{{- break -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+################
+### Datadog  ###
+################
+*/}}
+
+{{/*
+Generate Datadog annotations for OpenMetrics monitoring
+Usage: {{ include "lightrun.datadogAnnotations" (dict "serviceName" "lightrun-be" "metricPrefix" "backend" "deployment" .Values.deployments.backend "context" .) }}
+*/}}
+{{- define "lightrun.datadogAnnotations" -}}
+{{- if .deployment.appMetrics.exposeToDatadog }}
+{{- $last := sub (len .deployment.appMetrics.includeMetrics) 1 }}
+        ad.datadoghq.com/{{ .serviceName }}.checks: |
+          {
+            "openmetrics": {
+              "instances": [
+                {
+                  "openmetrics_endpoint": "http://%%host%%:%%port%%/management/prometheus",
+                  "namespace": "lightrun",
+                  "metrics": [
+          {{- range $index, $metricName := .deployment.appMetrics.includeMetrics }}
+          {{- if ne $index $last }}
+                      {"{{ $metricName }}": "{{ $.metricPrefix }}.{{ $metricName }}"},
+          {{- else }}
+                      {"{{ $metricName }}": "{{ $.metricPrefix }}.{{ $metricName }}"}
+          {{- end }}
+          {{- end }}
+                    ]
+                }
+              ]
+            }
+          }
+{{- end }}
+{{- end }}
+
+

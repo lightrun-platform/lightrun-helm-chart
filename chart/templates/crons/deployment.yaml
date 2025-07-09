@@ -1,0 +1,154 @@
+{{- if .Values.general.crons.enabled }}
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: {{ include "lightrun-crons.name" . }}
+  labels:
+    app: {{ include "lightrun-crons.name" . }}
+spec:
+  strategy: 
+      type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "lightrun-crons.name" . }}
+  template:
+    metadata:
+{{- if or .Values.deployments.crons.appMetrics.exposeToDatadog .Values.deployments.crons.podAnnotations }}
+      annotations:
+        {{- with .Values.deployments.crons.podAnnotations }}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
+{{- include "lightrun.datadogAnnotations" (dict "serviceName" (include "lightrun-crons.name" .) "metricPrefix" "crons" "deployment" .Values.deployments.crons "context" .) }}
+{{- end }}
+      labels:
+        app: {{ include "lightrun-crons.name" . }}
+        {{- with .Values.deployments.crons.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ template "lightrun-crons.serviceAccountName" . }}
+      volumes:
+        {{- include "lightrun-backend-crons.volumes" . | nindent 8 }}
+        {{- include "lightrun-crons.volumes.asyncProfiler" . | nindent 8 }}
+        - name: dumps
+          emptyDir:
+            sizeLimit: {{ .Values.deployments.crons.dumpsEmptyDirSizeLimit }}
+      {{- with .Values.deployments.crons.extraVolumes }}
+        {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.secrets.defaults.dockerhub_config }}
+      imagePullSecrets:
+      {{- if .Values.secrets.defaults.dockerhub_config.existingSecret }}
+        - name: {{ .Values.secrets.defaults.dockerhub_config.existingSecret }}
+      {{- else }}
+        - name: {{ include "secrets.dockerhub.name" . }}
+      {{- end -}}
+      {{- end }}
+      {{- if .Values.deployments.crons.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.deployments.crons.podSecurityContext | nindent 8 }}
+      {{- end }}
+      {{ with .Values.deployments.crons.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ . }}
+      {{ end }}
+      containers:
+      {{- include "lightrun-crons.container.persist-async-profiler-output-files" . | nindent 8 }}
+        - name: {{ include "lightrun-crons.name" . }}
+          securityContext: {{- include "lightrun-crons.containerSecurityContext" . | indent 12 }}
+          image: "{{ .Values.deployments.crons.image.repository }}:{{ .Values.deployments.crons.image.tag }}"
+          imagePullPolicy: {{ .Values.deployments.crons.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          command: ["/usr/lib/jvm/default-jvm/bin/java"]
+          args: [
+            {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name }}
+            "-Djavax.net.ssl.trustStore=/p12/internalca",
+            "-Djavax.net.ssl.trustStorePassword=$(KEYSTORE_PASSWORD)",
+            {{- end }}
+            {{- include "lightrun-crons.java.argument.asyncProfiler" . | nindent 12 }}
+            "-jar",
+            "/usr/src/lightrun/{{ .Values.deployments.crons.jar_name }}"
+          ]
+          volumeMounts:
+          {{- include "lightrun-backend-crons.volumeMounts" . | nindent 12 }}
+          {{- include "lightrun-crons.volumeMounts.asyncProfiler" . | nindent 12 }}
+          {{- with .Values.deployments.crons.extraVolumeMounts }}
+            {{ toYaml . | nindent 12 }}
+          {{- end }}
+          startupProbe:
+            timeoutSeconds: {{ .Values.deployments.crons.startupProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.deployments.crons.startupProbe.periodSeconds }}
+            failureThreshold: {{ .Values.deployments.crons.startupProbe.failureThreshold }}
+            successThreshold: {{ .Values.deployments.crons.startupProbe.successThreshold }}
+            httpGet:
+              scheme: {{ include "http.scheme" . | upper }}
+              path: {{ .Values.deployments.crons.startupProbe.path }}
+              port: 8080
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.deployments.crons.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.deployments.crons.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.deployments.crons.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.deployments.crons.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.crons.livenessProbe.failureThreshold }}
+            httpGet:
+              scheme: {{ include "http.scheme" . | upper }}
+              path: {{ .Values.deployments.crons.livenessProbe.path }}
+              port: 8080
+          readinessProbe:
+            initialDelaySeconds: {{ .Values.deployments.crons.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.deployments.crons.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.deployments.crons.readinessProbe.periodSeconds }}
+            successThreshold: {{ .Values.deployments.crons.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.crons.readinessProbe.failureThreshold }}
+            httpGet:
+              scheme: {{ include "http.scheme" . | upper }}
+              path: {{ .Values.deployments.crons.readinessProbe.path }}
+              port: 8080
+          {{- with .Values.deployments.crons.lifecycle }}
+          lifecycle:
+            {{ toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            requests:
+              cpu: {{ .Values.deployments.crons.resources.cpu }}
+              memory: {{ .Values.deployments.crons.resources.memory }}
+            limits:
+              cpu: {{ .Values.deployments.crons.resources.cpu }}
+              memory: {{ .Values.deployments.crons.resources.memory }}
+          envFrom:
+            - secretRef:
+                name: {{ include "secrets.backend.name" . }}
+          env:
+          {{- include "lightrun-backend-crons.environmentVariables" . | nindent 12 }}
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod,swagger,cluster,cron"
+            {{- $mergedExtraEnvs := include "lightrun-crons.mergedExtraEnvs" . }}
+            {{- if $mergedExtraEnvs }}
+{{ $mergedExtraEnvs | nindent 12 }}
+            {{- end }}
+            {{- if not (include "lightrun-crons.hasJavaOptions" $mergedExtraEnvs) }}
+            - name: "_JAVA_OPTIONS"
+              value: {{- toYaml (include "calculate-heap-size" .Values.deployments.crons) | nindent 21  }}
+            {{- end }}
+
+      # waiting for mysql, rabbitmq and keycloak initialization
+      initContainers:
+      {{- include "lightrun-backend-crons.initContainers" . | nindent 6 }}
+      {{- include "lightrun-crons.initContainer.download-async-profiler" . | nindent 6 }}
+
+      {{- if .Values.general.tolerations }}
+      tolerations:
+        {{ toYaml .Values.general.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.general.nodeSelector }}
+      nodeSelector:
+        {{ toYaml .Values.general.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.deployments.crons.affinity }}
+      affinity:
+        {{ toYaml .Values.deployments.crons.affinity | nindent 8 }}
+      {{- end }}
+{{- end }} 
