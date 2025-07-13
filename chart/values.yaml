@@ -681,8 +681,8 @@ deployments:
       tag: ""
       pullPolicy: IfNotPresent
     resources:
-      cpu: 3000m
-      memory: 6Gi
+      cpu: 1000m
+      memory: 2Gi
     podLabels: {}
     podAnnotations: {}
     appMetrics:
