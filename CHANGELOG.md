@@ -1,4 +1,86 @@
 
+<a name="v3.22.0"></a>
+## [v3.22.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.21.1...v3.22.0) - 2025-07-20
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.63.1-release.45eff1e031    |
+| backend       | 1.63.1-release.45eff1e031    |
+| crons         |                              |
+| data_streamer | 4.56.0-alpine-3.22.0-r0.lr-0 |
+| frontend      | 1.63.1-release.45eff1e031    |
+| keycloak      | 1.63.1-release.45eff1e031    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine-3.22.0-r0.lr-0  |
+| redis         | 7.2.9-alpine-3.22.0-r0.lr-0  |
+| router        | 1.28.0-alpine-3.22.0-r0.lr-0 |
+
+
+
+
+ 
+ 
+
+
+### Changed (1 change)
+
+- [cron-service-resources (#112) (#113)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/74c1c64)
+ 
+ 
+ 
+
+
+### Documentation (1 change)
+
+- [max connections instructions in database.md to account for cron service (#107)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/3bceeba)
+ 
+ 
+ 
+
+
+### Fixed (2 changes)
+
+- [cron-helper (#111)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/1047bd3)
+
+
+  Co-authored-by: eliranb <eliranb@lightrun.com>
+ 
+
+- [rabbitmq-naming-convention (#109)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/3271181)
+ 
+ 
+ 
+
+
+### Added (1 change)
+
+- [new-crons-service (#106)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/12f79d6)
+
+
+  Co-authored-by: eliranb <eliranb@lightrun.com>
+ 
+ 
+ 
+
+
+### Security (2 changes)
+
+- [fixing-alpine-cves-in-chart-helper-and-data-streamer (#110)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/555f31f)
+ 
+
+- [fixing-alpine-cves-in-common-base-image (#108)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/6fc0bab)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.21.1"></a>
 ## [v3.21.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.21.0...v3.21.1) - 2025-07-06
 
