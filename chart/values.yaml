@@ -648,7 +648,7 @@ deployments:
   crons:
     image:
       repository: "lightruncom/server"
-      tag: ""
+      tag: "1.63.1-release.45eff1e031"
       pullPolicy: IfNotPresent
     resources:
       cpu: 1000m
