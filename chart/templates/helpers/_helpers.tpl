@@ -517,13 +517,36 @@ Usage:
 */}}
 
 {{- define "calculate-heap-size" -}}
-{{ $heap:= "" }}
-    {{- if contains "Gi" .resources.memory -}}
-        {{- $heap = div (.resources.memory | replace "Gi" "" | int | mul 1024 | mul 75 ) 100  -}}
-    {{- else if contains "Mi" .resources.memory -}}
-        {{- $heap = div (.resources.memory | replace "Mi" "" | int | mul 75) 100  -}}
+{{- $deployment := . -}}
+{{- $xmsRatio := 1 -}}
+{{- $xmxRatio := 1 -}}
+{{- $heap:= "" -}}
+{{- $xms:= "" -}}
+{{/* Check if called with parameters: deployment, xmsRatio, xmxRatio */}}
+{{- if kindIs "slice" . -}}
+    {{- $deployment = index . 0 -}}
+    {{- if ge (len .) 2 -}}
+        {{- $xmsRatio = index . 1 | int -}}
     {{- end -}}
-{{- printf "-Xmx%vm -Xms%vm" $heap $heap -}}
+    {{- if ge (len .) 3 -}}
+        {{- $xmxRatio = index . 2 | int -}}
+    {{- end -}}
+{{- end -}}
+{{/* Validate ratios - only allow sensible ratios like 1:1, 1:2, 1:3, 1:4, 1:5 */}}
+{{- if ne $xmsRatio 1 -}}
+    {{- fail "calculate-heap-size: xmsRatio must be 1. Only ratios like 1:1, 1:2, 1:3, 1:4, 1:5 are supported." -}}
+{{- end -}}
+{{- if or (lt $xmxRatio 1) (gt $xmxRatio 5) -}}
+    {{- fail "calculate-heap-size: xmxRatio must be between 1 and 5. Only ratios like 1:1, 1:2, 1:3, 1:4, 1:5 are supported." -}}
+{{- end -}}
+{{- if contains "Gi" $deployment.resources.memory -}}
+    {{- $heap = div ($deployment.resources.memory | replace "Gi" "" | int | mul 1024 | mul 75 ) 100  -}}
+{{- else if contains "Mi" $deployment.resources.memory -}}
+    {{- $heap = div ($deployment.resources.memory | replace "Mi" "" | int | mul 75) 100  -}}
+{{- end -}}
+{{/* Calculate Xms = Xmx / xmxRatio */}}
+{{- $xms = div $heap $xmxRatio -}}
+{{- printf "-Xmx%vm -Xms%vm" $heap $xms -}}
 {{- end -}}
 
 {{- define "list-of-maps-contains" }}

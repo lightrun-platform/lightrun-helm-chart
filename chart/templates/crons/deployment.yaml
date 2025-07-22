@@ -131,7 +131,7 @@ spec:
             {{- end }}
             {{- if and (not (include "list-of-maps-contains" (list .Values.deployments.crons.extraEnvs "_JAVA_OPTIONS"))) (not (include "list-of-maps-contains" (list .Values.deployments.backend.extraEnvs "_JAVA_OPTIONS"))) }}
             - name: "_JAVA_OPTIONS"
-              value: {{- toYaml (include "calculate-heap-size" .Values.deployments.crons) | nindent 21  }}
+              value: {{- toYaml (include "calculate-heap-size" (list .Values.deployments.crons 1 3)) | nindent 21  }}
             {{- end }}
 
       # waiting for mysql, rabbitmq and keycloak initialization
