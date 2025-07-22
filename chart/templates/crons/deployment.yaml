@@ -1,3 +1,4 @@
+{{- if .Values.general.crons.enabled }}
 apiVersion: apps/v1 
 kind: Deployment
 metadata:
@@ -150,4 +151,4 @@ spec:
       affinity:
         {{ toYaml .Values.deployments.crons.affinity | nindent 8 }}
       {{- end }}
-
+{{- end }} 
