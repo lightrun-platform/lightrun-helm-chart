@@ -141,15 +141,6 @@ general:
       ## List of response status codes upon which the data streamer will not retry
       - 403
 
-  #####################
-  ## Crons
-  #####################
-  crons:
-    enabled: false
-    ## If set to `true`, will deploy a crons service for processing crons and other background operations
-    ## This service runs the same application as the backend but with crons profiles activated
-    ## It does not expose any external ports and focuses on background processing to improve backend performance
-
   ################################################
   ## Enable TLS communication between pods
   ################################################
