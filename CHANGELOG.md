@@ -401,7 +401,7 @@
 
 
 <a name="v3.17.0"></a>
-## [v3.17.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.16.6...v3.17.0) - 2025-05-11
+## [v3.17.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.16.7...v3.17.0) - 2025-05-11
 
 
 
@@ -448,6 +448,32 @@
 
 - [Support lightrun_init_sys_api_key secret (#48)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/e9533a0)
  
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.16.7"></a>
+## [v3.16.7](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.16.6...v3.16.7) - 2025-07-28
+
+
+
+### Versions
+
+| Image            | Tag                          |
+|------------------|------------------------------|
+| artifacts        | 1.57.6-release.28c0abba53    |
+| backend          | 1.57.6-release.28c0abba53    |
+| data_streamer    | 4.55.0-alpine-3.21.3-r0.lr-0 |
+| frontend         | 1.57.6-release.28c0abba53    |
+| keycloak         | 1.57.6-release.28c0abba53    |
+| mysql            | 8.0.38                       |
+| rabbitmq         | 3.12.14-alpine               |
+| redis            | 7.2.8-alpine-3.21.3-r0.lr-0  |
+| router           | 1.26.3-alpine-3.21.3-r0.lr-0 |
+| standalone_nginx | stable-alpine-slim           |
  
  
  
