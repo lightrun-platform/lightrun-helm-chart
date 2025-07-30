@@ -1,4 +1,53 @@
 
+<a name="v3.23.0"></a>
+## [v3.23.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.22.1...v3.23.0) - 2025-07-30
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.64.0-release.b8a5de8681    |
+| backend       | 1.64.0-release.b8a5de8681    |
+| crons         | 1.64.0-release.b8a5de8681    |
+| data_streamer | 4.56.0-alpine-3.22.0-r0.lr-0 |
+| frontend      | 1.64.0-release.b8a5de8681    |
+| keycloak      | 1.64.0-release.b8a5de8681    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine-3.22.0-r0.lr-0  |
+| redis         | 7.2.10-alpine-3.22.0-r0.lr-0 |
+| router        | 1.28.0-alpine-3.22.0-r0.lr-0 |
+
+
+
+
+ 
+ 
+
+
+### Changed (2 changes)
+
+- [bump redis to 7.2.10 (#116) (#117)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/f6f2a68)
+ 
+
+- [cron-service-resources (#112)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/5a82985)
+ 
+ 
+ 
+
+
+### Added (1 change)
+
+- [ratio-capability-when-calculating-heap-size-for-services (#115)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/d849114)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.22.1"></a>
 ## [v3.22.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.22.0...v3.22.1) - 2025-07-20
 
