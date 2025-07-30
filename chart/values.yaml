@@ -841,7 +841,7 @@ deployments:
       enabled: false
     image:
       repository: lightruncom/redis
-      tag: 7.2.9-alpine-3.22.0-r0.lr-0
+      tag: 7.2.10-alpine-3.22.0-r0.lr-0
       pullPolicy: IfNotPresent
     resources:
       cpu: 2000m
