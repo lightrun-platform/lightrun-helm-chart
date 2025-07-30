@@ -1,4 +1,53 @@
 
+<a name="v3.23.0"></a>
+## [v3.23.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.22.1...v3.23.0) - 2025-07-30
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.64.0-release.b8a5de8681    |
+| backend       | 1.64.0-release.b8a5de8681    |
+| crons         | 1.64.0-release.b8a5de8681    |
+| data_streamer | 4.56.0-alpine-3.22.0-r0.lr-0 |
+| frontend      | 1.64.0-release.b8a5de8681    |
+| keycloak      | 1.64.0-release.b8a5de8681    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine-3.22.0-r0.lr-0  |
+| redis         | 7.2.10-alpine-3.22.0-r0.lr-0 |
+| router        | 1.28.0-alpine-3.22.0-r0.lr-0 |
+
+
+
+
+ 
+ 
+
+
+### Changed (2 changes)
+
+- [bump redis to 7.2.10 (#116) (#117)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/f6f2a68)
+ 
+
+- [cron-service-resources (#112)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/5a82985)
+ 
+ 
+ 
+
+
+### Added (1 change)
+
+- [ratio-capability-when-calculating-heap-size-for-services (#115)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/d849114)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.22.1"></a>
 ## [v3.22.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.22.0...v3.22.1) - 2025-07-20
 
@@ -401,7 +450,7 @@
 
 
 <a name="v3.17.0"></a>
-## [v3.17.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.16.6...v3.17.0) - 2025-05-11
+## [v3.17.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.16.7...v3.17.0) - 2025-05-11
 
 
 
@@ -448,6 +497,32 @@
 
 - [Support lightrun_init_sys_api_key secret (#48)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/e9533a0)
  
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.16.7"></a>
+## [v3.16.7](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.16.6...v3.16.7) - 2025-07-28
+
+
+
+### Versions
+
+| Image            | Tag                          |
+|------------------|------------------------------|
+| artifacts        | 1.57.6-release.28c0abba53    |
+| backend          | 1.57.6-release.28c0abba53    |
+| data_streamer    | 4.55.0-alpine-3.21.3-r0.lr-0 |
+| frontend         | 1.57.6-release.28c0abba53    |
+| keycloak         | 1.57.6-release.28c0abba53    |
+| mysql            | 8.0.38                       |
+| rabbitmq         | 3.12.14-alpine               |
+| redis            | 7.2.8-alpine-3.21.3-r0.lr-0  |
+| router           | 1.26.3-alpine-3.21.3-r0.lr-0 |
+| standalone_nginx | stable-alpine-slim           |
  
  
  
