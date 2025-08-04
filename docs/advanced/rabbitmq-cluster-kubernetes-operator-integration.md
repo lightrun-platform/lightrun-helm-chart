@@ -1,6 +1,6 @@
 # Integrating Lightrun with RabbitMQ Cluster Kubernetes Operator
 
-This guide explains how to configure the Lightrun Helm chart to work with RabbitMQ Cluster Kubernetes Operator on Kubernetes clusters.
+This guide explains how to configure the Lightrun Helm chart to integrate with an existing RabbitMQ cluster managed by the RabbitMQ Cluster Kubernetes Operator.
 
 ## Prerequisites
 
@@ -104,7 +104,7 @@ spec:
   tls: {}
   ```
 
-A `definitions.json` file is used to declaratively configure RabbitMQ resources such as vhosts, policies, and queues. When imported, RabbitMQ applies these settings to enforce queue behavior, message TTLs, memory limits, and routing rules, ensuring consistent and automated broker configuration.
+The `definitions.json` file is used to declaratively configure RabbitMQ resources such as vhosts, policies, and queues. When imported, RabbitMQ applies these settings to enforce queue behavior, message TTLs, memory limits, and routing rules, ensuring consistent and automated broker configuration.
 These are the list of resources that will be created by the `definitions.json` file:
 
 ### Policies
@@ -231,9 +231,9 @@ When deploying Lightrun using Helm, you need to set the following values to inte
 ```
 
 Replace the following placeholders:
-- `<svc_name>`: The name of the service created for your Redis Enterprise Database
+- `<svc_name>`: The name of the service created for your RabbitMQ cluster
 
-### 4. Verify Configuration
+### 3. Verify Configuration
 
 After applying the configuration, you can verify the connection by checking the Lightrun server logs. You should see successful RabbitMQ connection messages in the logs.
 ```

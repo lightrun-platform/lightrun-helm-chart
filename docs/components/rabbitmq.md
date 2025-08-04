@@ -1,7 +1,6 @@
 # RabbitMQ
 
-RabbitMQ is used at Lightrun to decouple and buffer event-driven data such as telemetry and user actions between internal services.  
-It ensures reliable delivery and backpressure control for high-throughput pipelines that process events to mixpanel and keycloak events.
+RabbitMQ is used at Lightrun to decouple and buffer event-driven data such as telemetry and user actions between internal services. It ensures reliable delivery and backpressure control for high-throughput pipelines that process events for Mixpanel and Keycloak integrations.
 
 This page configures **RabbitMQ** as the message queue. 
 There are two modes:  
@@ -12,7 +11,7 @@ There are two modes:
 > When using external RabbitMQ, ensure that the provided endpoints are reachable.
 
 > [!Important]
-> - Support RabbitMQ versions 3.12.x.
+> - Supports RabbitMQ versions 3.12.x.
 > - Minimum size requirements: 0.5 vCPU, 1Gi memory.
 
 ### **Basic Configuration**
@@ -25,16 +24,16 @@ There are two modes:
 
 > [!NOTE]
 >   - If `general.mq.local: false`, all other RabbitMQ properties (such as storage, policies or metrics) **will be ignored** because the external RabbitMQ is expected to be pre-configured.
->   - If `general.mq.local: true`, only 1 replica of rabbitmq will be deployed. in addition, we do not support more than 1 replica of rabbitmq with local. Such configuraitons will result in unexpected behavior.
+>   - If `general.mq.local: true`, only 1 replica of rabbitmq will be deployed. in addition, we do not support more than 1 replica of rabbitmq with local. Such configurations will result in unexpected behavior.
 
 ### **External RabbitMQ Configuration (general.mq.local: false)**
-To use an external Rabbitmq instance, set general.mq.local to true. In this mode, the chart will not deploy a local Rabbitmq pod but will connect to an existing rabbitmq.
+To use an external RabbitMQ instance, set general.mq.local to false. In this mode, the chart will not deploy a local RabbitMQ pod but will connect to an existing RabbitMQ.
 
 ```yaml
   mq:
     enabled: true
     local: false
-    mq_endpoint: saas-rabbitmq # the k8s service name or the FQDN of the external RabbitMQ instance, like "rabbitmq.external.example.com"
+    mq_endpoint: saas-rabbitmq # Kubernetes service name or FQDN (e.g., "rabbitmq.external.example.com")
     port: "5672"
 ```
 
@@ -46,7 +45,7 @@ To use an external Rabbitmq instance, set general.mq.local to true. In this mode
 ### **Local RabbitMQ Configuration (general.mq.local: true)**
 
 - **`general.mq.queue_names: ["mixpanel-events","keycloak-events"]`** – The declared RabbitMQ queues names.
-    - **Changing this values** creates new queues (and a corresponding Dead Letter Queues).
+    - **Changing these values** creates new queues (and a corresponding Dead Letter Queues).
     - Old queues **will not be deleted automatically**.
     - New messages will be sent to the new queues.
 
@@ -71,7 +70,7 @@ general:
 | **`message_ttl: 600000000`**     | Time-to-live (TTL) for messages in milliseconds (**~7 days**).                  |
 | **`max_length: 2000`**           | Maximum number of messages allowed in the queue.                                |
 | [**`overflow: "reject-publish"`**](https://www.rabbitmq.com/docs/maxlength#overflow-behaviour) | Behavior when `max_length` is reached (`reject-publish` prevents new messages). |
-| **`max_length_bytes: 1000000`**  | Maximum total size of all messages (**500 bytes × 2000 messages**).             |
+| **`max_length_bytes: 1000000`**  | Maximum total size of all messages (**~1MB total**).             |
 
 This configuration **prevents queue overload** and ensures messages are retained only as needed.
 
@@ -189,7 +188,7 @@ deployments:
       failureThreshold: 3
 ```
 
-#### **Example of Local Redis Configuration**
+#### **Example of Local RabbitMQ Configuration**
 
 #### **Deploy a Local RabbitMQ Instance with 10Gi Storage**
 ```yaml
