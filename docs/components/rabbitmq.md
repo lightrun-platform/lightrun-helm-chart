@@ -1,11 +1,18 @@
 # RabbitMQ
 
-This page configures **RabbitMQ** as the message queue. You can either:  
-- Deploy a **local RabbitMQ instance** inside the cluster (`general.mq.local: true`) 
-- Connect to an **external RabbitMQ instance** (`general.mq.local: false`).
+RabbitMQ is used at Lightrun to decouple and buffer event-driven data such as telemetry and user actions between internal services. It ensures reliable delivery and backpressure control for high-throughput pipelines that process events for Mixpanel and Keycloak integrations.
+
+This page configures **RabbitMQ** as the message queue. 
+There are two modes:  
+- Local RabbitMQ Deployment - The chart deploys a **local RabbitMQ instance** inside the cluster (`general.mq.local: true`) 
+- External RabbitMQ Deployment: The chart connects to an **external RabbitMQ instance** (`general.mq.local: false`).
 
 > [!NOTE]
-> When using an external RabbitMQ instance, we support RabbitMQ versions 3.12.x.
+> When using external RabbitMQ, ensure that the provided endpoints are reachable.
+
+> [!Important]
+> - Supports RabbitMQ versions 3.12.x.
+> - Minimum size requirements: 0.5 vCPU, 1Gi memory.
 
 ### **Basic Configuration**
 | Property                                             | Description                                                                                               |
@@ -16,18 +23,33 @@ This page configures **RabbitMQ** as the message queue. You can either:
 | **`general.mq.port: "5672"`**                        | The **RabbitMQ connection port** (default: `5672`).                                                       |
 
 > [!NOTE]
->   - If `general.mq.local: false`, all other RabbitMQ properties (such as storage and policies) **will be ignored** because the external RabbitMQ is expected to be pre-configured.
->   - If `general.mq.local: true`, only 1 replica of rabbitmq will be deployed. in addition, we do not support more than 1 replica of rabbitmq with local. Such configuraitons will result in unexpected behavior.
+>   - If `general.mq.local: false`, all other RabbitMQ properties (such as storage, policies or metrics) **will be ignored** because the external RabbitMQ is expected to be pre-configured.
+>   - If `general.mq.local: true`, only 1 replica of rabbitmq will be deployed. in addition, we do not support more than 1 replica of rabbitmq with local. Such configurations will result in unexpected behavior.
 
+### **External RabbitMQ Configuration (general.mq.local: false)**
+To use an external RabbitMQ instance, set general.mq.local to false. In this mode, the chart will not deploy a local RabbitMQ pod but will connect to an existing RabbitMQ.
 
-### **Queue Configuration**
+```yaml
+  mq:
+    enabled: true
+    local: false
+    mq_endpoint: saas-rabbitmq # Kubernetes service name or FQDN (e.g., "rabbitmq.external.example.com")
+    port: "5672"
+```
 
-- **`general.mq.queue_name: "mixpanel-events"`** – The name of the RabbitMQ queue.
-    - **Changing this value** creates a new queue (and a corresponding Dead Letter Queue).
+> [!IMPORTANT]
+> - When using external RabbitMQ, local deployment settings (image, resources, health probes, etc.) do not apply.
+> - For instructions on integrating with RabbitMQ Cluster Kubernetes Operator , see [Integrating Lightrun with RabbitMQ Cluster Kubernetes Operator](../advanced/rabbitmq-cluster-kubernetes-operator-integration.md).
+---
+
+### **Local RabbitMQ Configuration (general.mq.local: true)**
+
+- **`general.mq.queue_names: ["mixpanel-events","keycloak-events"]`** – The declared RabbitMQ queues names.
+    - **Changing these values** creates new queues (and a corresponding Dead Letter Queues).
     - Old queues **will not be deleted automatically**.
-    - New messages will be sent to the new queue.
+    - New messages will be sent to the new queues.
 
-### **Policy Configuration**
+#### **Policy Configuration**
 
 The following policy applies to **all queues matching** the regex pattern specified:
 
@@ -35,7 +57,7 @@ The following policy applies to **all queues matching** the regex pattern specif
 general:
   mq:
     policy:
-      queue_regex_pattern: "^mixpanel-events.*"
+      queue_regex_pattern: "^.*-events.*"
       message_ttl: 600000000
       max_length: 2000
       overflow: "reject-publish"
@@ -48,12 +70,12 @@ general:
 | **`message_ttl: 600000000`**     | Time-to-live (TTL) for messages in milliseconds (**~7 days**).                  |
 | **`max_length: 2000`**           | Maximum number of messages allowed in the queue.                                |
 | [**`overflow: "reject-publish"`**](https://www.rabbitmq.com/docs/maxlength#overflow-behaviour) | Behavior when `max_length` is reached (`reject-publish` prevents new messages). |
-| **`max_length_bytes: 1000000`**  | Maximum total size of all messages (**500 bytes × 2000 messages**).             |
+| **`max_length_bytes: 1000000`**  | Maximum total size of all messages (**~1MB total**).             |
 
 This configuration **prevents queue overload** and ensures messages are retained only as needed.
 
 
-### **Storage Configuration (Only if `general.mq.local: true`)**
+#### **Storage Configuration (Only if `general.mq.local: true`)**
 
 ```yaml
 general:
@@ -76,7 +98,7 @@ general:
 > [!WARNING]
 > To **disable persistent storage**, set `storage: "0"` (all data will be lost on pod restart). This creates a deployment instead of statefulset.
 
-### **Metrics Configuration**
+#### **Metrics Configuration**
 
 - **`general.mq.metrics: false`** – If `true`, enables the **RabbitMQ Prometheus plugin**.
 - Metrics are exposed on port `15692` via the RabbitMQ service.
@@ -93,7 +115,7 @@ deployments:
         prometheus.io/port: '15692'
 
 ```
-### **Pod Configuration**
+#### **Pod Configuration**
 This is the **default RabbitMQ pod configuration**.
 Configuration is defined under **`deployments.rabbitmq`** in the **`values.yaml`** file.
 ```yaml
@@ -166,9 +188,9 @@ deployments:
       failureThreshold: 3
 ```
 
-### **Example Configurations**
+#### **Example of Local RabbitMQ Configuration**
 
-#### **1️) Deploy a Local RabbitMQ Instance with 10Gi Storage**
+#### **Deploy a Local RabbitMQ Instance with 10Gi Storage**
 ```yaml
 general:
   mq:
@@ -177,14 +199,4 @@ general:
     storageClassName: "gp3"
     storage: "10Gi"
     metrics: true
-```
-#### **2️) Connect to an External RabbitMQ Instance**
-
-```yaml
-general:
-  mq:
-    enabled: true
-    local: false
-    mq_endpoint: "rabbitmq.external.example.com"
-    port: 5672
 ```
