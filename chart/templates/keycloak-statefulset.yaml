@@ -199,12 +199,12 @@ spec:
             {{ end }}
             - name: KC_PROXY_HEADERS
               value: "xforwarded"
-            - name: KEYCLOAK_ADMIN
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: {{ include "secrets.keycloak.name" . }}
                   key: KEYCLOAK_USER
-            - name: KEYCLOAK_ADMIN_PASSWORD
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ include "secrets.keycloak.name" . }}
