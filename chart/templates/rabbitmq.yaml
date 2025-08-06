@@ -90,10 +90,10 @@ spec:
             timeoutSeconds: {{ .Values.deployments.rabbitmq.readinessProbe.timeoutSeconds }}
             successThreshold: {{ .Values.deployments.rabbitmq.readinessProbe.successThreshold }}
             failureThreshold: {{ .Values.deployments.rabbitmq.readinessProbe.failureThreshold }}
-          {{- with .Values.deployments.rabbitmq.lifecycle }}
-          lifecycle:
-            {{ toYaml . | nindent 12 }}
-          {{- end }}
+          # {{- with .Values.deployments.rabbitmq.lifecycle }}
+          # lifecycle:
+          #   {{ toYaml . | nindent 12 }}
+          # {{- end }}
           resources:
             requests:
               cpu: {{ .Values.deployments.rabbitmq.resources.cpu }}
