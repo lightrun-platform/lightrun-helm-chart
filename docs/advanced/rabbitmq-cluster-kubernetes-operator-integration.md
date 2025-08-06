@@ -10,7 +10,7 @@ This guide explains how to configure the Lightrun Helm chart to integrate with a
 ## Configuration Steps
 
 ### 1. Create RabbitMQ Cluster
-Create a RabbitMQ cluster using the RabbitMQ Cluster Kubernetes Operator. You can use the following example YAML to create a RabbitMQ cluster:
+Create a RabbitMQ cluster using the RabbitMQ Cluster Kubernetes Operator. Use the following required configuration to create a RabbitMQ cluster that is compatible with Lightrun:
 
 ```yaml
 apiVersion: rabbitmq.com/v1beta1
@@ -104,8 +104,9 @@ spec:
   tls: {}
   ```
 
-The `definitions.json` file is used to declaratively configure RabbitMQ resources such as vhosts, policies, and queues. When imported, RabbitMQ applies these settings to enforce queue behavior, message TTLs, memory limits, and routing rules, ensuring consistent and automated broker configuration.
-These are the list of resources that will be created by the `definitions.json` file:
+**Important:** The `definitions.json` file is required to declaratively configure RabbitMQ resources such as vhosts, policies, and queues. When imported, RabbitMQ applies these settings to enforce queue behavior, message TTLs, memory limits, and routing rules, ensuring consistent and automated broker configuration for Lightrun.
+
+The following resources are mandatory and will be created by the `definitions.json` file:
 
 ### Policies
 | Name                                                  | VHost | Pattern         | Apply To | Definition                                                           | Priority |
@@ -122,7 +123,7 @@ These are the list of resources that will be created by the `definitions.json` f
 | keycloak-events       | /     | true    | false        | ""                   | keycloak-events.dlq         | quorum     | chart      |
 | keycloak-events.dlq   | /     | true    | false        |                      |                             | quorum     | chart      |
 
-Deploy the following configmap which is used to define the RabbitMQ resources via the definitions.json file:
+Deploy the following ConfigMap which is required to define the RabbitMQ resources via the definitions.json file. This configuration is mandatory for proper Lightrun integration:
 
 ```yaml
 apiVersion: v1
@@ -220,7 +221,7 @@ data:
 
 ### 2. Configure Lightrun Helm Chart Values
 
-When deploying Lightrun using Helm, you need to set the following values to integrate with your created RabbitMQ cluster:
+When deploying Lightrun using Helm, you must set the following values to properly integrate with your RabbitMQ cluster:
 
 ```yaml
   mq:
