@@ -1,4 +1,30 @@
 
+<a name="v3.23.2"></a>
+## [v3.23.2](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.23.1...v3.23.2) - 2025-08-07
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.64.2-release.7b094fb087    |
+| backend       | 1.64.2-release.7b094fb087    |
+| crons         | 1.64.2-release.7b094fb087    |
+| data_streamer | 4.56.0-alpine-3.22.0-r0.lr-0 |
+| frontend      | 1.64.2-release.7b094fb087    |
+| keycloak      | 1.64.2-release.7b094fb087    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine-3.22.0-r0.lr-0  |
+| redis         | 7.2.10-alpine-3.22.0-r0.lr-1 |
+| router        | 1.28.0-alpine-3.22.0-r0.lr-0 |
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.23.1"></a>
 ## [v3.23.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.23.0...v3.23.1) - 2025-08-03
 
@@ -476,7 +502,7 @@
 
 
 <a name="v3.17.0"></a>
-## [v3.17.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.16.7...v3.17.0) - 2025-05-11
+## [v3.17.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.16.8...v3.17.0) - 2025-05-11
 
 
 
@@ -523,6 +549,32 @@
 
 - [Support lightrun_init_sys_api_key secret (#48)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/e9533a0)
  
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.16.8"></a>
+## [v3.16.8](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.16.7...v3.16.8) - 2025-08-07
+
+
+
+### Versions
+
+| Image            | Tag                          |
+|------------------|------------------------------|
+| artifacts        | 1.57.7-release.01d79cc4cd    |
+| backend          | 1.57.7-release.01d79cc4cd    |
+| data_streamer    | 4.55.0-alpine-3.21.3-r0.lr-0 |
+| frontend         | 1.57.7-release.01d79cc4cd    |
+| keycloak         | 1.57.7-release.01d79cc4cd    |
+| mysql            | 8.0.38                       |
+| rabbitmq         | 3.12.14-alpine               |
+| redis            | 7.2.8-alpine-3.21.3-r0.lr-0  |
+| router           | 1.26.3-alpine-3.21.3-r0.lr-0 |
+| standalone_nginx | stable-alpine-slim           |
  
  
  
