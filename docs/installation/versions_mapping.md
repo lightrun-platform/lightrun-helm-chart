@@ -11,6 +11,7 @@
 | 3.19.0        | 1.60.0-release.209dd9d600 |
 | 3.18.0        | 1.59.0-release.50ad36cad6 |
 | 3.17.0        | 1.58.1-release.a4f3b6a620 |
+| 3.16.8        | 1.57.7-release.01d79cc4cd |
 | 3.16.7        | 1.57.6-release.28c0abba53 |
 | 3.16.6        | 1.57.5-release.8e2c9a0d3d |
 | 3.16.5        | 1.57.4-release.55788b7735 |
