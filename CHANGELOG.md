@@ -1,6 +1,6 @@
 
 <a name="v3.24.0"></a>
-## [v3.24.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.23.2...v3.24.0) - 2025-08-11
+## [v3.24.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.23.3...v3.24.0) - 2025-08-11
 
 
 
@@ -33,6 +33,32 @@
 
 - [bump redis to 7.2.10 (#116)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/ba17dab)
  
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.23.3"></a>
+## [v3.23.3](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.23.2...v3.23.3) - 2025-08-12
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.64.3-release.64b0fee50a    |
+| backend       | 1.64.3-release.64b0fee50a    |
+| crons         | 1.64.3-release.64b0fee50a    |
+| data_streamer | 4.56.0-alpine-3.22.0-r0.lr-0 |
+| frontend      | 1.64.3-release.64b0fee50a    |
+| keycloak      | 1.64.3-release.64b0fee50a    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine-3.22.0-r0.lr-0  |
+| redis         | 7.2.10-alpine-3.22.0-r0.lr-1 |
+| router        | 1.28.0-alpine-3.22.0-r0.lr-0 |
  
  
  
