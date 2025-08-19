@@ -6,7 +6,7 @@
     - sh
     - -c
     - |
-      set -ex
+      set -x
       cd /tmp
       wget {{ .downloadUrl }} -O async-profiler.tar.gz
       tar xvf async-profiler.tar.gz
