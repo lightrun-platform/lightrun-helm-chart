@@ -6,9 +6,10 @@
     - sh
     - -c
     - |
-      set -ex
+      set -x
       cd /tmp_not_exist
-      wget {{ .downloadUrlx }} -O async-profiler.tar.gz
+      cd /tmp
+      wget {{ .downloadUrl }} -O async-profiler.tar.gz
       tar xvf async-profiler.tar.gz
       cp -r async-profiler-*/* /async-profiler
   resources:
