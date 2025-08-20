@@ -7,7 +7,6 @@
     - -c
     - |
       set -x
-      cd /tmp_not_exist
       cd /tmp
       wget {{ .downloadUrl }} -O async-profiler.tar.gz
       tar xvf async-profiler.tar.gz
