@@ -12,6 +12,7 @@
         ASYNC_PROFILER_FAILED_TO_DOWNLOAD=true
         exit 0
       fi
+      ASYNC_PROFILER_FAILED_TO_DOWNLOAD=false
       tar xvf async-profiler.tar.gz
       cp -r async-profiler-*/* /async-profiler
   resources:
