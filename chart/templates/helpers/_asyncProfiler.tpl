@@ -25,6 +25,8 @@
   volumeMounts:
     - name: async-profiler-download
       mountPath: /async-profiler
+    - name: async-profiler-download-status
+      mountPath: /async-profiler-download-status
 {{- end -}}
 
 
