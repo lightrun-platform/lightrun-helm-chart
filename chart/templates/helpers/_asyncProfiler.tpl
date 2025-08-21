@@ -6,9 +6,12 @@
     - sh
     - -c
     - |
-      set -x
+      set -ex
       cd /tmp
-      wget {{ .downloadUrl }} -O async-profiler.tar.gz
+      if ! wget "{{ .downloadUrl }}" -O async-profiler.tar.gz; then
+        ASYNC_PROFILER_FAILED_TO_DOWNLOAD=true
+        exit 0
+      fi
       tar xvf async-profiler.tar.gz
       cp -r async-profiler-*/* /async-profiler
   resources:
