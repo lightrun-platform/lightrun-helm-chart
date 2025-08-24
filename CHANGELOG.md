@@ -1,4 +1,66 @@
 
+<a name="v3.25.0"></a>
+## [v3.25.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.24.1...v3.25.0) - 2025-08-24
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.66.0-release.4f92d4c5d0    |
+| backend       | 1.66.0-release.4f92d4c5d0    |
+| crons         | 1.66.0-release.4f92d4c5d0    |
+| data_streamer | 4.56.0-alpine-3.22.0-r0.lr-0 |
+| frontend      | 1.66.0-release.4f92d4c5d0    |
+| keycloak      | 1.66.0-release.4f92d4c5d0    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine-3.22.0-r0.lr-0  |
+| redis         | 7.2.10-alpine-3.22.0-r0.lr-1 |
+| router        | 1.28.0-alpine-3.22.0-r0.lr-0 |
+
+
+
+
+
+
+ 
+ 
+
+
+### Removed (1 change)
+
+- [tests-from-templates-due-to-helm-ignore-behaivor-during-ci-when-used-during-helm-test (#127)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/e6f6411)
+ 
+ 
+ 
+
+
+### Added (2 changes)
+
+- [helm-ignore-for-tests-folder-when-packaging-chart (#125)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/403c49c)
+ 
+
+- [documentation-for-external-rabbitmq-configuration-and-updated-local-rabbitme-docs (#121)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/bdb39c6)
+ 
+ 
+ 
+
+
+### Fixed (2 changes)
+
+- [data-streamer-cve-by-bumping-version-to-4.61.0-reverted (#124)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/b2b3355)
+ 
+
+- [data-streamer-cve-by-bumping-version-to-4.61.0 (#123)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/54ba49e)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.24.1"></a>
 ## [v3.24.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.24.0...v3.24.1) - 2025-08-17
 
