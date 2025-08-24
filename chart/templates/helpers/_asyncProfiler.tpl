@@ -12,7 +12,6 @@
         touch /async-profiler-download-status/download-failed
         exit 0
       fi
-      touch /async-profiler-download-status/download-succeed
       tar xvf async-profiler.tar.gz
       cp -r async-profiler-*/* /async-profiler
   resources:
