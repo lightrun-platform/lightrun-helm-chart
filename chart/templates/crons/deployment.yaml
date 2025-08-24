@@ -62,16 +62,26 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
-          command: ["/usr/lib/jvm/default-jvm/bin/java"]
-          args: [
-            {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name }}
-            "-Djavax.net.ssl.trustStore=/p12/internalca",
-            "-Djavax.net.ssl.trustStorePassword=$(KEYSTORE_PASSWORD)",
-            {{- end }}
-            {{- include "lightrun-crons.java.argument.asyncProfiler" . | nindent 12 }}
-            "-jar",
-            "/usr/src/lightrun/{{ .Values.deployments.crons.jar_name }}"
-          ]
+          command: ["sh", "-c"]
+          args:
+            - |
+              if [ -f /async-profiler-download-status/download-failed ]; then
+                echo "async-profiler setup failed earlier, starting without it"
+                exec /usr/lib/jvm/default-jvm/bin/java \
+                {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name }}
+                "-Djavax.net.ssl.trustStore=/p12/internalca" \
+                "-Djavax.net.ssl.trustStorePassword=$(KEYSTORE_PASSWORD)" \
+                {{- end }}
+                "-jar" "/usr/src/lightrun/{{ .Values.deployments.crons.jar_name }}"
+              else
+                exec /usr/lib/jvm/default-jvm/bin/java \
+                {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name }}
+                "-Djavax.net.ssl.trustStore=/p12/internalca" \
+                "-Djavax.net.ssl.trustStorePassword=$(KEYSTORE_PASSWORD)" \
+                {{- end }}
+                {{- include "lightrun-crons.java.argument.asyncProfiler" . | nindent 16 }}
+                "-jar" "/usr/src/lightrun/{{ .Values.deployments.crons.jar_name }}"
+              fi
           volumeMounts:
           {{- include "lightrun-backend-crons.volumeMounts" . | nindent 12 }}
           {{- include "lightrun-crons.volumeMounts.asyncProfiler" . | nindent 12 }}
