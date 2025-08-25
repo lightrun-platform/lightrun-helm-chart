@@ -108,9 +108,9 @@ spec:
               echo "not clustermode2"
               exec /opt/keycloak/bin/kc.sh start --optimized
               {{- end }}
-          {{- if .Values.deployments.keycloak.useJsonLogFormat }}
-            - '--log-console-output=json'
-          {{- end }}
+              {{- if .Values.deployments.keycloak.useJsonLogFormat }}
+                - '--log-console-output=json'
+              {{- end }}
           {{- if or .Values.general.readOnlyRootFilesystem
                     .Values.general.internal_tls.enabled
                     .Values.deployments.keycloak.extraVolumeMounts
