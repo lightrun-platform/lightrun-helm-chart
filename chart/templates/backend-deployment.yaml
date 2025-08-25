@@ -95,23 +95,6 @@ spec:
              echo "Final CMD: $CMD"
              exec $CMD
 
-             if [ ! -f /async-profiler/lib/libasyncProfiler.so ]; then
-               echo "async-profiler setup failed earlier, starting without it"
-               exec /usr/lib/jvm/default-jvm/bin/java \
-               {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name }}
-               "-Djavax.net.ssl.trustStore=/p12/internalca" \
-               "-Djavax.net.ssl.trustStorePassword=$(KEYSTORE_PASSWORD)" \
-               {{- end }}
-               "-jar" "/usr/src/lightrun/{{ .Values.deployments.backend.jar_name }}"
-             else
-               exec /usr/lib/jvm/default-jvm/bin/java \
-               {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name }}
-               "-Djavax.net.ssl.trustStore=/p12/internalca" \
-               "-Djavax.net.ssl.trustStorePassword=$(KEYSTORE_PASSWORD)" \
-               {{- end }}
-               {{- include "lightrun-backend.java.argument.asyncProfiler" . | nindent 16 }} \
-               "-jar" "/usr/src/lightrun/{{ .Values.deployments.backend.jar_name }}"
-             fi
           volumeMounts:
           {{- include "lightrun-backend-crons.volumeMounts" . | nindent 12 }}
           {{- include "lightrun-backend.volumeMounts.asyncProfiler" . | nindent 12 }}
