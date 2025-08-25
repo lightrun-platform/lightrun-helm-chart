@@ -65,23 +65,28 @@ spec:
           command: ["sh", "-c"]
           args:
             - |
-              if [ ! -f /async-profiler/lib/libasyncProfiler.so ]; then
-                echo "async-profiler setup failed earlier, starting without it"
-                exec /usr/lib/jvm/default-jvm/bin/java \
-                {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name }}
-                "-Djavax.net.ssl.trustStore=/p12/internalca" \
-                "-Djavax.net.ssl.trustStorePassword=$(KEYSTORE_PASSWORD)" \
-                {{- end }}
-                "-jar" "/usr/src/lightrun/{{ .Values.deployments.crons.jar_name }}"
+              CMD="/usr/lib/jvm/default-jvm/bin/java"
+              
+              # Add TLS opts if enabled
+              {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name }}
+              CMD="$CMD -Djavax.net.ssl.trustStore=/p12/internalca"
+              CMD="$CMD -Djavax.net.ssl.trustStorePassword=$(KEYSTORE_PASSWORD)"
+              {{- end }}
+              
+              # Add async-profiler only if setup succeeded
+              if [ -f /async-profiler/lib/libasyncProfiler.so ]; then
+                echo "async-profiler available, enabling it..."
+                CMD="$CMD {{ include "lightrun-crons.java.argument.asyncProfiler" . }}"
               else
-                exec /usr/lib/jvm/default-jvm/bin/java \
-                {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name }}
-                "-Djavax.net.ssl.trustStore=/p12/internalca" \
-                "-Djavax.net.ssl.trustStorePassword=$(KEYSTORE_PASSWORD)" \
-                {{- end }}
-                {{- include "lightrun-crons.java.argument.asyncProfiler" . | nindent 16 }}
-                "-jar" "/usr/src/lightrun/{{ .Values.deployments.crons.jar_name }}"
+                echo "async-profiler setup failed earlier, starting without it"
               fi
+              
+              # Add the jar
+              CMD="$CMD -jar /usr/src/lightrun/{{ .Values.deployments.crons.jar_name }}"
+
+              echo "Final CMD: $CMD"
+              exec $CMD
+
           volumeMounts:
           {{- include "lightrun-backend-crons.volumeMounts" . | nindent 12 }}
           {{- include "lightrun-crons.volumeMounts.asyncProfiler" . | nindent 12 }}
