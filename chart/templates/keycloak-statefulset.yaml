@@ -109,7 +109,7 @@ spec:
               {{- end }}
 
               echo "JAVA_OPTS_APPEND at runtime: $JAVA_OPTS_APPEND"
-              echo "Final CMD: $CMD"
+
               exec $CMD
 
           {{- if or .Values.general.readOnlyRootFilesystem

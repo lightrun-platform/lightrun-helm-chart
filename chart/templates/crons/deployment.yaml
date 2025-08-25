@@ -84,7 +84,6 @@ spec:
               # Add the jar
               CMD="$CMD -jar /usr/src/lightrun/{{ .Values.deployments.crons.jar_name }}"
 
-              echo "Final CMD: $CMD"
               exec $CMD
 
           volumeMounts:
