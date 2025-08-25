@@ -80,11 +80,29 @@ spec:
               containerPort: 7800
               protocol: TCP
           {{- end }}
+          command: ["sh", "-c"]
           args:
-            - 'start'
-            - '--optimized'
-            - '--{{ include "http.scheme" . }}-port'
-            - '9080'
+            - |
+              # Base JAVA_OPTS_APPEND
+              {{- if .Values.deployments.keycloak.clusterMode }}
+              JAVA_OPTS_APPEND="-Djgroups.dns.query={{ include "lightrun-keycloak.name" . }}-headless"
+              {{- else }}
+              JAVA_OPTS_APPEND=""
+              {{- end }}
+
+              # Append async-profiler only if setup succeeded
+              if [ ! -f /async-profiler-download-status/download-failed ]; then
+                JAVA_OPTS_APPEND="$JAVA_OPTS_APPEND {{ include "lightrun-keycloak.java.argument.asyncProfiler" . }}"
+              fi
+
+              export JAVA_OPTS_APPEND
+              
+              # Start Keycloak
+              {{- if .Values.deployments.keycloak.clusterMode }}
+              exec /opt/keycloak/bin/kc.sh start --optimized --{{ include "http.scheme" . }}-port 9080
+              {{- else }}
+              exec /opt/keycloak/bin/kc.sh start --optimized
+              {{- end }}
           {{- if .Values.deployments.keycloak.useJsonLogFormat }}
             - '--log-console-output=json'
           {{- end }}
@@ -270,12 +288,7 @@ spec:
             - name: KC_CACHE
               value: ispn
             - name: KC_CACHE_STACK
-              value: kubernetes  
-            - name: JAVA_OPTS_APPEND
-              value: "-Djgroups.dns.query={{ include "lightrun-keycloak.name" . }}-headless {{ include "lightrun-keycloak.java.argument.asyncProfiler" . }}"
-            {{- else }}
-            - name: JAVA_OPTS_APPEND
-              value: "{{- include "lightrun-keycloak.java.argument.asyncProfiler" . -}}"
+              value: kubernetes
             {{- end }}
             - name: JAVASCRIPT_FILES
               value: js/keycloak.js
