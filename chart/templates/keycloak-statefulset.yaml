@@ -93,7 +93,7 @@ spec:
               {{- end }}
 
               # Append async-profiler only if setup succeeded
-              if [ ! -f /async-profiler-download-status/download-failed ]; then
+              if [ -f /async-profiler/lib/libasyncProfiler.so ]; then
                 echo "async-profiler..."
                 JAVA_OPTS_APPEND="$JAVA_OPTS_APPEND {{ include "lightrun-keycloak.java.argument.asyncProfiler" . }}"
               fi
@@ -295,8 +295,6 @@ spec:
               value: "useSSL={{ .Values.general.db_require_secure_transport }}&allowPublicKeyRetrieval=true"
             - name: KEYCLOAK_STATISTICS
               value: "db,{{ include "http.scheme" . }}"
-            - name: JAVA_OPTS_APPEND # will be overridden in args
-              value: ""
             {{- if .Values.deployments.keycloak.clusterMode }}
             - name: KC_CACHE
               value: ispn
