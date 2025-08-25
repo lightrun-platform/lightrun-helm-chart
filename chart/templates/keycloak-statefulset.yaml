@@ -85,13 +85,16 @@ spec:
             - |
               # Base JAVA_OPTS_APPEND
               {{- if .Values.deployments.keycloak.clusterMode }}
+              echo "clustermode"
               JAVA_OPTS_APPEND="-Djgroups.dns.query={{ include "lightrun-keycloak.name" . }}-headless"
               {{- else }}
+              echo "not clustermode"
               JAVA_OPTS_APPEND=""
               {{- end }}
 
               # Append async-profiler only if setup succeeded
               if [ ! -f /async-profiler-download-status/download-failed ]; then
+                echo "async-profiler..."
                 JAVA_OPTS_APPEND="$JAVA_OPTS_APPEND {{ include "lightrun-keycloak.java.argument.asyncProfiler" . }}"
               fi
 
@@ -100,7 +103,9 @@ spec:
               # Start Keycloak
               {{- if .Values.deployments.keycloak.clusterMode }}
               exec /opt/keycloak/bin/kc.sh start --optimized --{{ include "http.scheme" . }}-port 9080
+              echo "clustermode2"
               {{- else }}
+              echo "not clustermode2"
               exec /opt/keycloak/bin/kc.sh start --optimized
               {{- end }}
           {{- if .Values.deployments.keycloak.useJsonLogFormat }}
