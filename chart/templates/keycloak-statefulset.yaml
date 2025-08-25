@@ -99,18 +99,23 @@ spec:
               fi
 
               export JAVA_OPTS_APPEND
-              
-              # Start Keycloak
+
+              # Build startup command
+              CMD="/opt/keycloak/bin/kc.sh start --optimized"
+
               {{- if .Values.deployments.keycloak.clusterMode }}
-              exec /opt/keycloak/bin/kc.sh start --optimized --{{ include "http.scheme" . }}-port 9080
+              CMD="$CMD --{{ include "http.scheme" . }}-port 9080"
               echo "clustermode2"
-              {{- else }}
-              echo "not clustermode2"
-              exec /opt/keycloak/bin/kc.sh start --optimized
               {{- end }}
+
               {{- if .Values.deployments.keycloak.useJsonLogFormat }}
-                - '--log-console-output=json'
+              CMD="$CMD --log-console-output=json"
+              echo "useJsonLogFormat"
               {{- end }}
+
+              echo "Final CMD: $CMD"
+              exec $CMD
+
           {{- if or .Values.general.readOnlyRootFilesystem
                     .Values.general.internal_tls.enabled
                     .Values.deployments.keycloak.extraVolumeMounts
