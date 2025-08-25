@@ -113,6 +113,7 @@ spec:
               echo "useJsonLogFormat"
               {{- end }}
 
+              echo "JAVA_OPTS_APPEND at runtime: $JAVA_OPTS_APPEND"
               echo "Final CMD: $CMD"
               exec $CMD
 
@@ -294,6 +295,8 @@ spec:
               value: "useSSL={{ .Values.general.db_require_secure_transport }}&allowPublicKeyRetrieval=true"
             - name: KEYCLOAK_STATISTICS
               value: "db,{{ include "http.scheme" . }}"
+            - name: JAVA_OPTS_APPEND # will be overridden in args
+              value: ""
             {{- if .Values.deployments.keycloak.clusterMode }}
             - name: KC_CACHE
               value: ispn
