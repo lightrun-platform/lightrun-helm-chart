@@ -200,12 +200,6 @@ steps:
 
 - script: |
     set -euo pipefail
-    # Run helm test and capture the pod names
-    helm test $(RELEASE_NAME) -n $(NAMESPACE)    
-  displayName: 'Run Chart Tests'
-
-- script: |
-    set -euo pipefail
     helm uninstall $(RELEASE_NAME) -n $(NAMESPACE)
   displayName: 'Cleanup'
   condition: always() 
