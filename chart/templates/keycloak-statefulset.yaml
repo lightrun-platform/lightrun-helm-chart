@@ -91,7 +91,7 @@ spec:
               {{- end }}
 
               # Append async-profiler only if setup succeeded
-              if [ -f /async-profiler/lib/libasyncProfiler.so ]; then
+              if [ -f {{ (split "=" (include "asyncProfiler.java.agentpath" .))._0 | trimPrefix "-agentpath:" }} ]; then
                 JAVA_OPTS_APPEND="$JAVA_OPTS_APPEND {{ include "lightrun-keycloak.java.argument.asyncProfiler" . }}"
               fi
 

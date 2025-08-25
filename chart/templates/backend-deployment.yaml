@@ -82,17 +82,13 @@ spec:
              {{- end }}
 
              # Add async-profiler only if setup succeeded
-             if [ -f /async-profiler/lib/libasyncProfiler.so ]; then
-               echo "async-profiler available, enabling it..."
+             if [ -f {{ (split "=" (include "asyncProfiler.java.agentpath" .))._0 | trimPrefix "-agentpath:" }} ]; then
                CMD="$CMD {{ include "lightrun-backend.java.argument.asyncProfiler" . }}"
-             else
-               echo "async-profiler setup failed earlier, starting without it"
              fi
 
              # Add the jar
              CMD="$CMD -jar /usr/src/lightrun/{{ .Values.deployments.backend.jar_name }}"
 
-             echo "Final CMD: $CMD"
              exec $CMD
 
           volumeMounts:
