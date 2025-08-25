@@ -75,10 +75,7 @@ spec:
               
               # Add async-profiler only if setup succeeded
               if [ -f {{ (split "=" (include "asyncProfiler.java.agentpath" .))._0 | trimPrefix "-agentpath:" }} ]; then
-                echo "async-profiler available, enabling it..."
                 CMD="$CMD {{ include "lightrun-crons.java.argument.asyncProfiler" . }}"
-              else
-                echo "async-profiler setup failed earlier, starting without it"
               fi
               
               # Add the jar
