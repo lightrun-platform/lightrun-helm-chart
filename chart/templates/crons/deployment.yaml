@@ -65,7 +65,7 @@ spec:
           command: ["sh", "-c"]
           args:
             - |
-              if [ -f /async-profiler-download-status/download-failed ]; then
+              if [ ! -f /async-profiler/lib/libasyncProfiler.so ]; then
                 echo "async-profiler setup failed earlier, starting without it"
                 exec /usr/lib/jvm/default-jvm/bin/java \
                 {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name }}

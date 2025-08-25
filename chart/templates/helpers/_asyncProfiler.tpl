@@ -9,7 +9,6 @@
       set -ex
       cd /tmp
       if ! wget "{{ .downloadUrl }}" -O async-profiler.tar.gz; then
-        touch /async-profiler-download-status/download-failed
         exit 0
       fi
       tar xvf async-profiler.tar.gz
@@ -24,8 +23,6 @@
   volumeMounts:
     - name: async-profiler-download
       mountPath: /async-profiler
-    - name: async-profiler-download-status
-      mountPath: /async-profiler-download-status
 {{- end -}}
 
 
@@ -95,9 +92,6 @@
 - name: async-profiler-download
   emptyDir:
     sizeLimit: 50Mi
-- name: async-profiler-download-status
-  emptyDir:
-    sizeLimit: 10Mi
 {{- end -}}
 
 
@@ -106,8 +100,6 @@
   mountPath: /async-profiler-tmp
 - name: async-profiler-download
   mountPath: /async-profiler
-- name: async-profiler-download-status
-  mountPath: /async-profiler-download-status
 {{- end -}}
 
 
