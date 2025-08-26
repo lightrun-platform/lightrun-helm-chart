@@ -1,4 +1,46 @@
 
+<a name="v3.23.6"></a>
+## [v3.23.6](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.23.5...v3.23.6) - 2025-08-26
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.64.4-release.4d96a911d1    |
+| backend       | 1.64.4-release.4d96a911d1    |
+| crons         | 1.64.4-release.4d96a911d1    |
+| data_streamer | 4.56.0-alpine-3.22.0-r0.lr-0 |
+| frontend      | 1.64.4-release.4d96a911d1    |
+| keycloak      | 1.64.4-release.4d96a911d1    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine-3.22.0-r0.lr-0  |
+| redis         | 7.2.10-alpine-3.22.0-r0.lr-1 |
+| router        | 1.28.0-alpine-3.22.0-r0.lr-0 |
+ 
+ 
+
+
+### Removed (1 change)
+
+- [tests-from-templates-due-to-helm-ignore-behaivor-… (#128)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/1c3b181)
+ 
+ 
+ 
+
+
+### Changed (1 change)
+
+- [deprecated-keycloak-env-vars (#122) (#129)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/17cf438)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.23.5"></a>
 ## [v3.23.5](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.23.4...v3.23.5) - 2025-08-25
 
