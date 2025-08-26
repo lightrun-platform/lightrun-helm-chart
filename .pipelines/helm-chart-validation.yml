@@ -179,6 +179,11 @@ steps:
 
 - script: |
     set -euo pipefail
+    set -euo pipefail
+
+    trap 'echo "--- Pods status ---"; kubectl get pods -n "$NAMESPACE" -o wide;
+    echo "--- Events ---"; kubectl get events -n "$NAMESPACE" --sort-by=.lastTimestamp;' ERR
+
     helm install $(RELEASE_NAME) $(CHART_PATH) \
       -f values.yaml \
       --namespace $(NAMESPACE) \
