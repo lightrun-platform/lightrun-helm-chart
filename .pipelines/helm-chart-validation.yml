@@ -181,10 +181,6 @@ steps:
     set -euo pipefail
     set -euo pipefail
 
-    trap 'echo "--- Pods status ---"; kubectl get pods -n "$NAMESPACE" -o wide;
-    echo "--- Events ---"; kubectl get events -n "$NAMESPACE" --sort-by=.lastTimestamp;
-    echo "--- Backend logs ---"; kubectl logs -n "$NAMESPACE" -l app=lightrun-backend --tail=300 || true;' ERR
-
     helm install $(RELEASE_NAME) $(CHART_PATH) \
       -f values.yaml \
       --namespace $(NAMESPACE) \
