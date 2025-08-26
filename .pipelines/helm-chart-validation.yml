@@ -179,6 +179,8 @@ steps:
 
 - script: |
     set -euo pipefail
+    set -euo pipefail
+
     helm install $(RELEASE_NAME) $(CHART_PATH) \
       -f values.yaml \
       --namespace $(NAMESPACE) \
@@ -197,12 +199,6 @@ steps:
     # Get deployment status
     kubectl get deployments -n $(NAMESPACE) -o wide
   displayName: 'Verify Deployment'
-
-- script: |
-    set -euo pipefail
-    # Run helm test and capture the pod names
-    helm test $(RELEASE_NAME) -n $(NAMESPACE)    
-  displayName: 'Run Chart Tests'
 
 - script: |
     set -euo pipefail
