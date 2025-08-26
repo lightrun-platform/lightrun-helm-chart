@@ -103,6 +103,10 @@
 {{- end -}}
 
 
+{{- define "asyncProfiler.libPath" -}}
+/async-profiler/lib/libasyncProfiler.so
+{{- end -}}
+
 {{- define "asyncProfiler.java.agentpath" -}}
--agentpath:/async-profiler/lib/libasyncProfiler.so={{ .arguments }}
+-agentpath:{{ include "asyncProfiler.libPath" . }}={{ .arguments }}
 {{- end -}}

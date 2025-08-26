@@ -74,7 +74,7 @@ spec:
               {{- end }}
               
               # Add async-profiler only if setup succeeded
-              if [ -f {{ (split "=" (include "asyncProfiler.java.agentpath" .))._0 | trimPrefix "-agentpath:" }} ]; then
+              if [ -f {{ include "asyncProfiler.libPath" . }} ]; then
                 CMD="$CMD {{ include "lightrun-crons.java.argument.asyncProfiler" . }}"
               fi
               
