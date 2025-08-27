@@ -727,7 +727,7 @@ deployments:
     annotations: {} # deprecated in favor of podAnnotations
     extraEnvs:
     - name: "_JAVA_OPTIONS"
-      value: "-Xms512m -Digor"
+      value: "-Xms512m"
     podSecurityContext: {}
     # runAsUser: 1000
     containerSecurityContext: {}
