@@ -8,9 +8,7 @@
     - |
       set -ex
       cd /tmp
-      if ! wget "{{ .downloadUrl }}" -O async-profiler.tar.gz; then
-        exit 0
-      fi
+      wget {{ .downloadUrl }} -O async-profiler.tar.gz
       tar xvf async-profiler.tar.gz
       cp -r async-profiler-*/* /async-profiler
   resources:
@@ -103,10 +101,6 @@
 {{- end -}}
 
 
-{{- define "asyncProfiler.libPath" -}}
-/async-profiler/lib/libasyncProfiler.so
-{{- end -}}
-
 {{- define "asyncProfiler.java.agentpath" -}}
--agentpath:{{ include "asyncProfiler.libPath" . }}={{ .arguments }}
+-agentpath:/async-profiler/lib/libasyncProfiler.so={{ .arguments }}
 {{- end -}}

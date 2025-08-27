@@ -80,38 +80,14 @@ spec:
               containerPort: 7800
               protocol: TCP
           {{- end }}
-          command: ["sh", "-c"]
           args:
-            - |
-              # Base JAVA_OPTS_APPEND
-              {{- if .Values.deployments.keycloak.clusterMode }}
-              JAVA_OPTS_APPEND="-Djgroups.dns.query={{ include "lightrun-keycloak.name" . }}-headless"
-              {{- else }}
-              JAVA_OPTS_APPEND=""
-              {{- end }}
-
-              # Append async-profiler only if setup succeeded
-              if [ -f {{ include "asyncProfiler.libPath" . }} ]; then
-                JAVA_OPTS_APPEND="$JAVA_OPTS_APPEND {{ include "lightrun-keycloak.java.argument.asyncProfiler" . }}"
-              fi
-
-              export JAVA_OPTS_APPEND
-
-              # Build startup command
-              CMD="/opt/keycloak/bin/kc.sh start --optimized"
-
-              {{- if .Values.deployments.keycloak.clusterMode }}
-              CMD="$CMD --{{ include "http.scheme" . }}-port 9080"
-              {{- end }}
-
-              {{- if .Values.deployments.keycloak.useJsonLogFormat }}
-              CMD="$CMD --log-console-output=json"
-              {{- end }}
-
-              echo "JAVA_OPTS_APPEND at runtime: $JAVA_OPTS_APPEND"
-
-              exec $CMD
-
+            - 'start'
+            - '--optimized'
+            - '--{{ include "http.scheme" . }}-port'
+            - '9080'
+          {{- if .Values.deployments.keycloak.useJsonLogFormat }}
+            - '--log-console-output=json'
+          {{- end }}
           {{- if or .Values.general.readOnlyRootFilesystem
                     .Values.general.internal_tls.enabled
                     .Values.deployments.keycloak.extraVolumeMounts
@@ -294,16 +270,25 @@ spec:
             - name: KC_CACHE
               value: ispn
             - name: KC_CACHE_STACK
-              value: kubernetes
+              value: kubernetes  
+            {{- if not (include "list-of-maps-contains" (list .Values.deployments.keycloak.extraEnvs "JAVA_OPTS_APPEND") ) }}
+            - name: JAVA_OPTS_APPEND
+              value: "-Djgroups.dns.query={{ include "lightrun-keycloak.name" . }}-headless {{ include "lightrun-keycloak.java.argument.asyncProfiler" . }}"
+            {{- end }}
+            {{- else }}
+            {{- if not (include "list-of-maps-contains" (list .Values.deployments.keycloak.extraEnvs "JAVA_OPTS_APPEND") ) }}
+            - name: JAVA_OPTS_APPEND
+              value: "{{- include "lightrun-keycloak.java.argument.asyncProfiler" . -}}"
+            {{- end }}
             {{- end }}
             - name: JAVASCRIPT_FILES
               value: js/keycloak.js
             {{- if .Values.deployments.keycloak.extraEnvs }}
-              {{- toYaml .Values.deployments.keycloak.extraEnvs | nindent 12 }}
-              {{- if not (include "list-of-maps-contains" (list .Values.deployments.keycloak.extraEnvs "_JAVA_OPTIONS") ) }}
+              {{- include "filter-out-java-options" .Values.deployments.keycloak.extraEnvs | nindent 12 }}
+            {{- end }}
             - name: "_JAVA_OPTIONS"
-              value: {{- toYaml (include "calculate-heap-size" .Values.deployments.keycloak) | nindent 21  }}
-              {{- end }}
+              value: {{- toYaml (include "compose-java-options" (list .Values.deployments.keycloak (include "get-java-options-from-envs" .Values.deployments.keycloak.extraEnvs))) | nindent 21 }}
+            {{- if .Values.deployments.keycloak.extraEnvs }}
               {{- if not (include "list-of-maps-contains" (list .Values.deployments.keycloak.extraEnvs "KC_HOSTNAME") ) }}
                 {{- if semverCompare ">=1.38.0" $version }}
             - name: KC_HOSTNAME
@@ -314,8 +299,6 @@ spec:
                 {{- end }}
               {{- end }}
             {{- else }}
-            - name: "_JAVA_OPTIONS"
-              value: {{- toYaml (include "calculate-heap-size" .Values.deployments.keycloak) | nindent 21  }}
               {{- if semverCompare ">=1.38.0" $version }}
             - name: KC_HOSTNAME
               value: 'https://{{ .Values.general.lightrun_endpoint }}/auth'
