@@ -549,6 +549,63 @@ Usage:
 {{- printf "-Xmx%vm -Xms%vm" $heap $xms -}}
 {{- end -}}
 
+{{/*
+Build final JAVA options string according to the rules:
+ - If user provided -Xms and/or -Xmx, use exactly what they provided and do not add the missing pair
+ - If neither -Xms nor -Xmx were provided, calculate both and append any additional user options
+Usage:
+  {{ include "compose-java-options" (list $deployment $userOptions) }}
+  {{ include "compose-java-options" (list $deployment $userOptions 1 3) }} # with ratios
+*/}}
+{{- define "compose-java-options" -}}
+{{- $deployment := index . 0 -}}
+{{- $userOptions := index . 1 | default "" -}}
+{{- $xmsRatio := 1 -}}
+{{- $xmxRatio := 1 -}}
+{{- if ge (len .) 3 -}}
+  {{- $xmsRatio = index . 2 | int -}}
+{{- end -}}
+{{- if ge (len .) 4 -}}
+  {{- $xmxRatio = index . 3 | int -}}
+{{- end -}}
+{{- $hasXms := and $userOptions (contains "-Xms" $userOptions) -}}
+{{- $hasXmx := and $userOptions (contains "-Xmx" $userOptions) -}}
+{{- if or $hasXms $hasXmx -}}
+{{- $userOptions -}}
+{{- else -}}
+{{- $calculated := include "calculate-heap-size" (list $deployment $xmsRatio $xmxRatio) -}}
+{{- printf "%s %s" $calculated $userOptions | trim -}}
+{{- end -}}
+{{- end -}}
+
+{{/* Extract JAVA options value from a list of env maps */}}
+{{- define "get-java-options-from-envs" -}}
+{{- $envs := . | default list -}}
+{{- $opts := "" -}}
+{{- range $envs -}}
+  {{- if or (eq .name "_JAVA_OPTIONS") (eq .name "JAVA_OPTIONS") -}}
+    {{- if .value -}}
+      {{- $opts = .value -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $opts -}}
+{{- end -}}
+
+{{/* Return env list without any JAVA options entries */}}
+{{- define "filter-out-java-options" -}}
+{{- $envs := . | default list -}}
+{{- $out := list -}}
+{{- range $envs -}}
+  {{- if and (ne .name "_JAVA_OPTIONS") (ne .name "JAVA_OPTIONS") -}}
+    {{- $out = append $out . -}}
+  {{- end -}}
+{{- end -}}
+{{- if $out -}}
+{{- toYaml $out -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "list-of-maps-contains" }}
     {{- $arg1 := index . 0 }}
     {{- $arg2 := index . 1 }}
@@ -829,7 +886,8 @@ Cron-specific asyncProfiler helpers
 {{- end -}}
 
 {{/*
-Merge extraEnvs from backend and crons with crons taking precedence for duplicate keys
+Merge extraEnvs from backend and crons with crons taking precedence for duplicate keys.
+JAVA options are intentionally filtered out and should be added explicitly by templates.
 */}}
 {{- define "lightrun-crons.mergedExtraEnvs" -}}
 {{- $backendExtraEnvs := .Values.deployments.backend.extraEnvs | default list -}}
@@ -848,18 +906,35 @@ Merge extraEnvs from backend and crons with crons taking precedence for duplicat
 {{- end -}}
 {{/* Only add backend env if not overridden by crons */}}
 {{- if not $isOverridden -}}
-{{- $mergedEnvs = append $mergedEnvs $backendEnv -}}
+  {{- if and (ne $backendEnv.name "_JAVA_OPTIONS") (ne $backendEnv.name "JAVA_OPTIONS") -}}
+    {{- $mergedEnvs = append $mergedEnvs $backendEnv -}}
+  {{- end -}}
 {{- end -}}
 {{- end -}}
 
 {{/* Then, add all crons extraEnvs (these take precedence) */}}
 {{- range $cronsExtraEnvs -}}
-{{- $mergedEnvs = append $mergedEnvs . -}}
+  {{- if and (ne .name "_JAVA_OPTIONS") (ne .name "JAVA_OPTIONS") -}}
+    {{- $mergedEnvs = append $mergedEnvs . -}}
+  {{- end -}}
 {{- end -}}
 
 {{/* Output merged envs as YAML if any exist */}}
 {{- if $mergedEnvs -}}
 {{- toYaml $mergedEnvs -}}
+{{- end -}}
+{{- end -}}
+
+{{/* Get merged JAVA options from backend+crons with crons taking precedence */}}
+{{- define "lightrun-crons.getMergedJavaOptions" -}}
+{{- $backendExtraEnvs := .Values.deployments.backend.extraEnvs | default list -}}
+{{- $cronsExtraEnvs := .Values.deployments.crons.extraEnvs | default list -}}
+{{- $opts := include "get-java-options-from-envs" $backendExtraEnvs -}}
+{{- $cronsOpts := include "get-java-options-from-envs" $cronsExtraEnvs -}}
+{{- if $cronsOpts -}}
+{{- $cronsOpts -}}
+{{- else -}}
+{{- $opts -}}
 {{- end -}}
 {{- end -}}
 

@@ -62,27 +62,16 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
-          command: ["sh", "-c"]
-          args:
-            - |
-              CMD="/usr/lib/jvm/default-jvm/bin/java"
-              
-              # Add TLS opts if enabled
-              {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name }}
-              CMD="$CMD -Djavax.net.ssl.trustStore=/p12/internalca"
-              CMD="$CMD -Djavax.net.ssl.trustStorePassword=$(KEYSTORE_PASSWORD)"
-              {{- end }}
-              
-              # Add async-profiler only if setup succeeded
-              if [ -f {{ include "asyncProfiler.libPath" . }} ]; then
-                CMD="$CMD {{ include "lightrun-crons.java.argument.asyncProfiler" . }}"
-              fi
-              
-              # Add the jar
-              CMD="$CMD -jar /usr/src/lightrun/{{ .Values.deployments.crons.jar_name }}"
-
-              exec $CMD
-
+          command: ["/usr/lib/jvm/default-jvm/bin/java"]
+          args: [
+            {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name }}
+            "-Djavax.net.ssl.trustStore=/p12/internalca",
+            "-Djavax.net.ssl.trustStorePassword=$(KEYSTORE_PASSWORD)",
+            {{- end }}
+            {{- include "lightrun-crons.java.argument.asyncProfiler" . | nindent 12 }}
+            "-jar",
+            "/usr/src/lightrun/{{ .Values.deployments.crons.jar_name }}"
+          ]
           volumeMounts:
           {{- include "lightrun-backend-crons.volumeMounts" . | nindent 12 }}
           {{- include "lightrun-crons.volumeMounts.asyncProfiler" . | nindent 12 }}
@@ -140,10 +129,8 @@ spec:
             {{- if $mergedExtraEnvs }}
 {{ $mergedExtraEnvs | nindent 12 }}
             {{- end }}
-            {{- if and (not (include "list-of-maps-contains" (list .Values.deployments.crons.extraEnvs "_JAVA_OPTIONS"))) (not (include "list-of-maps-contains" (list .Values.deployments.backend.extraEnvs "_JAVA_OPTIONS"))) }}
             - name: "_JAVA_OPTIONS"
-              value: {{- toYaml (include "calculate-heap-size" (list .Values.deployments.crons 1 3)) | nindent 21  }}
-            {{- end }}
+              value: {{- toYaml (include "compose-java-options" (list .Values.deployments.crons (include "lightrun-crons.getMergedJavaOptions" .) 1 3)) | nindent 21 }}
 
       # waiting for mysql, rabbitmq and keycloak initialization
       initContainers:
