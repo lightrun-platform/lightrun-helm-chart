@@ -145,15 +145,10 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: "prod,swagger,cluster"
             {{- if .Values.deployments.backend.extraEnvs }}
-              {{- toYaml .Values.deployments.backend.extraEnvs | nindent 12 }}
-              {{- if not (include "list-of-maps-contains" (list .Values.deployments.backend.extraEnvs "_JAVA_OPTIONS") ) }}
-            - name: "_JAVA_OPTIONS"
-              value: {{- toYaml (include "calculate-heap-size" .Values.deployments.backend) | nindent 21  }}
-              {{- end }}
-            {{- else }}
-            - name: "_JAVA_OPTIONS"
-              value: {{- toYaml (include "calculate-heap-size" .Values.deployments.backend) | nindent 21  }}
+            {{- include "filter-out-java-options" .Values.deployments.backend.extraEnvs | nindent 12 }}
             {{- end }}
+            - name: "_JAVA_OPTIONS"
+              value: {{- toYaml (include "compose-java-options" (list .Values.deployments.backend (include "get-java-options-from-envs" .Values.deployments.backend.extraEnvs))) | nindent 21 }}
 
       # waiting for mysql, rabbitmq and keycloak initialization
       initContainers:

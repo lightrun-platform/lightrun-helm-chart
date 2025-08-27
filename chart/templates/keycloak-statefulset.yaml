@@ -301,11 +301,11 @@ spec:
             - name: JAVASCRIPT_FILES
               value: js/keycloak.js
             {{- if .Values.deployments.keycloak.extraEnvs }}
-              {{- toYaml .Values.deployments.keycloak.extraEnvs | nindent 12 }}
-              {{- if not (include "list-of-maps-contains" (list .Values.deployments.keycloak.extraEnvs "_JAVA_OPTIONS") ) }}
+              {{- include "filter-out-java-options" .Values.deployments.keycloak.extraEnvs | nindent 12 }}
+            {{- end }}
             - name: "_JAVA_OPTIONS"
-              value: {{- toYaml (include "calculate-heap-size" .Values.deployments.keycloak) | nindent 21  }}
-              {{- end }}
+              value: {{- toYaml (include "compose-java-options" (list .Values.deployments.keycloak (include "get-java-options-from-envs" .Values.deployments.keycloak.extraEnvs))) | nindent 21  }}
+            {{- if .Values.deployments.keycloak.extraEnvs }}
               {{- if not (include "list-of-maps-contains" (list .Values.deployments.keycloak.extraEnvs "KC_HOSTNAME") ) }}
                 {{- if semverCompare ">=1.38.0" $version }}
             - name: KC_HOSTNAME
@@ -316,8 +316,6 @@ spec:
                 {{- end }}
               {{- end }}
             {{- else }}
-            - name: "_JAVA_OPTIONS"
-              value: {{- toYaml (include "calculate-heap-size" .Values.deployments.keycloak) | nindent 21  }}
               {{- if semverCompare ">=1.38.0" $version }}
             - name: KC_HOSTNAME
               value: 'https://{{ .Values.general.lightrun_endpoint }}/auth'
