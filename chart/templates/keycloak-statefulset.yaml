@@ -98,11 +98,7 @@ spec:
               export JAVA_OPTS_APPEND
 
               # Build startup command
-              CMD="/opt/keycloak/bin/kc.sh start --optimized"
-
-              {{- if .Values.deployments.keycloak.clusterMode }}
-              CMD="$CMD --{{ include "http.scheme" . }}-port 9080"
-              {{- end }}
+              CMD="/opt/keycloak/bin/kc.sh start --optimized --{{ include "http.scheme" . }}-port 9080"
 
               {{- if .Values.deployments.keycloak.useJsonLogFormat }}
               CMD="$CMD --log-console-output=json"
