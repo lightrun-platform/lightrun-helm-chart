@@ -140,10 +140,8 @@ spec:
             {{- if $mergedExtraEnvs }}
 {{ $mergedExtraEnvs | nindent 12 }}
             {{- end }}
-            {{- if and (not (include "list-of-maps-contains" (list .Values.deployments.crons.extraEnvs "_JAVA_OPTIONS"))) (not (include "list-of-maps-contains" (list .Values.deployments.backend.extraEnvs "_JAVA_OPTIONS"))) }}
             - name: "_JAVA_OPTIONS"
-              value: {{- toYaml (include "calculate-heap-size" (list .Values.deployments.crons 1 3)) | nindent 21  }}
-            {{- end }}
+              value: {{- toYaml (include "compose-java-options" (list .Values.deployments.crons (include "lightrun-crons.getMergedJavaOptions" .) 1 3)) | nindent 21 }}
 
       # waiting for mysql, rabbitmq and keycloak initialization
       initContainers:
