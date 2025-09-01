@@ -75,7 +75,6 @@ data:
     }
 
   rabbitmq.conf: |
-    loopback_users = none
     queue_master_locator=min-masters
     vm_memory_high_watermark.relative=0.4
     total_memory_available_override_value = {{ include "lightrun-mq.toBytes" .Values.deployments.rabbitmq.resources.memory }}
