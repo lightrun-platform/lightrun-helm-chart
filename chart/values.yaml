@@ -944,7 +944,7 @@ deployments:
     emptyDir:
       sizeLimit: 5Gi
     affinity: {}
-    lifecycle: 
+    lifecycle:
       postStart:
         exec:
           command:
