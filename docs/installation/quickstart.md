@@ -1,4 +1,4 @@
-# Lightrun Deployment Using HelM Quick Start Guide
+# Lightrun Deployment Using Helm Quick Start Guide
 
 This guide walks you through deploying Lightrun using Helm with a minimal configuration.
 
