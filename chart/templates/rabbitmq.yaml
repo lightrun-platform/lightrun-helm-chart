@@ -143,7 +143,7 @@ spec:
           volumeMounts:
             # rabbitmq.conf and enabled_plugins -> should have writeable access
           - name: {{ include "lightrun-mq.name" . }}-config-rw
-            mountPath: /etc/rabbitmq/conf.d/rabbitmq.conf
+            mountPath: /etc/rabbitmq/rabbitmq.conf
             subPath: rabbitmq.conf
           - name: {{ include "lightrun-mq.name" . }}-config-plugins
             mountPath: /etc/rabbitmq/enabled_plugins
