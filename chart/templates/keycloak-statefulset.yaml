@@ -290,7 +290,7 @@ spec:
             - name: KC_CACHE
               value: ispn
             - name: KC_CACHE_STACK
-              value: kubernetes
+              value: jdbc-ping
             {{- end }}
             - name: JAVASCRIPT_FILES
               value: js/keycloak.js
