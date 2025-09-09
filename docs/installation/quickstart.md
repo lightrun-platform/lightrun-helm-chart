@@ -1,4 +1,4 @@
-# Lightrun Deployment Using HelM Quick Start Guide
+# Lightrun Deployment Using Helm Quick Start Guide
 
 This guide walks you through deploying Lightrun using Helm with a minimal configuration.
 
@@ -60,7 +60,7 @@ secrets:
 - **Router** is exposed without SSL, relying on an ingress controller (such as Nginx) for SSL termination.
     
 
-For a self-signed certificate, see the **"Generating a Self-Signed TLS Certificate"** section in the [Certificate Overview](docs/installation/certificate).
+For a self-signed certificate, see the **"Generating a Self-Signed TLS Certificate"** section in the [Certificate Overview](certificate.md).
 
 ## Step 3: Install Lightrun
 

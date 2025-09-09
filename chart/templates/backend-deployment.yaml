@@ -144,11 +144,32 @@ spec:
           {{- include "lightrun-backend-crons.environmentVariables" . | nindent 12 }}
             - name: SPRING_PROFILES_ACTIVE
               value: "prod,swagger,cluster"
-            {{- if .Values.deployments.backend.extraEnvs }}
-            {{- include "filter-out-java-options" .Values.deployments.backend.extraEnvs | nindent 12 }}
-            {{- end }}
-            - name: "_JAVA_OPTIONS"
-              value: {{- toYaml (include "compose-java-options" (list .Values.deployments.backend (include "get-java-options-from-envs" .Values.deployments.backend.extraEnvs))) | nindent 21 }}
+{{- /* >>> BEGIN updated env-emitting block <<< */}}
+{{- $envs := .Values.deployments.backend.extraEnvs | default (list) -}}
+{{- $memMi := include "mem-to-mi" (.Values.deployments.backend.resources.memory | default "") | int -}}
+{{- $javaVal := (include "get-env" (list $envs "_JAVA_OPTIONS") | trim) -}}
+
+{{- /* start with user extraEnvs, but drop _JAVA_OPTIONS */ -}}
+{{- $rendered := list -}}
+{{- range $e := $envs -}}
+  {{- $name := $e.name | default "" -}}
+  {{- if ne $name "_JAVA_OPTIONS" -}}
+    {{- $rendered = append $rendered $e -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* add enhanced _JAVA_OPTIONS calculation */ -}}
+{{- $enhancedJavaOpts := include "calculate-enhanced-java-options" (dict "deployment" .Values.deployments.backend "existingJavaOpts" $javaVal) -}}
+{{- if ne $enhancedJavaOpts "" -}}
+  {{- $rendered = append $rendered (dict "name" "_JAVA_OPTIONS" "value" $enhancedJavaOpts) -}}
+{{- else if eq $javaVal "" -}}
+  {{- $rendered = append $rendered (dict "name" "_JAVA_OPTIONS" "value" "") -}}
+{{- end -}}
+
+{{- if $rendered }}
+{{ toYaml $rendered | nindent 12 }}
+{{- end }}
+{{- /* >>> END updated env-emitting block <<< */}}
 
       # waiting for mysql, rabbitmq and keycloak initialization
       initContainers:
