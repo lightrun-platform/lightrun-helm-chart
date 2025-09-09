@@ -974,8 +974,7 @@ Cron-specific asyncProfiler helpers
 {{- end -}}
 
 {{/*
-Merge extraEnvs from backend and crons with crons taking precedence for duplicate keys.
-JAVA options are intentionally filtered out and should be added explicitly by templates.
+Merge extraEnvs from backend and crons with crons taking precedence for duplicate keys
 */}}
 {{- define "lightrun-crons.mergedExtraEnvs" -}}
 {{- $backendExtraEnvs := .Values.deployments.backend.extraEnvs | default list -}}
@@ -994,36 +993,18 @@ JAVA options are intentionally filtered out and should be added explicitly by te
 {{- end -}}
 {{/* Only add backend env if not overridden by crons */}}
 {{- if not $isOverridden -}}
-{{- if and (ne $backendEnv.name "_JAVA_OPTIONS") (ne $backendEnv.name "JAVA_OPTIONS") -}}
-    {{- $mergedEnvs = append $mergedEnvs $backendEnv -}}
-  {{- end -}}
+{{- $mergedEnvs = append $mergedEnvs $backendEnv -}}
 {{- end -}}
 {{- end -}}
 
 {{/* Then, add all crons extraEnvs (these take precedence) */}}
 {{- range $cronsExtraEnvs -}}
-{{- if and (ne .name "_JAVA_OPTIONS") (ne .name "JAVA_OPTIONS") -}}
-    {{- $mergedEnvs = append $mergedEnvs . -}}
-  {{- end -}}
+{{- $mergedEnvs = append $mergedEnvs . -}}
 {{- end -}}
 
 {{/* Output merged envs as YAML if any exist */}}
 {{- if $mergedEnvs -}}
 {{- toYaml $mergedEnvs -}}
-{{- end -}}
-{{- end -}}
-
-
-{{/* Get merged JAVA options from backend+crons with crons taking precedence */}}
-{{- define "lightrun-crons.getMergedJavaOptions" -}}
-{{- $backendExtraEnvs := .Values.deployments.backend.extraEnvs | default list -}}
-{{- $cronsExtraEnvs := .Values.deployments.crons.extraEnvs | default list -}}
-{{- $opts := include "get-java-options-from-envs" $backendExtraEnvs -}}
-{{- $cronsOpts := include "get-java-options-from-envs" $cronsExtraEnvs -}}
-{{- if $cronsOpts -}}
-{{- $cronsOpts -}}
-{{- else -}}
-{{- $opts -}}
 {{- end -}}
 {{- end -}}
 

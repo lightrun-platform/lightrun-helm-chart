@@ -147,7 +147,6 @@ spec:
 {{- $envs := .Values.deployments.backend.extraEnvs | default (list) -}}
 {{- $memMi := include "mem-to-mi" (.Values.deployments.backend.resources.memory | default "") | int -}}
 {{- $javaVal := (include "get-env" (list $envs "_JAVA_OPTIONS") | trim) -}}
-
 {{- /* start with user extraEnvs, but drop _JAVA_OPTIONS */ -}}
 {{- $rendered := list -}}
 {{- range $e := $envs -}}
