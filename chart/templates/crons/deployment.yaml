@@ -136,12 +136,52 @@ spec:
           {{- include "lightrun-backend-crons.environmentVariables" . | nindent 12 }}
             - name: SPRING_PROFILES_ACTIVE
               value: "prod,swagger,cluster,cron"
-            {{- $mergedExtraEnvs := include "lightrun-crons.mergedExtraEnvs" . }}
-            {{- if $mergedExtraEnvs }}
-{{ $mergedExtraEnvs | nindent 12 }}
+            {{- /* Enhanced _JAVA_OPTIONS logic for crons */ -}}
+            {{- $backendExtraEnvs := .Values.deployments.backend.extraEnvs | default list -}}
+            {{- $cronsExtraEnvs := .Values.deployments.crons.extraEnvs | default list -}}
+            {{- $mergedEnvs := list -}}
+            {{- $javaVal := "" -}}
+  
+            {{- /* First, add all backend extraEnvs except _JAVA_OPTIONS */ -}}
+            {{- range $backendExtraEnvs -}}
+              {{- $backendEnv := . -}}
+              {{- $isOverridden := false -}}
+              {{- if eq $backendEnv.name "_JAVA_OPTIONS" -}}
+                {{- $javaVal = (printf "%v" $backendEnv.value) -}}
+              {{- else -}}
+                {{- /* Check if this env var is overridden in crons */ -}}
+                {{- range $cronsExtraEnvs -}}
+                  {{- if eq .name $backendEnv.name -}}
+                    {{- $isOverridden = true -}}
+                  {{- end -}}
+                {{- end -}}
+                {{- /* Only add backend env if not overridden by crons */ -}}
+                {{- if not $isOverridden -}}
+                  {{- $mergedEnvs = append $mergedEnvs $backendEnv -}}
+                {{- end -}}
+              {{- end -}}
+            {{- end -}}
+
+            {{- /* Then, add all crons extraEnvs except _JAVA_OPTIONS */ -}}
+            {{- range $cronsExtraEnvs -}}
+              {{- if eq .name "_JAVA_OPTIONS" -}}
+                {{- $javaVal = (printf "%v" .value) -}}
+              {{- else -}}
+                {{- $mergedEnvs = append $mergedEnvs . -}}
+              {{- end -}}
+            {{- end -}}
+
+            {{- /* Add enhanced _JAVA_OPTIONS calculation */ -}}
+            {{- $enhancedJavaOpts := include "calculate-enhanced-java-options" (dict "deployment" .Values.deployments.crons "existingJavaOpts" $javaVal) -}}
+            {{- if ne $enhancedJavaOpts "" -}}
+              {{- $mergedEnvs = append $mergedEnvs (dict "name" "_JAVA_OPTIONS" "value" $enhancedJavaOpts) -}}
+            {{- else if eq $javaVal "" -}}
+              {{- $mergedEnvs = append $mergedEnvs (dict "name" "_JAVA_OPTIONS" "value" "") -}}
+            {{- end -}}
+
+            {{- if $mergedEnvs }}
+{{ toYaml $mergedEnvs | nindent 12 }}
             {{- end }}
-            - name: "_JAVA_OPTIONS"
-              value: {{- toYaml (include "compose-java-options" (list .Values.deployments.crons (include "lightrun-crons.getMergedJavaOptions" .) 1 3)) | nindent 21 }}
 
       # waiting for mysql, rabbitmq and keycloak initialization
       initContainers:

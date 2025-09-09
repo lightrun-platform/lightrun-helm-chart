@@ -11,10 +11,8 @@ metadata:
   {{- end }}
 spec:
   serviceName: {{ include "lightrun-keycloak.name" . }}
-  updateStrategy: 
+  updateStrategy:
     type: RollingUpdate
-  # For clusters with more than 3 pods, consider changing the number of "owner nodes" as described in
-  # https://www.keycloak.org/server/caching#_configuring_caches -> Configuring caches for availability
   replicas: {{ .Values.deployments.keycloak.replicas }}
   selector:
     matchLabels:
@@ -30,7 +28,6 @@ spec:
       annotations:
       {{- end }}
         {{- with .Values.deployments.keycloak.annotations }}
-        {{/* deprecated if favor of podAnnotations */}}
         {{ toYaml . | nindent 8 }}
         {{- end }}
         {{- with .Values.deployments.keycloak.podAnnotations }}
@@ -55,7 +52,6 @@ spec:
         {{- toYaml .Values.deployments.keycloak.podSecurityContext | nindent 8 }}
       {{- end }}
       containers:
-
       {{- include "lightrun-keycloak.container.persist-async-profiler-output-files" . | indent 8 }}
         - name: {{ include "lightrun-keycloak.name" . }}
           securityContext: {{- include "lightrun-keycloak.containerSecurityContext" . | indent 12 }}
@@ -71,7 +67,7 @@ spec:
           ports:
             - name: mgmt
               containerPort: 9000
-              protocol: TCP          
+              protocol: TCP
             - name: http
               containerPort: 9080
               protocol: TCP
@@ -214,15 +210,15 @@ spec:
                 secretKeyRef:
                   name: {{ include "secrets.backend.name" . }}
                   key: SPRING_RABBITMQ_PASSWORD
-            {{- end }}          
+            {{- end }}
             - name: INFO_DEPLOYMENT
-            {{ if eq .Values.general.deployment_type "saas" }}
+            {{- if eq .Values.general.deployment_type "saas" }}
               value: "SaaS"
-            {{ else if eq .Values.general.deployment_type "single-tenant" }}
+            {{- else if eq .Values.general.deployment_type "single-tenant" }}
               value: "single-tenant"
-            {{ else }}
+            {{- else }}
               value: "on-prem"
-            {{ end }}
+            {{- end }}
             - name: KC_PROXY_HEADERS
               value: "xforwarded"
             - name: KC_BOOTSTRAP_ADMIN_USERNAME
@@ -235,12 +231,12 @@ spec:
                 secretKeyRef:
                   name: {{ include "secrets.keycloak.name" . }}
                   key: KEYCLOAK_PASSWORD
-            {{ if .Values.general.internal_tls.enabled }}
+            {{- if .Values.general.internal_tls.enabled }}
             - name: KC_HTTPS_CERTIFICATE_FILE
               value: /etc/x509/https/tls.crt
             - name: KC_HTTPS_CERTIFICATE_KEY_FILE
               value: /etc/x509/https/tls.key
-            {{- if and .Values.deployments.keycloak.clusterMode (eq .Values.general.internal_tls.certificates.source "existing_certificates")  }}
+            {{- if and .Values.deployments.keycloak.clusterMode (eq .Values.general.internal_tls.certificates.source "existing_certificates") }}
             - name: KC_CACHE_EMBEDDED_MTLS_ENABLED
               value: "true"
             - name: KC_CACHE_EMBEDDED_MTLS_KEY_STORE_FILE
@@ -258,12 +254,12 @@ spec:
                   name: {{ include "secrets.backend.name" . }}
                   key: KEYSTORE_PASSWORD
             {{- end }}
-            {{ else }}
+            {{- else }}
             - name: KC_HTTPS_CERTIFICATE_FILE
             - name: KC_HTTPS_CERTIFICATE_KEY_FILE
             - name: KC_HTTP_ENABLED
               value: "true"
-            {{ end }}
+            {{- end }}
             - name: KC_DB
               value: mysql
             - name: KC_DB_URL
@@ -300,30 +296,45 @@ spec:
             {{- end }}
             - name: JAVASCRIPT_FILES
               value: js/keycloak.js
-            {{- if .Values.deployments.keycloak.extraEnvs }}
-              {{- include "filter-out-java-options" .Values.deployments.keycloak.extraEnvs | nindent 12 }}
+
+            # ---- extra envs (with computed _JAVA_OPTIONS when empty) ----
+            {{- $envs := .Values.deployments.keycloak.extraEnvs | default (list) -}}
+            {{- $memMi := include "mem-to-mi" (.Values.deployments.keycloak.resources.memory | default "") | int -}}
+            {{- $javaVal := (include "get-env" (list $envs "_JAVA_OPTIONS") | trim) -}}
+
+            {{- /* start with user extraEnvs, but drop an empty _JAVA_OPTIONS */ -}}
+            {{- $rendered := list -}}
+            {{- range $e := $envs -}}
+              {{- $name := $e.name | default "" -}}
+              {{- $val  := "" -}}
+              {{- if hasKey $e "value" -}}{{- $val = (printf "%v" $e.value) -}}{{- end -}}
+              {{- if ne $name "_JAVA_OPTIONS" -}}
+                {{- $rendered = append $rendered $e -}}
+              {{- end -}}
+            {{- end -}}
+
+            {{- /* add enhanced _JAVA_OPTIONS calculation */ -}}
+            {{- $enhancedJavaOpts := include "calculate-enhanced-java-options" (dict "deployment" .Values.deployments.keycloak "existingJavaOpts" $javaVal) -}}
+            {{- if ne $enhancedJavaOpts "" -}}
+              {{- $rendered = append $rendered (dict "name" "_JAVA_OPTIONS" "value" $enhancedJavaOpts) -}}
+            {{- else if eq $javaVal "" -}}
+              {{- $rendered = append $rendered (dict "name" "_JAVA_OPTIONS" "value" "") -}}
+            {{- end -}}
+
+            {{- /* ensure KC_HOSTNAME (or KC_HOSTNAME_URL) exists if user didn’t supply one */ -}}
+            {{- if not (include "list-of-maps-contains" (list $envs "KC_HOSTNAME")) -}}
+              {{- if semverCompare ">=1.38.0" $version -}}
+                {{- $rendered = append $rendered (dict "name" "KC_HOSTNAME" "value" (printf "https://%s/auth" .Values.general.lightrun_endpoint)) -}}
+              {{- else -}}
+                {{- $rendered = append $rendered (dict "name" "KC_HOSTNAME_URL" "value" (printf "https://%s/auth" .Values.general.lightrun_endpoint)) -}}
+              {{- end -}}
+            {{- end -}}
+
+            {{- if $rendered }}
+            {{ toYaml $rendered | nindent 12 }}
             {{- end }}
-            - name: "_JAVA_OPTIONS"
-              value: {{- toYaml (include "compose-java-options" (list .Values.deployments.keycloak (include "get-java-options-from-envs" .Values.deployments.keycloak.extraEnvs))) | nindent 21  }}
-            {{- if .Values.deployments.keycloak.extraEnvs }}
-              {{- if not (include "list-of-maps-contains" (list .Values.deployments.keycloak.extraEnvs "KC_HOSTNAME") ) }}
-                {{- if semverCompare ">=1.38.0" $version }}
-            - name: KC_HOSTNAME
-              value: 'https://{{ .Values.general.lightrun_endpoint }}/auth'
-                {{- else }}
-            - name: KC_HOSTNAME_URL
-              value: 'https://{{ .Values.general.lightrun_endpoint }}/auth'
-                {{- end }}
-              {{- end }}
-            {{- else }}
-              {{- if semverCompare ">=1.38.0" $version }}
-            - name: KC_HOSTNAME
-              value: 'https://{{ .Values.general.lightrun_endpoint }}/auth'
-              {{- else }}
-            - name: KC_HOSTNAME_URL
-              value: 'https://{{ .Values.general.lightrun_endpoint }}/auth'
-              {{- end }}
-            {{- end }}
+
+
     {{- if or .Values.general.readOnlyRootFilesystem
               .Values.general.db_local
               .Values.general.internal_tls.enabled
@@ -331,9 +342,9 @@ spec:
     }}
       initContainers:
       {{- include "lightrun-keycloak.initContainer.download-async-profiler" . | nindent 6 }}
-      {{ if .Values.general.mq.enabled }}
+      {{- if .Values.general.mq.enabled }}
       {{- include "lightrun-mq.initContainer.wait-for-rabbitmq" (merge (dict "imageConfig" .Values.deployments.keycloak.initContainers.wait_for_rabbitmq "securityContext" "lightrun-keycloak.containerSecurityContext") .) | nindent 6 }}
-      {{- end }}      
+      {{- end }}
     {{- end -}}
     {{- if .Values.general.readOnlyRootFilesystem }}
         {{- include "lightrun-keycloak.initContainer.read-only-rootfs" . }}
@@ -387,17 +398,12 @@ spec:
             {{- else if eq .Values.general.internal_tls.certificates.source "existing_certificates" }}
             secretName: {{ .Values.general.internal_tls.certificates.existing_certificates.keycloak }}
             {{- end }}
-            {{- if and  .Values.deployments.keycloak.clusterMode (eq .Values.general.internal_tls.certificates.source "existing_certificates") }}
+            {{- if and .Values.deployments.keycloak.clusterMode (eq .Values.general.internal_tls.certificates.source "existing_certificates") }}
         - name: cluster-cert
           secret:
             defaultMode: 444
-            # Secret should create the following files: ca.crt, tls.key, tls.crt
             secretName: {{ .Values.general.internal_tls.certificates.existing_certificates.keycloak_cluster }}
         - name: p12
           emptyDir: {}
             {{- end }}
-        {{- end }}
-        {{- if .Values.deployments.keycloak.extraVolumes }}
-          {{- range .Values.deployments.keycloak.extraVolumes }}
-        {{- end }}
         {{- end }}
