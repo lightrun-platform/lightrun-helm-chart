@@ -140,8 +140,7 @@ spec:
             {{- $backendExtraEnvs := .Values.deployments.backend.extraEnvs | default list -}}
             {{- $cronsExtraEnvs := .Values.deployments.crons.extraEnvs | default list -}}
             {{- $mergedEnvs := list -}}
-            {{- $javaVal := "" -}}
-  
+            {{- $javaVal := "" -}} 
             {{- /* First, add all backend extraEnvs except _JAVA_OPTIONS */ -}}
             {{- range $backendExtraEnvs -}}
               {{- $backendEnv := . -}}

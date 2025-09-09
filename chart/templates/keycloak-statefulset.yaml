@@ -13,8 +13,6 @@ spec:
   serviceName: {{ include "lightrun-keycloak.name" . }}
   updateStrategy:
     type: RollingUpdate
-  # For clusters with more than 3 pods, consider changing the number of "owner nodes" as described in
-  # https://www.keycloak.org/server/caching#_configuring_caches -> Configuring caches for availability
   replicas: {{ .Values.deployments.keycloak.replicas }}
   selector:
     matchLabels:

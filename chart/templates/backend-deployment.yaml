@@ -144,7 +144,6 @@ spec:
           {{- include "lightrun-backend-crons.environmentVariables" . | nindent 12 }}
             - name: SPRING_PROFILES_ACTIVE
               value: "prod,swagger,cluster"
-
 {{- $envs := .Values.deployments.backend.extraEnvs | default (list) -}}
 {{- $memMi := include "mem-to-mi" (.Values.deployments.backend.resources.memory | default "") | int -}}
 {{- $javaVal := (include "get-env" (list $envs "_JAVA_OPTIONS") | trim) -}}
