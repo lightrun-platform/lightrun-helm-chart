@@ -786,7 +786,7 @@ deployments:
     extraVolumes:
       - name: ca-cert
         secret:
-          secretName: "ldap-ca-cert"
+          secretName: "ldapCaCert"
     extraVolumeMounts:
       - name: ca-cert
         mountPath: /opt/keycloak/conf/truststores
