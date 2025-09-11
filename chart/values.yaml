@@ -726,7 +726,10 @@ deployments:
     podLabels: {}
     podAnnotations: {}
     annotations: {} # deprecated in favor of podAnnotations
-    extraEnvs: []
+    # extraEnvs: []
+    extraEnvs:
+      - name: DISABLE_LDAP_AUDIT
+        value: "true"
     podSecurityContext: {}
     # runAsUser: 1000
     containerSecurityContext: {}
