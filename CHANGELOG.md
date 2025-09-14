@@ -1,4 +1,30 @@
 
+<a name="v3.26.1"></a>
+## [v3.26.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.26.0...v3.26.1) - 2025-09-14
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.67.1-release.69bcdd888d    |
+| backend       | 1.67.1-release.69bcdd888d    |
+| crons         | 1.67.1-release.69bcdd888d    |
+| data_streamer | 4.63.0-alpine-3.22.0-r0.lr-0 |
+| frontend      | 1.67.1-release.69bcdd888d    |
+| keycloak      | 1.67.1-release.69bcdd888d    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine-3.22.0-r0.lr-0  |
+| redis         | 7.2.10-alpine-3.22.0-r0.lr-1 |
+| router        | 1.28.0-alpine-3.22.0-r0.lr-0 |
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.26.0"></a>
 ## [v3.26.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.25.2...v3.26.0) - 2025-09-10
 
@@ -200,7 +226,7 @@
 
 
 <a name="v3.24.0"></a>
-## [v3.24.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.23.6...v3.24.0) - 2025-08-11
+## [v3.24.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.23.7...v3.24.0) - 2025-08-11
 
 
 
@@ -233,6 +259,32 @@
 
 - [bump redis to 7.2.10 (#116)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/ba17dab)
  
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.23.7"></a>
+## [v3.23.7](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.23.6...v3.23.7) - 2025-09-11
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.64.5-release.60958a9009    |
+| backend       | 1.64.5-release.60958a9009    |
+| crons         | 1.64.5-release.60958a9009    |
+| data_streamer | 4.56.0-alpine-3.22.0-r0.lr-0 |
+| frontend      | 1.64.5-release.60958a9009    |
+| keycloak      | 1.64.5-release.60958a9009    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine-3.22.0-r0.lr-0  |
+| redis         | 7.2.10-alpine-3.22.0-r0.lr-1 |
+| router        | 1.28.0-alpine-3.22.0-r0.lr-0 |
  
  
  
