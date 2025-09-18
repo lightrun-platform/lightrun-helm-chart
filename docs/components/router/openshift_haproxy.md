@@ -29,8 +29,8 @@ kubectl get secrets -n openshift-config-managed router-certs -o yaml
 For further details, refer to [the official OpenShift documentation on ingress certificates.](https://docs.openshift.com/container-platform/4.14/security/certificate_types_descriptions/ingress-certificates.html)
 # Configure the Lightrun Router in the helm chart
 Choose the most suitable option from the list below:  
-[1 - Openshift HAProxy Router SSL <> Lightrun Router Non-SSL](#1---openshift-haproxy-router-ssl--lightrun-router-non-ssl)  
-[2 - Openshift HAProxy Router Non-SSL <> Lightrun Router SSL](#2---openshift-haproxy-router-non-ssl--lightrun-router-ssl)  
+[1 - Openshift HAProxy Router SSL <> Lightrun Router Non-SSL](#1-openshift-haproxy-router-ssl-lightrun-router-non-ssl)  
+[2 - Openshift HAProxy Router Non-SSL <> Lightrun Router SSL](#2-openshift-haproxy-router-non-ssl-lightrun-router-ssl)  
 ##### 1 - Openshift HAProxy Router SSL <> Lightrun Router Non-SSL
   >The Openshift HAProxy Router listens for incoming requests on protocol/port HTTPS:443, performs SSL termination, and forwards the traffic to the Lightrun Router on protocol/port HTTP:8080 as a non-SSL connection.  
   >The Lightrun Router then directs the traffic to Lightrun services within the cluster.

@@ -6,8 +6,8 @@ This guide covers [Azure Application Gateways](https://azure.microsoft.com/en-us
 3. [Azure Application Gateway Ingress Controller installed](https://learn.microsoft.com/en-us/azure/application-gateway/ingress-controller-overview) in the cluster.
 # Configure the Lightrun Router in the helm chart
 Choose the most suitable option from the list below:  
-[1 - Azure Application Gateway  SSL <> Lightrun Router SSL](#1---azure-application-gateway--ssl--lightrun-router-ssl)  
-[2 - Azure Application Gateway SSL <> Lightrun Router Non-SSL](#2---azure-application-gateway-ssl--lightrun-router-non-ssl)
+[1 - Azure Application Gateway  SSL <> Lightrun Router SSL](#1-azure-application-gateway-ssl-lightrun-router-ssl)  
+[2 - Azure Application Gateway SSL <> Lightrun Router Non-SSL](#2-azure-application-gateway-ssl-lightrun-router-non-ssl)
 ##### 1 - Azure Application Gateway  SSL <> Lightrun Router SSL
    >The Application Gateway listens for incoming requests on protocol/port HTTPS:443, performs SSL termination, and forwards the traffic to the Lightrun Router on protocol/port HTTPS:8443.  
    >The Lightrun Router then performs SSL termination and directs the traffic to Lightrun services within the cluster.

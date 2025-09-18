@@ -8,8 +8,8 @@ This guide covers set [Contour Ingress Controller](https://projectcontour.io/doc
 While Contour have [Ingress V1 Support](https://projectcontour.io/docs/1.30/config/ingress/) we can not use this option because of websocket support which seems to be available only on HTTPProxy
 # Configure the Contour Ingress Controller and HTTPProxy with the Lightrun Router 
 Choose the most suitable option from the list below:  
-[1 - Contour Ingress Controller SSL <> Lightrun Router SSL](#1---contour-ingress-controller-ssl--lightrun-router-ssl)  
-[2 - Contour Ingress Controller SSL <> Lightrun Router Non-SSL](#2---contour-ingress-controller-ssl--lightrun-router-non-ssl)
+[1 - Contour Ingress Controller SSL <> Lightrun Router SSL](#1-contour-ingress-controller-ssl-lightrun-router-ssl)  
+[2 - Contour Ingress Controller SSL <> Lightrun Router Non-SSL](#2-contour-ingress-controller-ssl-lightrun-router-non-ssl)
 #### 1 - Contour Ingress Controller SSL <> Lightrun Router SSL
 >Contour Ingress Controller listens on protocol/port HTTPS:443 for incoming requests, performs SSL termination,  and forwards traffic to the Lightrun router on protocol/port HTTPS:8443.  
 >The Lightrun router then performs SSL termination and forwards traffic to Lightrun services inside the cluster.
