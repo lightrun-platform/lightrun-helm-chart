@@ -460,7 +460,6 @@ Usage:
 {{- end -}}
 {{- end -}}
 
-
 {{- define "secrets.certificate.name" -}}
 {{- if .Values.certificate.existing_cert -}}
 {{ .Values.certificate.existing_cert }}
@@ -507,6 +506,10 @@ Usage:
 {{- else -}}
 {{ include "lightrun.fullname" . }}-lightrun-dockerhub
 {{- end -}}
+{{- end -}}
+
+{{- define "secrets.custom_ca_certificate.name" -}}
+{{ include "lightrun.fullname" . }}-custom-ca-certificate
 {{- end -}}
 
 
@@ -898,5 +901,3 @@ Usage: {{ include "lightrun.datadogAnnotations" (dict "serviceName" "lightrun-be
           }
 {{- end }}
 {{- end }}
-
-

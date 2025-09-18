@@ -478,6 +478,7 @@ secrets:
     # redis authentication.
     # requires to enable auth in deployments.redis.auth.enabled by set to true
     password: ""
+  customCaCertificate: ""
   license:
     content: ""
     signature: ""

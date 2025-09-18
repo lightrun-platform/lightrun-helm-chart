@@ -112,6 +112,7 @@ spec:
                     .Values.general.internal_tls.enabled
                     .Values.deployments.keycloak.extraVolumeMounts
                     .Values.deployments.keycloak.asyncProfiler.enabled
+                    .Values.secrets.customCaCertificate
           }}
           volumeMounts:
           {{- include "lightrun-keycloak.volumeMounts.asyncProfiler" . | nindent 12 }}
@@ -126,6 +127,11 @@ spec:
             - name: tmpfs
               mountPath: /opt
               subPath: opt
+          {{- end }}
+          {{- if .Values.secrets.customCaCertificate }}
+            - name: custom-ca-certificate
+              mountPath: /opt/keycloak/conf/truststores
+              readOnly: true
           {{- end }}
           {{- if .Values.general.internal_tls.enabled }}
             - name: internal-cert
@@ -356,6 +362,7 @@ spec:
                 .Values.general.internal_tls.enabled
                 .Values.deployments.keycloak.extraVolumes
                 .Values.deployments.keycloak.asyncProfiler.enabled
+                .Values.secrets.customCaCertificate
       }}
       volumes:
       {{- include "lightrun-keycloak.volumes.asyncProfiler" . | nindent 8 }}
@@ -367,6 +374,11 @@ spec:
         - name: tmpfs
           emptyDir:
             sizeLimit: {{ .Values.general.readOnlyRootFilesystem_tmpfs_sizeLimit  }}
+        {{ end }}
+        {{- if .Values.secrets.customCaCertificate }}
+        - name: custom-ca-certificate
+          secret:
+            secretName: {{ include "secrets.custom_ca_certificate.name" . }}
         {{ end }}
         {{- if .Values.general.internal_tls.enabled }}
         - name: internal-cert
