@@ -10,10 +10,10 @@ Kubernetes [Service resources](https://kubernetes.io/docs/concepts/services-net
 
 ## Configure the Lightrun Router in the helm chart
 Choose the most suitable option from the list below:  
-[1 - AWS Application Load Balancer SSL <> Lightrun Router SSL](#1---aws-application-load-balancer-ssl--lightrun-router-ssl)  
-[2 - AWS Application Load Balancer SSL <> Lightrun router Non-SSL](#2---aws-application-load-balancer-ssl--lightrun-router-non-ssl)  
-[3 - AWS Network Load Balancer Non-SSL <> Lightrun router SSL](#3---aws-network-load-balancer-non-ssl--lightrun-router-ssl)  
-[4 - AWS Network Load Balancer SSL <> Lightrun router SSL](#4---aws-network-load-balancer-ssl--lightrun-router-ssl)  
+[1 - AWS Application Load Balancer SSL <> Lightrun Router SSL](#1-aws-application-load-balancer-ssl-lightrun-router-ssl)  
+[2 - AWS Application Load Balancer SSL <> Lightrun router Non-SSL](#2-aws-application-load-balancer-ssl-lightrun-router-non-ssl)  
+[3 - AWS Network Load Balancer Non-SSL <> Lightrun router SSL](#3-aws-network-load-balancer-non-ssl-lightrun-router-ssl)  
+[4 - AWS Network Load Balancer SSL <> Lightrun router SSL](#4-aws-network-load-balancer-ssl-lightrun-router-ssl)  
 ##### 1 - AWS Application Load Balancer SSL <> Lightrun Router SSL
    >Application load balancer listens on protocol/port HTTPS:443 for incoming requests, performs SSL termination,  and forwards traffic to the Lightrun router on protocol/port HTTPS:8443.  
    > The Lightrun router then performs SSL termination and forwards traffic to Lightrun services inside the cluster.

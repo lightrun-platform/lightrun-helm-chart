@@ -32,8 +32,8 @@ Based on the [official documentation GKE Ingress Controller](https://cloud.googl
 
 # Configure the Lightrun Router in the helm chart
 Choose the most suitable option from the list below:  
-[1 - GCP Application Load Balancer  SSL <> Lightrun Router SSL](#1---gcp-application-load-balancer--ssl--lightrun-router-ssl)  
-[2 - GCP Application Load Balancer SSL <> Lightrun Router Non-SSL](#2---gcp-application-load-balancer-ssl--lightrun-router-non-ssl)
+[1 - GCP Application Load Balancer  SSL <> Lightrun Router SSL](#1-gcp-application-load-balancer-ssl-lightrun-router-ssl)  
+[2 - GCP Application Load Balancer SSL <> Lightrun Router Non-SSL](#2-gcp-application-load-balancer-ssl-lightrun-router-non-ssl)
 ##### 1 - GCP Application Load Balancer  SSL <> Lightrun Router SSL
    >The GCP Application Load Balancer listens for incoming requests on protocol/port HTTPS:443, performs SSL termination, and forwards the traffic to the Lightrun Router on protocol/port HTTPS:8443.  
    >The Lightrun Router then performs SSL termination and directs the traffic to Lightrun services within the cluster.

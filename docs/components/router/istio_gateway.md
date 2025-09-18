@@ -5,8 +5,8 @@ This guide covers set [Isito Gateway](https://istio.io/latest/docs/reference/con
 2. [Istio installed](https://istio.io/latest/docs/setup/install/) in the cluster. including [Istio Ingress Gateway](https://istio.io/latest/docs/setup/additional-setup/gateway/#deploying-a-gateway).
 # Configure the Istio Gateway and Virtual Service with the Lightrun Router 
 Choose the most suitable option from the list below:  
-[1 - Istio Gateway Non-SSL <> Lightrun Router SSL](#1---istio-gateway--non-ssl--lightrun-router-ssl)  
-[2 - Istio Gateway SSL <> Lightrun Router Non-SSL](#2---istio-gateway--ssl--lightrun-router-non-ssl)
+[1 - Istio Gateway Non-SSL <> Lightrun Router SSL](#1-istio-gateway-non-ssl-lightrun-router-ssl)  
+[2 - Istio Gateway SSL <> Lightrun Router Non-SSL](#2-istio-gateway-ssl-lightrun-router-non-ssl)
 ##### 1 - Istio Gateway  Non-SSL <> Lightrun Router SSL
    >The Istio Gateway listen for incoming requests on protocol/port HTTPS:443 and passthrough unterminated SSL traffic to the Lightrun Router service on protocol/port HTTPS:8443.  
    >The Lightrun Router then performs SSL termination and directs the traffic to Lightrun services within the cluster.
@@ -237,20 +237,20 @@ router:
 
 2. Run `istioctl proxy-config listener -n <istio-ingress-namespace> <istio-ingress-deployment>` to retrieve information about listener configuration.
 
-	Example of good output of [1 - Istio Gateway Non-SSL <> Lightrun Router SSL](#1---istio-gateway--non-ssl--lightrun-router-ssl) use case:
+	Example of good output of [1 - Istio Gateway Non-SSL <> Lightrun Router SSL](#1-istio-gateway-non-ssl-lightrun-router-ssl) use case:
 	```shell
 	istioctl proxy-config listener -n istio-ingress istio-ingress-69598f76d8-l5df6
 	ADDRESSES PORT  MATCH                                                DESTINATION
 	0.0.0.0   443   SNI: lightrun-tig-router-istio.internal.lightrun.com Cluster: outbound|8443||lightrun-tig-router.lightrun-tig.svc.cluster.local
 	```
 
-	Example of good output of [2 - Istio Gateway  SSL <> Lightrun Router Non-SSL](#2---istio-gateway--ssl--lightrun-router-non-ssl) use case:
+	Example of good output of [2 - Istio Gateway  SSL <> Lightrun Router Non-SSL](#2-istio-gateway-ssl-lightrun-router-non-ssl) use case:
 	```shell
 	istioctl proxy-config listener -n istio-ingress istio-ingress-69598f76d8-l5df6
 	ADDRESSES PORT  MATCH                                                DESTINATION
 	0.0.0.0   443   SNI: lightrun-tig-router-istio.internal.lightrun.com Route: https.443.https.lightrun-gateway.lightrun-tig
 	```
-3. (Only relevant to [2 - Istio Gateway  SSL <> Lightrun Router Non-SSL](#2---istio-gateway--ssl--lightrun-router-non-ssl)) Run `istioctl proxy-config route -n <istio-ingress-namespace> <istio-ingress-deployment>` in order to retrieve information about route configuration.
+3. (Only relevant to [2 - Istio Gateway  SSL <> Lightrun Router Non-SSL](#2-istio-gateway-ssl-lightrun-router-non-ssl)) Run `istioctl proxy-config route -n <istio-ingress-namespace> <istio-ingress-deployment>` in order to retrieve information about route configuration.
 
 	Example of good output:
 	```shell
