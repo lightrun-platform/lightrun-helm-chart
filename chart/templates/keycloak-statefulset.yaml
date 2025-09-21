@@ -112,7 +112,7 @@ spec:
                     .Values.general.internal_tls.enabled
                     .Values.deployments.keycloak.extraVolumeMounts
                     .Values.deployments.keycloak.asyncProfiler.enabled
-                    .Values.secrets.customCaCertificate
+                    (include "secrets.custom_ca_certificate.enabled" . | trim | eq "true")
           }}
           volumeMounts:
           {{- include "lightrun-keycloak.volumeMounts.asyncProfiler" . | nindent 12 }}
@@ -128,7 +128,7 @@ spec:
               mountPath: /opt
               subPath: opt
           {{- end }}
-          {{- if .Values.secrets.customCaCertificate }}
+          {{- if (include "secrets.custom_ca_certificate.enabled" . | trim | eq "true") }}
             - name: custom-ca-certificate
               mountPath: /opt/keycloak/conf/truststores
               readOnly: true
@@ -362,7 +362,7 @@ spec:
                 .Values.general.internal_tls.enabled
                 .Values.deployments.keycloak.extraVolumes
                 .Values.deployments.keycloak.asyncProfiler.enabled
-                .Values.secrets.customCaCertificate
+                (include "secrets.custom_ca_certificate.enabled" . | trim | eq "true")
       }}
       volumes:
       {{- include "lightrun-keycloak.volumes.asyncProfiler" . | nindent 8 }}
@@ -375,7 +375,7 @@ spec:
           emptyDir:
             sizeLimit: {{ .Values.general.readOnlyRootFilesystem_tmpfs_sizeLimit  }}
         {{ end }}
-        {{- if .Values.secrets.customCaCertificate }}
+        {{- if (include "secrets.custom_ca_certificate.enabled" . | trim | eq "true") }}
         - name: custom-ca-certificate
           secret:
             secretName: {{ include "secrets.custom_ca_certificate.name" . }}

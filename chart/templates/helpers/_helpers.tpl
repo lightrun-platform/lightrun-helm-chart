@@ -508,8 +508,26 @@ Usage:
 {{- end -}}
 {{- end -}}
 
+
+{{- define "secrets.custom_ca_certificate.enabled" -}}
+{{- if or .Values.secrets.customCa.customCaCertificate .Values.secrets.customCa.existingCaSecret -}}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- end -}}
+
+
 {{- define "secrets.custom_ca_certificate.name" -}}
+{{- if and .Values.secrets.customCa.customCaCertificate .Values.secrets.customCa.existingCaSecret -}}
+  {{- fail "You must set only one of secrets.customCa.customCaCertificate or secrets.customCa.existingCaSecret" -}}
+{{- end -}}
+
+{{- if .Values.secrets.customCa.existingCaSecret -}}
+{{ .Values.secrets.customCa.existingCaSecret }}
+{{- else -}}
 {{ include "lightrun.fullname" . }}-custom-ca-certificate
+{{- end -}}
 {{- end -}}
 
 
