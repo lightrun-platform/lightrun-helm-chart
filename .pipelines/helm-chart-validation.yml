@@ -97,6 +97,15 @@ steps:
             value: ""
         image:
           tag: ${APP_VERSION}
+      crons:
+        resources:
+          cpu: "0m"
+          memory: "0Mi"
+        extraEnvs:
+          - name: "_JAVA_OPTIONS"
+            value: ""
+        image:
+          tag: ${APP_VERSION}
       keycloak:
         resources:
           cpu: "0m"
