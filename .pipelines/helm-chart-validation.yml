@@ -208,6 +208,27 @@ steps:
   displayName: 'Verify Deployment'
 
 - script: |
+    k8s_logs_dir=$(mktemp -d)
+    echo "##vso[task.setvariable variable=k8s_logs_dir;]$k8s_logs_dir"
+    ./.pipelines/scripts/get_k8s_all_container_logs.sh $(NAMESPACE) $k8s_logs_dir
+  condition: always()
+  displayName: Collect k8s logs
+
+- script: |
+    for file in $(ls "$(k8s_logs_dir)"); do
+      echo "##[group]$file"
+      cat "$(k8s_logs_dir)/$file"
+      echo "##[endgroup]"
+    done
+  condition: always()
+  displayName: Print k8s logs
+
+- publish: $(k8s_logs_dir)
+  artifact: k8s_logs_$(System.JobAttempt)
+  condition: always()
+  displayName: Publish k8s logs
+
+- script: |
     set -euo pipefail
     helm uninstall $(RELEASE_NAME) -n $(NAMESPACE)
   displayName: 'Cleanup'
