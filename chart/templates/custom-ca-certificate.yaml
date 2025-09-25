@@ -1,9 +1,0 @@
-{{- if and .Values.secrets.customCa.customCaCertificate (not .Values.secrets.customCa.existingCaSecret) }}
-apiVersion: v1
-kind: Secret
-metadata:
-  name: {{ include "secrets.custom_ca_certificate.name" . }}
-type: Opaque
-data:
-  custom-ca.pem: {{ .Values.secrets.customCa.customCaCertificate }}
-{{ end }}
