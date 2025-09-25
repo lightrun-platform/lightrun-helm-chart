@@ -201,7 +201,7 @@ steps:
 - script: |
     k8s_logs_dir=$(mktemp -d)
     echo "##vso[task.setvariable variable=k8s_logs_dir;]$k8s_logs_dir"
-    ./pipelines/get_k8s_all_container_logs.sh $(NAMESPACE) $k8s_logs_dir
+    ./pipelines/scripts/get_k8s_all_container_logs.sh $(NAMESPACE) $k8s_logs_dir
   condition: always()
   displayName: Collect k8s logs
 
