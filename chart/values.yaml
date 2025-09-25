@@ -145,7 +145,7 @@ general:
   ## Crons
   #####################
   crons:
-    enabled: false
+    enabled: true
     ## If set to `true`, will deploy a crons service for processing crons and other background operations
     ## This service runs the same application as the backend but with crons profiles activated
     ## It does not expose any external ports and focuses on background processing to improve backend performance
