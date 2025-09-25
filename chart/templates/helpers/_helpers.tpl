@@ -512,9 +512,9 @@ Usage:
 {{- define "secrets.custom_ca_certificate.enabled" -}}
 {{- if and .Values.secrets.customCa.customCaCertificate .Values.secrets.customCa.existingCaSecret }}
   {{- fail "You must set only one of secrets.customCa.customCaCertificate or secrets.customCa.existingCaSecret" }}
-{{- else if and (not .Values.general.deploy_secrets.enabled) .Values.secrets.customCa.customCaCertificate }}
-  {{- fail "deploy_secrets.enabled must be true if customCaCertificate is defined" }}
-{{- else if and .Values.general.deploy_secrets.enabled .Values.secrets.customCa.customCaCertificate (not .Values.secrets.customCa.existingCaSecret) }}
+{{- else if and (not (include "secrets.deploy_secrets" .)) .Values.secrets.customCa.customCaCertificate }}
+  {{- fail "deploy_secrets must be true if customCaCertificate is defined" }}
+{{- else if and (include "secrets.deploy_secrets" .) .Values.secrets.customCa.customCaCertificate (not .Values.secrets.customCa.existingCaSecret) }}
 true
 {{- else if and .Values.secrets.customCa.existingCaSecret (not .Values.secrets.customCa.customCaCertificate) }}
 true
