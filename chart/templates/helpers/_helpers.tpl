@@ -460,7 +460,6 @@ Usage:
 {{- end -}}
 {{- end -}}
 
-
 {{- define "secrets.certificate.name" -}}
 {{- if .Values.certificate.existing_cert -}}
 {{ .Values.certificate.existing_cert }}
@@ -506,6 +505,30 @@ Usage:
 {{ include "lightrun.fullname" . }}-dockerhub
 {{- else -}}
 {{ include "lightrun.fullname" . }}-lightrun-dockerhub
+{{- end -}}
+{{- end -}}
+
+
+{{- define "secrets.custom_ca_certificate.enabled" -}}
+{{- if and .Values.secrets.customCa.customCaCertificate .Values.secrets.customCa.existingCaSecret }}
+  {{- fail "You must set only one of secrets.customCa.customCaCertificate or secrets.customCa.existingCaSecret" }}
+{{- else if and (not (include "secrets.deploy_secrets" .)) .Values.secrets.customCa.customCaCertificate }}
+  {{- fail "deploy_secrets must be true if customCaCertificate is defined" }}
+{{- else if and (include "secrets.deploy_secrets" .) .Values.secrets.customCa.customCaCertificate (not .Values.secrets.customCa.existingCaSecret) }}
+true
+{{- else if and .Values.secrets.customCa.existingCaSecret (not .Values.secrets.customCa.customCaCertificate) }}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- end -}}
+
+
+{{- define "secrets.custom_ca_certificate.name" -}}
+{{- if .Values.secrets.customCa.existingCaSecret -}}
+{{ .Values.secrets.customCa.existingCaSecret }}
+{{- else -}}
+{{ include "lightrun.fullname" . }}-custom-ca-certificate
 {{- end -}}
 {{- end -}}
 
@@ -898,5 +921,3 @@ Usage: {{ include "lightrun.datadogAnnotations" (dict "serviceName" "lightrun-be
           }
 {{- end }}
 {{- end }}
-
-

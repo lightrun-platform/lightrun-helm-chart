@@ -70,6 +70,8 @@ steps:
         password: test123
       redis:
         password: test123
+      customCa:
+        customCaCertificate: $(CUSTOM_CA_CERTIFICATE)
       defaults:
         dockerhub_config:
           configContent: $(DOCKERHUB_CONFIG)
@@ -180,6 +182,27 @@ steps:
       exit 1
     fi
   displayName: 'Validate Templates'
+
+- script: |
+    set -euo pipefail
+
+    echo "Verifying Keycloak custom CA volume mount in Helm template"
+
+    # Redirect output to file
+    helm template $(RELEASE_NAME) $(CHART_PATH) -f values.yaml --namespace $(NAMESPACE) > template_output.yaml 2>&1
+
+    KEYCLOAK_CONTAINER="${RELEASE_NAME}-keycloak"
+
+    # Extract volume mounts for container $(RELEASE_NAME)-keycloak from the rendered template file
+    VOLUME_MOUNTS=$(yq e ".spec.template.spec.containers[] | select(.name==\"$KEYCLOAK_CONTAINER\") | .volumeMounts[].name" template_output.yaml)
+
+    if echo "$VOLUME_MOUNTS" | grep -q "^custom-ca-certificate$"; then
+      echo "Found 'custom-ca-certificate' volume mount in Helm template as expected"
+    else
+      echo "Missing 'custom-ca-certificate' volume mount in Helm template"
+      exit 1
+    fi
+  displayName: 'Check Keycloak custom CA volume in Helm template'
 
 - script: |
     set -euo pipefail

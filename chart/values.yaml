@@ -478,6 +478,12 @@ secrets:
     # redis authentication.
     # requires to enable auth in deployments.redis.auth.enabled by set to true
     password: ""
+  customCa:
+    # Optional | If empty, will not be used
+    # Only *one* of `customCaCertificate` and `existingCaSecret` can be set at a time:
+    # Setting both will cause Helm to fail during rendering.
+    customCaCertificate: "" # Base64-encoded CA certificate content.
+    existingCaSecret: "" # Name of an existing Kubernetes secret containing the CA certificate.
   license:
     content: ""
     signature: ""
