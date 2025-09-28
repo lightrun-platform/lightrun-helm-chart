@@ -1,4 +1,41 @@
 
+<a name="v3.27.1"></a>
+## [v3.27.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.27.0...v3.27.1) - 2025-09-28
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.68.1-release.2b5ede413c    |
+| backend       | 1.68.1-release.2b5ede413c    |
+| crons         | 1.68.1-release.2b5ede413c    |
+| data_streamer | 4.63.0-alpine-3.22.0-r0.lr-0 |
+| frontend      | 1.68.1-release.2b5ede413c    |
+| keycloak      | 1.68.1-release.2b5ede413c    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine-3.22.0-r0.lr-0  |
+| redis         | 7.2.10-alpine-3.22.0-r0.lr-1 |
+| router        | 1.28.0-alpine-3.22.0-r0.lr-1 |
+ 
+ 
+
+
+### Changed (1 change)
+
+- [enable-crons-service-by-default (cherry pick 3.27) (#142)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/ee43d83)
+
+
+  Co-authored-by: Moshiko <moshikos@lightrun.com>
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.27.0"></a>
 ## [v3.27.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.26.1...v3.27.0) - 2025-09-21
 
