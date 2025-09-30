@@ -6,14 +6,14 @@ trigger: none
 variables:
   - group: lightrun-helm-chart-variables
 
-schedules:
-  - cron: 0 8 * * 3
-    displayName: "Run every 2 weeks on Wednesday 11:00 Israel time"
-    branches:
-      include:
-        - main
-        - DEVOPS-3000   # temporary for testing
-    always: true
+# schedules:
+#   - cron: 0 8 * * 3
+#     displayName: "Run every 2 weeks on Wednesday 11:00 Israel time"
+#     branches:
+#       include:
+#         - main
+#         - DEVOPS-3000   # temporary for testing
+#     always: true
 
 pool:
   vmImage: "ubuntu-latest"
@@ -32,7 +32,7 @@ jobs:
       - script: |
           python -m pip install --upgrade pip
           pip install azure-devops
-          python .pipelines/scripts/create_release_branch.py $(AZURE_DEVOPS_PAT_RO)
+          python .pipelines/scripts/create_release_branch.py $(AZURE_DEVOPS_PAT_RW)
         displayName: 'Run schedule check'
        
       # - script: |
