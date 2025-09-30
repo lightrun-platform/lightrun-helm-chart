@@ -16,7 +16,7 @@ schedules:
     always: true
 
 pool:
-  name: "ubuntu-latest"
+  vmImage: "ubuntu-latest"
 
 jobs:
   - job:
