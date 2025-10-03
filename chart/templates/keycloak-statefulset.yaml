@@ -98,14 +98,13 @@ spec:
               export JAVA_OPTS_APPEND
 
               # Build startup command
-              CMD="/opt/keycloak/bin/kc.sh start --optimized --{{ include "http.scheme" . }}-port 9080"
+              CMD="/opt/keycloak/bin/kc.sh start --spi-login-provider=lightrun-login-form --spi-email-template-provider=lightrun-email-template --{{ include "http.scheme" . }}-port 9080"
 
               {{- if .Values.deployments.keycloak.useJsonLogFormat }}
               CMD="$CMD --log-console-output=json"
               {{- end }}
 
               echo "JAVA_OPTS_APPEND at runtime: $JAVA_OPTS_APPEND"
-
               exec $CMD
 
           {{- if or .Values.general.readOnlyRootFilesystem

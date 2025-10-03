@@ -86,6 +86,12 @@ spec:
               mountPath: /cert/
               readOnly: true
           {{- end }}
+          {{- if .Values.general.readOnlyRootFilesystem }}
+            - name: tmpfs
+              mountPath: /var/lib/nginx/tmp
+            - name: tmpfs
+              mountPath: /tmp
+          {{- end }}          
       {{- if .Values.general.tolerations }}
       tolerations:
         {{ toYaml .Values.general.tolerations | nindent 8 }}
@@ -111,3 +117,8 @@ spec:
           secretName: {{ .Values.general.internal_tls.certificates.existing_certificates.artifacts }}
           {{- end }}
       {{- end }}
+      {{- if .Values.general.readOnlyRootFilesystem }}
+      - name: tmpfs
+        emptyDir:
+          sizeLimit: {{ .Values.general.readOnlyRootFilesystem_tmpfs_sizeLimit }}
+      {{- end -}}
