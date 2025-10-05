@@ -1,6 +1,9 @@
 {{ define "lightrun-keycloak.initContainer.read-only-rootfs" }}
       - args:
-          - cp -R /opt/* /keycloak-empty-dir/
+          - >
+            cp -R /opt/* /keycloak-empty-dir/ &&
+            cd /opt &&
+            find . -type f -exec touch -r {} /keycloak-empty-dir/{} \; 2>/dev/null
         command:
           - /bin/sh
           - -c
