@@ -1,4 +1,61 @@
 
+<a name="v3.28.0"></a>
+## [v3.28.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.27.1...v3.28.0) - 2025-10-05
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.69.0-release.053cf2a695    |
+| backend       | 1.69.0-release.053cf2a695    |
+| crons         | 1.69.0-release.053cf2a695    |
+| data_streamer | 4.63.0-alpine-3.22.0-r0.lr-0 |
+| frontend      | 1.69.0-release.053cf2a695    |
+| keycloak      | 1.69.0-release.053cf2a695    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine-3.22.0-r0.lr-0  |
+| redis         | 7.2.10-alpine-3.22.0-r0.lr-1 |
+| router        | 1.28.0-alpine-3.22.0-r0.lr-1 |
+
+
+
+
+ 
+ 
+
+
+### Added (1 change)
+
+- [support-custom-ca (#138)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/bd8ea31)
+ 
+ 
+ 
+
+
+### Changed (1 change)
+
+- [enable-crons-service-by-default (#140)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/f8c5cdf)
+
+
+  Co-authored-by: Moshiko <moshikos@lightrun.com>
+ 
+ 
+ 
+
+
+### Fixed (1 change)
+
+- [broken-anchors-in-docs (#139)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2ec4597)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.27.1"></a>
 ## [v3.27.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.27.0...v3.27.1) - 2025-09-28
 
