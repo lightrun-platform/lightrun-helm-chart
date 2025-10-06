@@ -368,7 +368,7 @@
 
 
 <a name="v3.24.0"></a>
-## [v3.24.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.23.9...v3.24.0) - 2025-08-11
+## [v3.24.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.23.10...v3.24.0) - 2025-08-11
 
 
 
@@ -400,6 +400,40 @@
  
 
 - [bump redis to 7.2.10 (#116)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/ba17dab)
+ 
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.23.10"></a>
+## [v3.23.10](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.23.9...v3.23.10) - 2025-10-06
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.64.7-release.de32b65dd6    |
+| backend       | 1.64.7-release.de32b65dd6    |
+| crons         | 1.64.7-release.de32b65dd6    |
+| data_streamer | 4.56.0-alpine-3.22.0-r0.lr-0 |
+| frontend      | 1.64.7-release.de32b65dd6    |
+| keycloak      | 1.64.7-release.de32b65dd6    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine-3.22.0-r0.lr-0  |
+| redis         | 7.2.10-alpine-3.22.0-r0.lr-1 |
+| router        | 1.28.0-alpine-3.22.0-r0.lr-1 |
+ 
+ 
+
+
+### Fixed (1 change)
+
+- [readOnlyRootFilesystem-issue-for-artifacts-and-keycloak-cherry-pick-for-sap (#145)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/d159172)
  
  
  
