@@ -11,6 +11,7 @@
 | 3.25.0        | 1.66.0-release.4f92d4c5d0 |
 | 3.24.1        | 1.65.1-release.3b872fa607 |
 | 3.24.0        | 1.65.0-release.dbbc13e864 |
+| 3.23.11       | 1.64.8-release.5dc3cc5743 |
 | 3.23.10       | 1.64.7-release.de32b65dd6 |
 | 3.23.9        | 1.64.7-release.de32b65dd6 |
 | 3.23.8        | 1.64.6-release.d47d361a70 |
