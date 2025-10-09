@@ -1,0 +1,192 @@
+name: "Create Release Branch"
+
+pr: none
+trigger: none
+
+variables:
+  - group: lightrun-helm-chart-variables
+
+# schedules:
+#   - cron: "0 8 * * *"
+#     displayName: "Run every day at 11:00 AM Israel time"
+#     branches:
+#       include:
+#         - main
+#         - DEVOPS-3000 # temporary for testing
+#     always: true
+
+pool:
+  vmImage: "ubuntu-latest"
+
+jobs:
+  - job:
+    steps:
+      - checkout: self
+        persistCredentials: true
+
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: 3.11
+          addToPath: true
+          
+      - script: |
+          python -m pip install --upgrade pip
+          pip install azure-devops
+
+          python .pipelines/scripts/check_release_schedule.py $(AZURE_DEVOPS_PAT_RW)
+          exit_code=$?
+
+          echo "Python exit code: $exit_code"
+
+          if [ $exit_code -eq 0 ]; then
+            echo "✅ Success — continue pipeline."
+            exit 0
+          elif [ $exit_code -eq 1 ]; then
+            echo "❌ Failure — trigger failure report."
+            exit 1   # mark step as failed
+          elif [ $exit_code -eq 2 ]; then
+            echo "🛑 Controlled stop — exiting entire pipeline."
+            echo "##vso[task.complete result=SucceededWithIssues;]DONE"
+            exit 0   # mark as success so pipeline ends quietly (no failure condition triggered)
+          else
+            echo "⚠️ Unexpected exit code: $exit_code"
+            exit 1
+          fi
+        displayName: 'Run schedule check'
+        name: CheckSchedule
+       
+      - script: |
+          set -euo pipefail
+          CHART_VERSION=$(awk -F'|' 'NR > 2 && $2 !~ /^[[:space:]]*-+[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$2); if ($2 != "") {print $2; exit}}' docs/installation/versions_mapping.md)
+          MAJOR=$(echo "$CHART_VERSION" | cut -d. -f1)
+          MINOR=$(echo "$CHART_VERSION" | cut -d. -f2)
+          NEXT_MINOR=$((MINOR + 1))
+          NEXT_CHART_VERSION="${MAJOR}.${NEXT_MINOR}"
+          echo "Next chart version: $NEXT_CHART_VERSION"
+          echo "##vso[task.setvariable variable=NEXT_CHART_VERSION]$NEXT_CHART_VERSION"
+        condition: eq(variables['Agent.JobStatus'], 'Succeeded')
+        displayName: 'Compute next chart version'
+
+      # - script: |
+      #     git fetch origin main
+      #     git checkout main
+      #     git pull origin main
+      #     git checkout -b "releases/$(NEXT_CHART_VERSION)/official"
+      #   condition: eq(variables['Agent.JobStatus'], 'Succeeded')
+      #   displayName: 'Create release branch'
+
+      - script: |
+          MESSAGE_PAYLOAD=$(cat <<EOF
+          {
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "<!here> *Create release branch pipeline failed* ⚠️"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Pipeline:*\n$BUILD_DEFINITIONNAME"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Triggered By:*\n$BUILD_REQUESTEDFOR"
+                  }
+                ]
+              },
+              {
+                "type": "actions",
+                "elements": [
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "View Failed Build",
+                      "emoji": true
+                    },
+                    "url": "$SYSTEM_TEAMFOUNDATIONCOLLECTIONURI$SYSTEM_TEAMPROJECT/_build/results?buildId=$BUILD_BUILDID",
+                    "action_id": "view_failed_build",
+                    "style": "danger"
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          )
+
+          curl -X POST -H 'Content-type: application/json' --data "$MESSAGE_PAYLOAD" "$SLACK_WEBHOOK_URL"
+        target:
+          container: host
+        env:
+          SLACK_WEBHOOK_URL: $(DEVOPS_ALERTS_SLACK_WEBHOOK_URL) # devops-alerts
+        condition: failed()
+        continueOnError: true
+        displayName: Report pipeline failure
+
+      - script: |
+          MESSAGE_PAYLOAD=$(cat <<EOF
+          {
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "<!here> *Create release branch pipeline succeeded* :tada:"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Pipeline:*\n$BUILD_DEFINITIONNAME"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Triggered By:*\n$BUILD_REQUESTEDFOR"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Next Chart Version:*\n$(NEXT_CHART_VERSION)"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*New Branch Name:*\nreleases/$(NEXT_CHART_VERSION)/official"
+                  }
+                ]
+              },
+              {
+                "type": "actions",
+                "elements": [
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "View Build",
+                      "emoji": true
+                    },
+                    "url": "$SYSTEM_TEAMFOUNDATIONCOLLECTIONURI$SYSTEM_TEAMPROJECT/_build/results?buildId=$BUILD_BUILDID",
+                    "action_id": "view_build",
+                    "style": "primary"
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          )
+
+          curl -X POST -H 'Content-type: application/json' --data "$MESSAGE_PAYLOAD" "$SLACK_WEBHOOK_URL"
+        target:
+          container: host
+        env:
+          SLACK_WEBHOOK_URL: $(DEVOPS_PERIODIC_ALERTS_SLACK_WEBHOOK_URL) # devops-periodic-alerts
+        condition: eq(variables['Agent.JobStatus'], 'Succeeded')
+        continueOnError: true
+        displayName: Report pipeline success
