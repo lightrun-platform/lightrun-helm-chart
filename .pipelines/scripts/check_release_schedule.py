@@ -2,7 +2,6 @@ import sys
 from datetime import datetime, timedelta
 from msrest.authentication import BasicAuthentication
 from azure.devops.connection import Connection
-from azure.devops.v7_0.release.models import VariableGroupProjectReference, ProjectReference
 from azure.devops.v7_0.task_agent.models import VariableGroupParameters
 
 ORGANIZATION_NAME = "athenat"
@@ -29,26 +28,41 @@ def get_variable_group(client, group: str):
     return variable_groups[0]
 
 
-def update_variable_group(variable_group, client):
-        variable_group_parameters = VariableGroupParameters(
-                name=variable_group.name,
-                description=variable_group.description,
-                type=variable_group.type,
-                variables=variable_group.variables,
-                variable_group_project_references=[
-                    VariableGroupProjectReference(
-                         name=variable_group.name,
-                        project_reference=ProjectReference(
-                            id=ATHENA_PROJECT_ID,
-                            name=ATHENA_PROJECT_NAME
-                        )
-                    )
-                ]
-            )
-        
-        # removes the description of the variable group
-        client.update_variable_group(variable_group_parameters=variable_group_parameters, group_id=VARIABLE_GROUP_ID)
-        print("variable group updated.")
+def update_variable_group(variable_group, client, updates: dict):
+    """
+    Update (or insert) variables in an existing variable group.
+
+    Args:
+        variable_group: The existing VariableGroup object.
+        client: The client used to update the variable group.
+        updates (dict): Variables to update or insert.
+                        Example: {"var_name": "new_value"} or {"var_name": None}
+    """
+    vg: dict = variable_group.as_dict()
+
+    for key, val in updates.items():
+        vg["variables"][key] = {"value": val}
+
+    vg["variable_group_project_references"] = [
+        {
+            "name": variable_group.name,
+            "project_reference": {
+                "id": ATHENA_PROJECT_ID,
+                "name": ATHENA_PROJECT_NAME
+            }
+        }
+    ]
+
+    # Convert back to VariableGroupParameters
+    parameters = VariableGroupParameters.from_dict(vg)
+
+    # Note: this action removes the description of the variable group
+    client.update_variable_group(
+        variable_group_parameters=parameters,
+        group_id=VARIABLE_GROUP_ID
+    )
+
+    print("Variable group updated.")
 
 
 def main():
@@ -90,39 +104,41 @@ def main():
     if OVERRIDE_RELEASE_DATE and isinstance(OVERRIDE_RELEASE_DATE, str):
         OVERRIDE_RELEASE_DATE = parse_date(OVERRIDE_RELEASE_DATE)
 
-    # check the difference in days
-    delta_days = abs((NEXT_RELEASE_DATE - OVERRIDE_RELEASE_DATE).days) if OVERRIDE_RELEASE_DATE else None
+    if OVERRIDE_RELEASE_DATE:
+        delta_days = abs((NEXT_RELEASE_DATE - OVERRIDE_RELEASE_DATE).days)
 
-    if delta_days is not None and delta_days > 13:
-        print(f"OVERRIDE_RELEASE_DATE ({OVERRIDE_RELEASE_DATE}) is {delta_days} days away from NEXT_RELEASE_DATE ({NEXT_RELEASE_DATE}).\n"
-              f"Max delta allowed is 13 days, deleting value of OVERRIDE_RELEASE_DATE and exiting.")
-        
-        if "OVERRIDE_RELEASE_DATE" in variable_group.variables:
-            variable_group.variables["OVERRIDE_RELEASE_DATE"].value = None
-        
-        update_variable_group(variable_group, task_agent_client)
-        sys.exit(1)
+        if delta_days > 13:
+            print(f"OVERRIDE_RELEASE_DATE ({OVERRIDE_RELEASE_DATE}) is {delta_days} days away from NEXT_RELEASE_DATE ({NEXT_RELEASE_DATE}).\n"
+                f"Max delta allowed is 13 days, deleting value of OVERRIDE_RELEASE_DATE and exiting.")
 
-    elif OVERRIDE_RELEASE_DATE:
+            updates = {
+                "OVERRIDE_RELEASE_DATE": None
+            }
+            update_variable_group(variable_group, task_agent_client, updates)
+
+            sys.exit(1)
+
         print(f"OVERRIDE_RELEASE_DATE ({OVERRIDE_RELEASE_DATE}) has priority over NEXT_RELEASE_DATE ({NEXT_RELEASE_DATE}) and will be used.")
         if current_date != OVERRIDE_RELEASE_DATE:
-            sys.exit(2) # exit if today is not the override date
+            sys.exit(2)  # exit if today is not the override date
         
         next_release_date_plus_2_weeks = NEXT_RELEASE_DATE + timedelta(weeks=2)
-        variable_group.variables["NEXT_RELEASE_DATE"].value = next_release_date_plus_2_weeks
-        variable_group.variables["OVERRIDE_RELEASE_DATE"].value = None
+        updates = {
+                "NEXT_RELEASE_DATE": next_release_date_plus_2_weeks,
+                "OVERRIDE_RELEASE_DATE": None
+            }
+        update_variable_group(variable_group, task_agent_client, updates)
 
-        update_variable_group(variable_group, task_agent_client)
-
-    elif NEXT_RELEASE_DATE and not OVERRIDE_RELEASE_DATE:
+    elif NEXT_RELEASE_DATE:
         print(f"Using NEXT_RELEASE_DATE ({NEXT_RELEASE_DATE}) since OVERRIDE_RELEASE_DATE is None.")
         if current_date != NEXT_RELEASE_DATE:
-            sys.exit(2) # exit if today is not the next release date
-        
+            sys.exit(2)  # exit if today is not the next release date
+    
         next_release_date_plus_2_weeks = NEXT_RELEASE_DATE + timedelta(weeks=2)
-        variable_group.variables["NEXT_RELEASE_DATE"].value = next_release_date_plus_2_weeks
-
-        update_variable_group(variable_group, task_agent_client)
+        updates = {
+                "NEXT_RELEASE_DATE": next_release_date_plus_2_weeks
+            }
+        update_variable_group(variable_group, task_agent_client, updates)
 
 
 if __name__ == "__main__":

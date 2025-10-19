@@ -6,14 +6,13 @@ trigger: none
 variables:
   - group: lightrun-helm-chart-variables
 
-# schedules:
-#   - cron: "0 8 * * *"
-#     displayName: "Run every day at 11:00 AM Israel time"
-#     branches:
-#       include:
-#         - main
-#         - DEVOPS-3000 # temporary for testing
-#     always: true
+schedules:
+  - cron: "0 8 * * *"
+    displayName: "Run every day at 11:00 AM Israel time"
+    branches:
+      include:
+        - main
+    always: true
 
 pool:
   vmImage: "ubuntu-latest"
@@ -67,13 +66,13 @@ jobs:
         condition: eq(variables['Agent.JobStatus'], 'Succeeded')
         displayName: 'Compute next chart version'
 
-      # - script: |
-      #     git fetch origin main
-      #     git checkout main
-      #     git pull origin main
-      #     git checkout -b "releases/$(NEXT_CHART_VERSION)/official"
-      #   condition: eq(variables['Agent.JobStatus'], 'Succeeded')
-      #   displayName: 'Create release branch'
+      - script: |
+          git fetch origin main
+          git checkout main
+          git pull origin main
+          git checkout -b "releases/$(NEXT_CHART_VERSION)/official"
+        condition: eq(variables['Agent.JobStatus'], 'Succeeded')
+        displayName: 'Create release branch'
 
       - script: |
           MESSAGE_PAYLOAD=$(cat <<EOF
