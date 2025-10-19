@@ -65,6 +65,36 @@ def update_variable_group(variable_group, client, updates: dict):
     print("Variable group updated.")
 
 
+def fetch_release_dates(variable_group):
+    """Extract and parse NEXT_RELEASE_DATE and OVERRIDE_RELEASE_DATE from a variable group."""
+    try:
+        next_release = variable_group.variables['NEXT_RELEASE_DATE'].value
+        override_release = variable_group.variables['OVERRIDE_RELEASE_DATE'].value
+    except KeyError as e:
+        raise KeyError(f"Missing variable in group '{VARIABLE_GROUP_NAME}': {e}")
+    
+    # Log and enforce NEXT_RELEASE_DATE presence
+    if not next_release or (isinstance(next_release, str) and not next_release.strip()):
+        print("NEXT_RELEASE_DATE is not set, exiting...")
+        sys.exit(1)
+    else:
+        print(f"NEXT_RELEASE_DATE = {next_release}")
+
+    # Log OVERRIDE_RELEASE_DATE status
+    if not override_release or (isinstance(override_release, str) and not override_release.strip()):
+        print("OVERRIDE_RELEASE_DATE is not set, ignoring it.")
+        override_release = None
+    else:
+        print(f"OVERRIDE_RELEASE_DATE = {override_release}")
+
+    if isinstance(next_release, str):
+        next_release = parse_date(next_release)
+    if override_release and isinstance(override_release, str):
+        override_release = parse_date(override_release)
+    
+    return next_release, override_release
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: check_release_schedule.py <AZURE_DEVOPS_PAT_RW>")
@@ -77,32 +107,8 @@ def main():
     task_agent_client = connection.clients.get_task_agent_client()
 
     variable_group = get_variable_group(client=task_agent_client, group=VARIABLE_GROUP_NAME)
-    
-    if 'NEXT_RELEASE_DATE' not in variable_group.variables:
-        raise KeyError(f"Variable 'NEXT_RELEASE_DATE' not found in the variable group '{VARIABLE_GROUP_NAME}'.")
-    NEXT_RELEASE_DATE = variable_group.variables['NEXT_RELEASE_DATE'].value
-
-    if 'OVERRIDE_RELEASE_DATE' not in variable_group.variables:
-        raise KeyError(f"Variable 'OVERRIDE_RELEASE_DATE' not found in the variable group '{VARIABLE_GROUP_NAME}'.")
-    OVERRIDE_RELEASE_DATE = variable_group.variables['OVERRIDE_RELEASE_DATE'].value
-    
+    NEXT_RELEASE_DATE, OVERRIDE_RELEASE_DATE = fetch_release_dates(variable_group)
     current_date = datetime.utcnow().date()
-
-    if not NEXT_RELEASE_DATE:
-        print("NEXT_RELEASE_DATE is not set, exiting...")
-        sys.exit(1)
-    else:
-        print(f"NEXT_RELEASE_DATE = {NEXT_RELEASE_DATE}")
-    
-    if not OVERRIDE_RELEASE_DATE:
-        print("OVERRIDE_RELEASE_DATE is not set, ignoring it.")
-    else:
-        print(f"OVERRIDE_RELEASE_DATE = {OVERRIDE_RELEASE_DATE}")
-    
-    if isinstance(NEXT_RELEASE_DATE, str):
-        NEXT_RELEASE_DATE = parse_date(NEXT_RELEASE_DATE)
-    if OVERRIDE_RELEASE_DATE and isinstance(OVERRIDE_RELEASE_DATE, str):
-        OVERRIDE_RELEASE_DATE = parse_date(OVERRIDE_RELEASE_DATE)
 
     if OVERRIDE_RELEASE_DATE:
         delta_days = abs((NEXT_RELEASE_DATE - OVERRIDE_RELEASE_DATE).days)
