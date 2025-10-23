@@ -14,10 +14,43 @@ There are two modes:
 > - Supports RabbitMQ versions 3.12.x.
 > - Minimum size requirements: 0.5 vCPU, 1Gi memory.
 
+## RabbitMQ Enabled by Default in 3.30.0 Chart Version
+
+Starting with the 3.30.0 chart version, RabbitMQ is enabled by default with ephemeral storage (storage: "0"), eliminating the need for Persistent Volumes (PVs). This change ensures a frictionless upgrade experience while maintaining compatibility with existing configurations.
+
+### Key Implications for Upgrades:
+
+- **Previously not using RabbitMQ due to explicitly setting `general.mq.enabled: false`)**: RabbitMQ will continue be disabled. No action is required.
+- **Previously not using RabbitMQ due to default settings**: RabbitMQ will be automatically enabled with ephemeral storage. No action is required. RabbitMQ data will not persist across pod restarts.
+- **Previously using local RabbitMQ with default storage setting (storage: "10Gi")**: If you have not customized your values.yaml file and are using the default storage configuration, you must explicitly set `general.mq.storage: "10Gi"` to maintain persistent storage across pod restarts. Otherwise, RabbitMQ will use ephemeral storage (EmptyDir).
+- **Previously using external RabbitMQ**: No action is required.
+
+> [!IMPORTANT]
+> For environments with restrictions on PV/PVC creation (e.g., restricted cloud platforms or internal policies), you must explicitly set:
+> ```yaml
+> general:
+>   mq:
+>     enabled: true
+>     storage: "0"
+> ```
+> This ensures RabbitMQ uses EmptyDir for temporary storage and avoids PVC provisioning attempts.
+
+> [!NOTE]
+> **For air-gapped or restricted environments**: If your environment have no access to DockerHub, you must provide the RabbitMQ container image (like `lightruncom/rabbitmq:4.0.9-alpine.lr-0`) through your internal container registry. Customers must override the image repository tag in their values.yaml file:
+> ```yaml
+> general:
+>   mq:
+>     image:
+>       repository: your-internal-registry.example.com/lightruncom/rabbitmq
+>       tag: 4.0.9-alpine.lr-0
+> ```
+
+
+
 ### **Basic Configuration**
 | Property                                             | Description                                                                                               |
 | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| **`general.mq.enabled: false`**                      | Enable (`true`) or disable (`false`) RabbitMQ.                                                            |
+| **`general.mq.enabled: true`**                      | Enable (`true`) or disable (`false`) RabbitMQ.                                                            |
 | **`general.mq.local: true`**                         | If `true`, a RabbitMQ **StatefulSet** will be deployed inside the cluster.                                |
 | **`general.mq.mq_endpoint: "rabbitmq.example.com"`** | The **fully qualified domain name (FQDN)** of an external RabbitMQ instance. **Ignored** if `local: true` |
 | **`general.mq.port: "5672"`**                        | The **RabbitMQ connection port** (default: `5672`).                                                       |
