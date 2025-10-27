@@ -18,12 +18,32 @@ There are two modes:
 
 Starting with the 3.30.0 chart version, RabbitMQ is enabled by default with ephemeral storage (storage: "0"), eliminating the need for Persistent Volumes (PVs). This change ensures a frictionless upgrade experience while maintaining compatibility with existing configurations.
 
-### Key Implications for Upgrades:
+### Upgrade Implications for RabbitMQ Configuration
 
-- **Previously not using RabbitMQ due to explicitly setting `general.mq.enabled: false`)**: RabbitMQ will continue be disabled. No action is required.
-- **Previously not using RabbitMQ due to default settings**: RabbitMQ will be automatically enabled with ephemeral storage. No action is required. RabbitMQ data will not persist across pod restarts.
-- **Previously using local RabbitMQ with default storage setting (storage: "10Gi")**: If you have not customized your values.yaml file and are using the default storage configuration, you must explicitly set `general.mq.storage: "10Gi"` to maintain persistent storage across pod restarts. Otherwise, RabbitMQ will use ephemeral storage (EmptyDir).
-- **Previously using external RabbitMQ**: No action is required.
+Review the following scenarios to determine the necessary actions for your upgrade.
+
+- RabbitMQ Was Explicitly Disabled
+  - Condition: Your `values.yaml` contained `general.mq.enabled: false`.
+  - Outcome: RabbitMQ remains disabled.
+  - Action: None required.
+
+- RabbitMQ Was Unused (Default Settings)
+  - Condition: You were not using RabbitMQ and relied on default settings.
+  - Outcome: RabbitMQ will now be automatically enabled with ephemeral storage.
+  - Action: You must set non-blank RabbitMQ credentials. The method depends on your secret configuration:
+    - If using deployed secrets (`general.deploy_secrets.enabled: true`): Set `secrets.mq.user` and `secrets.mq.password` in your `values.yaml`.
+    - If using an existing secret (`general.deploy_secrets.enabled: false`): Set the `SPRING_RABBITMQ_USERNAME` and `SPRING_RABBITMQ_PASSWORD` fields in the existing secret referenced by `general.deploy_secrets.existing_secrets.backend`.
+
+- RabbitMQ Was Used with Default Persistent Storage
+  - Condition: You were using the local RabbitMQ with the default storage: "10Gi" setting.
+  - Outcome: The default storage will change to ephemeral, which does not persist data across pod restarts.
+  - Action: To retain persistent storage, you must explicitly set `general.mq.storage: "10Gi"` in your `values.yaml`.
+
+- Using an External RabbitMQ Service
+  - Condition: Your configuration points to an external RabbitMQ instance.
+  - Outcome: No change to your configuration.
+  - Action: None required.
+
 
 > [!IMPORTANT]
 > For environments with restrictions on PV/PVC creation (e.g., restricted cloud platforms or internal policies), you must explicitly set:
@@ -36,7 +56,7 @@ Starting with the 3.30.0 chart version, RabbitMQ is enabled by default with ephe
 > This ensures RabbitMQ uses EmptyDir for temporary storage and avoids PVC provisioning attempts.
 
 > [!NOTE]
-> **For air-gapped or restricted environments**: If your environment have no access to DockerHub, you must provide the RabbitMQ container image (like `lightruncom/rabbitmq:4.0.9-alpine.lr-0`) through your internal container registry. Customers must override the image repository tag in their values.yaml file:
+> **For air-gapped or restricted environments**: If your environment have no access to DockerHub, you must provide the RabbitMQ container image (like `lightruncom/rabbitmq:4.0.9-alpine.lr-0`) through your internal container registry. Override the image source in your `values.yaml` as shown below:
 > ```yaml
 > general:
 >   mq:
