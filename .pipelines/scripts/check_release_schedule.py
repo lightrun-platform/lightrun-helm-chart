@@ -10,6 +10,11 @@ ATHENA_PROJECT_NAME = "athena"
 VARIABLE_GROUP_NAME = "lightrun-helm-chart-variables"
 VARIABLE_GROUP_ID = 45
 
+# === Exit codes ===
+# 0: Success
+# 1: Failure
+# 2: Exiting because the release date does not match today's date
+
 
 def parse_date(date_str):
     """Parse YYYY-MM-DD or YYYY-M-D into datetime.date"""
@@ -122,7 +127,7 @@ def main():
             }
             update_variable_group(variable_group, task_agent_client, updates)
 
-            sys.exit(1)
+            sys.exit(1)  # exit if the difference between `NEXT_RELEASE_DATE` and `OVERRIDE_RELEASE_DATE` is more than 13 days
 
         print(f"OVERRIDE_RELEASE_DATE ({OVERRIDE_RELEASE_DATE}) has priority over NEXT_RELEASE_DATE ({NEXT_RELEASE_DATE}) and will be used.")
         if current_date != OVERRIDE_RELEASE_DATE:
