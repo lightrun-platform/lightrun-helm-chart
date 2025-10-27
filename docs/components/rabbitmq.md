@@ -16,7 +16,7 @@ There are two modes:
 
 ## RabbitMQ Enabled by Default in 3.30.0 Chart Version
 
-Starting with the 3.30.0 chart version, RabbitMQ is enabled by default with ephemeral storage (storage: "0"), eliminating the need for Persistent Volumes (PVs). This change ensures a frictionless upgrade experience while maintaining compatibility with existing configurations.
+Starting with the 3.30.0 chart version, RabbitMQ is enabled by default with ephemeral storage (storage: "0"), eliminating the need for Persistent Volumes (PVs). This change ensures a smoother upgrade experience while maintaining compatibility with existing configurations.
 
 ### Upgrade Implications for RabbitMQ Configuration
 
@@ -56,7 +56,7 @@ Review the following scenarios to determine the necessary actions for your upgra
 > This ensures RabbitMQ uses EmptyDir for temporary storage and avoids PVC provisioning attempts.
 
 > [!NOTE]
-> **For air-gapped or restricted environments**: If your environment have no access to DockerHub, you must provide the RabbitMQ container image (like `lightruncom/rabbitmq:4.0.9-alpine.lr-0`) through your internal container registry. Override the image source in your `values.yaml` as shown below:
+> **For air-gapped or restricted environments**: If your environment has no access to DockerHub, you must provide the RabbitMQ container image (like `lightruncom/rabbitmq:4.0.9-alpine.lr-0`) through your internal container registry. Override the image source in your `values.yaml` as shown below:
 > ```yaml
 > general:
 >   mq:
