@@ -22,11 +22,6 @@ Starting with the 3.30.0 chart version, RabbitMQ is enabled by default with ephe
 
 Review the following scenarios to determine the necessary actions for your upgrade.
 
-- RabbitMQ Was Explicitly Disabled
-  - Condition: Your `values.yaml` contained `general.mq.enabled: false`.
-  - Outcome: RabbitMQ remains disabled.
-  - Action: None required.
-
 - RabbitMQ Was Unused (Default Settings)
   - Condition: You were not using RabbitMQ and relied on default settings.
   - Outcome: RabbitMQ will now be automatically enabled with ephemeral storage.
@@ -34,8 +29,13 @@ Review the following scenarios to determine the necessary actions for your upgra
     - If using deployed secrets (`general.deploy_secrets.enabled: true`): Set `secrets.mq.user` and `secrets.mq.password` in your `values.yaml`.
     - If using an existing secret (`general.deploy_secrets.enabled: false`): Set the `SPRING_RABBITMQ_USERNAME` and `SPRING_RABBITMQ_PASSWORD` fields in the existing secret referenced by `general.deploy_secrets.existing_secrets.backend`.
 
+- RabbitMQ Was Explicitly Disabled
+  - Condition: Your `values.yaml` contained `general.mq.enabled: false`.
+  - Outcome: RabbitMQ remains disabled.
+  - Action: None required.
+
 - RabbitMQ Was Used with Default Persistent Storage
-  - Condition: You were using the local RabbitMQ with the default storage: "10Gi" setting.
+  - Condition: You were using the local RabbitMQ with the default `storage: "10Gi"` setting.
   - Outcome: The default storage will change to ephemeral, which does not persist data across pod restarts.
   - Action: To retain persistent storage, you must explicitly set `general.mq.storage: "10Gi"` in your `values.yaml`.
 
@@ -44,16 +44,6 @@ Review the following scenarios to determine the necessary actions for your upgra
   - Outcome: No change to your configuration.
   - Action: None required.
 
-
-> [!IMPORTANT]
-> For environments with restrictions on PV/PVC creation (e.g., restricted cloud platforms or internal policies), you must explicitly set:
-> ```yaml
-> general:
->   mq:
->     enabled: true
->     storage: "0"
-> ```
-> This ensures RabbitMQ uses EmptyDir for temporary storage and avoids PVC provisioning attempts.
 
 > [!NOTE]
 > **For air-gapped or restricted environments**: If your environment has no access to DockerHub, you must provide the RabbitMQ container image (like `lightruncom/rabbitmq:4.0.9-alpine.lr-0`) through your internal container registry. Override the image source in your `values.yaml` as shown below:
