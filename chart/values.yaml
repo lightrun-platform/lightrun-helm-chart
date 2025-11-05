@@ -74,7 +74,7 @@ general:
   ## Message Queue
   #################
   mq:
-    enabled: false
+    enabled: true
     local: true
     ## Changing the queue name results in a new queue (and dlq) being created
     ## Old queues will not be deleted automatically
@@ -113,9 +113,9 @@ general:
     ## adjust to proper class
     # AWS - `gp2`
     # GCP - `standard`
-    storage: "10Gi"
-    ## For testing purposes you can set "0"
-    ## 0 - no PVC created, data will be lost on pod restart
+    storage: "0"
+    ## For environments requiring persistent storage, set to "10Gi" or higher
+    ## For environments without PV/PVC access, keep as "0" to use ephemeral storage (EmptyDir)
     pvc_name: ""
     ## If empty, will be set to default: {{ .Release.Name }}-mq-data
     metrics: false
