@@ -48,6 +48,17 @@ steps:
     echo "App version: $APP_VERSION"
 
     # Create values.yaml file
+    # if the chart version >= 3.30.0 then use license v2 othewise fallback to license v1
+    if [[ "$(echo "$CHART_VERSION" | sed 's/\..*//')" -ge 3 && "$(echo "$CHART_VERSION" | sed 's/[^.]*\.//; s/\..*//')" -ge 30 ]]; then
+      echo "License version: v2"
+      LICENSE_CONTENT=$(LICENSE_CONTENT_V2)
+      LICENSE_SIGNATURE=$(LICENSE_SIGNATURE_V2)
+    else
+      echo "License version: v1"
+      LICENSE_CONTENT=$(LICENSE_CONTENT)
+      LICENSE_SIGNATURE=$(LICENSE_SIGNATURE)
+    fi
+    
     cat > values.yaml << EOF
     general:
       lightrun_endpoint: test.example.com
@@ -58,8 +69,8 @@ steps:
     
     secrets:
       license:
-        content: $(LICENSE_CONTENT)
-        signature: $(LICENSE_SIGNATURE)
+        content: $LICENSE_CONTENT
+        signature: $LICENSE_SIGNATURE
       keycloak:
         password: test123
       db:
