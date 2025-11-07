@@ -14,10 +14,53 @@ There are two modes:
 > - Supports RabbitMQ versions 3.12.x.
 > - Minimum size requirements: 0.5 vCPU, 1Gi memory.
 
+## RabbitMQ Enabled by Default in 3.30.0 Chart Version
+
+Starting with the 3.30.0 chart version, RabbitMQ is enabled by default with ephemeral storage (storage: "0"), eliminating the need for Persistent Volumes (PVs). This change ensures a smoother upgrade experience while maintaining compatibility with existing configurations.
+
+### Upgrade Implications for RabbitMQ Configuration
+
+Review the following scenarios to determine the necessary actions for your upgrade.
+
+- RabbitMQ Was Unused (Default Settings)
+  - Condition: You were not using RabbitMQ and relied on default settings.
+  - Outcome: RabbitMQ will now be automatically enabled with ephemeral storage.
+  - Action: You must set non-blank RabbitMQ credentials. The method depends on your secret configuration:
+    - If using deployed secrets (`general.deploy_secrets.enabled: true`): Set `secrets.mq.user` and `secrets.mq.password` in your `values.yaml`.
+    - If using an existing secret (`general.deploy_secrets.enabled: false`): Set the `SPRING_RABBITMQ_USERNAME` and `SPRING_RABBITMQ_PASSWORD` fields in the existing secret referenced by `general.deploy_secrets.existing_secrets.backend`.
+
+- RabbitMQ Was Explicitly Disabled
+  - Condition: Your `values.yaml` contained `general.mq.enabled: false`.
+  - Outcome: RabbitMQ remains disabled.
+  - Action: None required.
+
+- RabbitMQ Was Used with Default Persistent Storage
+  - Condition: You were using the local RabbitMQ with the default `storage: "10Gi"` setting.
+  - Outcome: The default storage will change to ephemeral, which does not persist data across pod restarts.
+  - Action: To retain persistent storage, you must explicitly set `general.mq.storage: "10Gi"` in your `values.yaml`.
+
+- Using an External RabbitMQ Service
+  - Condition: Your configuration points to an external RabbitMQ instance.
+  - Outcome: No change to your configuration.
+  - Action: None required.
+
+
+> [!NOTE]
+> **For air-gapped or restricted environments**: If your environment has no access to DockerHub, you must provide the RabbitMQ container image (like `lightruncom/rabbitmq:4.0.9-alpine.lr-0`) through your internal container registry. Override the image source in your `values.yaml` as shown below:
+> ```yaml
+> general:
+>   mq:
+>     image:
+>       repository: your-internal-registry.example.com/lightruncom/rabbitmq
+>       tag: 4.0.9-alpine.lr-0
+> ```
+
+
+
 ### **Basic Configuration**
 | Property                                             | Description                                                                                               |
 | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| **`general.mq.enabled: false`**                      | Enable (`true`) or disable (`false`) RabbitMQ.                                                            |
+| **`general.mq.enabled: true`**                      | Enable (`true`) or disable (`false`) RabbitMQ.                                                            |
 | **`general.mq.local: true`**                         | If `true`, a RabbitMQ **StatefulSet** will be deployed inside the cluster.                                |
 | **`general.mq.mq_endpoint: "rabbitmq.example.com"`** | The **fully qualified domain name (FQDN)** of an external RabbitMQ instance. **Ignored** if `local: true` |
 | **`general.mq.port: "5672"`**                        | The **RabbitMQ connection port** (default: `5672`).                                                       |
