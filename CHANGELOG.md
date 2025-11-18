@@ -1,4 +1,50 @@
 
+<a name="v3.31.0"></a>
+## [v3.31.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.30.1...v3.31.0) - 2025-11-18
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.72.0-release.323d6e609d    |
+| backend       | 1.72.0-release.323d6e609d    |
+| crons         | 1.72.0-release.323d6e609d    |
+| data_streamer | 4.68.0-alpine-3.22.0-r2.lr-0 |
+| frontend      | 1.72.0-release.323d6e609d    |
+| keycloak      | 1.72.0-release.323d6e609d    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine.lr-0            |
+| redis         | 7.2.10-alpine-3.22.0-r2.lr-0 |
+| router        | 1.28.0-alpine-3.22.0-r2.lr-0 |
+
+
+
+
+ 
+ 
+
+
+### Fixed (1 change)
+
+- [validation-to-use-license-v2-for-3-30-0-charts-and-license-v1-for-below-versions (#158)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/c8b7768)
+ 
+ 
+ 
+
+
+### Changed (1 change)
+
+- [cleanup (#154)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/192e800)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.30.1"></a>
 ## [v3.30.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.30.0...v3.30.1) - 2025-11-09
 
