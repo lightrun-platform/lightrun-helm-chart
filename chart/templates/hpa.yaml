@@ -114,5 +114,42 @@ spec:
         averageUtilization: {{ .Values.deployments.router.hpa.memory }}
   {{- end }}
 {{ end }}
-
-
+---
+{{ if .Values.deployments.debugZero.backend.hpa.enabled }}
+{{- if .Values.deployments.debugZero.backend.hpa.apiVersion }}
+apiVersion: {{ .Values.deployments.debugZero.backend.hpa.apiVersion }}
+{{- else }}
+{{- if semverCompare ">=1.23.0" .Capabilities.KubeVersion.GitVersion }}
+apiVersion: autoscaling/v2
+{{- else }}
+apiVersion: autoscaling/v2beta2
+{{- end }}
+{{- end }}
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "debugZero.backend.name" . }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "debugZero.backend.name" . }}
+  minReplicas:  {{ .Values.deployments.debugZero.backend.replicas }}
+  maxReplicas:  {{ .Values.deployments.debugZero.backend.hpa.maxReplicas }}
+  metrics:
+  {{- if .Values.deployments.debugZero.backend.hpa.cpu }}
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: {{ .Values.deployments.debugZero.backend.hpa.cpu }}
+  {{- end }}
+  {{- if .Values.deployments.debugZero.backend.hpa.memory }}
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: {{ .Values.deployments.debugZero.backend.hpa.memory }}
+  {{- end }}
+{{ end }}

@@ -190,6 +190,21 @@ data:
           internal;
         }
 
+        location /ai/admin/ {
+        {{- range .Values.general.router.acl.ai_admin.allow_ips }}
+          allow {{ . }};
+        {{- end }}
+        {{- range .Values.general.router.acl.ai_admin.deny_ips }}
+          deny {{ . }};
+        {{- end }}
+          {{ include "router.internal_tls_use_ca_cert" . | nindent 10 }}
+          proxy_pass {{ include "http.scheme" . }}://{{ include "debugZero.backend.name" . }}/admin/;
+        }
+
+        location /ai/ {
+          {{ include "router.internal_tls_use_ca_cert" . | nindent 10 }}
+          proxy_pass {{ include "http.scheme" . }}://{{ include "debugZero.backend.name" . }}/;
+        }
 
         location /auth/admin {
         {{- range .Values.general.router.acl.auth_admin.allow_ips }}

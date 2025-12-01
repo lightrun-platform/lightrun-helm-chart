@@ -1,0 +1,128 @@
+{{- if .Values.deployments.debugZero.backend.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "debugZero.backend.name" . }}
+  labels:
+    app: {{ include "debugZero.backend.name" . }}
+spec:
+  strategy:
+      type: {{ .Values.deployments.debugZero.backend.rollout_strategy }}
+  {{- if not .Values.deployments.debugZero.backend.hpa.enabled }}
+  replicas: {{ .Values.deployments.debugZero.backend.replicas }}
+  {{- end }}
+  selector:
+    matchLabels:
+     app: {{ include "debugZero.backend.name" . }}
+  template:
+    metadata:
+      {{- with .Values.deployments.debugZero.backend.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ include "debugZero.backend.name" . }}
+        {{- with .Values.deployments.debugZero.backend.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if .Values.deployments.debugZero.backend.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{ toYaml .Values.deployments.debugZero.backend.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "debugZero.backend.serviceAccountName" . }}
+      {{- with .Values.deployments.debugZero.backend.extraVolumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      imagePullSecrets:
+      {{- if .Values.secrets.defaults.dockerhub_config.existingSecret }}
+        - name: {{ .Values.secrets.defaults.dockerhub_config.existingSecret }}
+      {{- else }}
+        - name: {{ include "secrets.dockerhub.name" . }}
+      {{- end -}}
+      securityContext:
+        {{- toYaml .Values.debugZero.backend.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ include "debugZero.backend.name" . }}
+          securityContext: {{- include "debugZero.backend.containerSecurityContext" . | indent 12 }}
+          image: "{{ .Values.deployments.debugZero.backend.image.repository }}:{{ .Values.deployments.debugZero.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.deployments.debugZero.backend.image.pullPolicy }}
+          {{- include "debugZero.backend.env" . | nindent 10 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.deployments.debugZero.backend.service.port }}
+              protocol: TCP
+          {{- with .Values.deployments.debugZero.backend.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}              
+          {{- if and .Values.deployments.debugZero.backend.healthCheck.enabled .Values.deployments.debugZero.backend.healthCheck.livenessProbe.enabled }}
+          livenessProbe:
+            {{- if .Values.deployments.debugZero.backend.healthCheck.livenessProbe.httpGet }}
+            httpGet:
+              path: {{ .Values.deployments.debugZero.backend.healthCheck.livenessProbe.httpGet.path }}
+              port: {{ .Values.deployments.debugZero.backend.healthCheck.livenessProbe.httpGet.port }}
+            {{- end }}
+            {{- if .Values.deployments.debugZero.backend.healthCheck.livenessProbe.initialDelaySeconds }}
+            initialDelaySeconds: {{ .Values.deployments.debugZero.backend.healthCheck.livenessProbe.initialDelaySeconds }}
+            {{- end }}
+            {{- if .Values.deployments.debugZero.backend.healthCheck.livenessProbe.periodSeconds }}
+            periodSeconds: {{ .Values.deployments.debugZero.backend.healthCheck.livenessProbe.periodSeconds }}
+            {{- end }}
+            {{- if .Values.deployments.debugZero.backend.healthCheck.livenessProbe.timeoutSeconds }}
+            timeoutSeconds: {{ .Values.deployments.debugZero.backend.healthCheck.livenessProbe.timeoutSeconds }}
+            {{- end }}
+            {{- if .Values.deployments.debugZero.backend.healthCheck.livenessProbe.failureThreshold }}
+            failureThreshold: {{ .Values.deployments.debugZero.backend.healthCheck.livenessProbe.failureThreshold }}
+            {{- end }}
+            {{- if .Values.deployments.debugZero.backend.healthCheck.livenessProbe.successThreshold }}
+            successThreshold: {{ .Values.deployments.debugZero.backend.healthCheck.livenessProbe.successThreshold }}
+            {{- end }}
+          {{- end }}
+          {{- if and .Values.deployments.debugZero.backend.healthCheck.enabled .Values.deployments.debugZero.backend.healthCheck.readinessProbe.enabled }}
+          readinessProbe:
+            {{- if .Values.deployments.debugZero.backend.healthCheck.readinessProbe.httpGet }}
+            httpGet:
+              path: {{ .Values.deployments.debugZero.backend.healthCheck.readinessProbe.httpGet.path }}
+              port: {{ .Values.deployments.debugZero.backend.healthCheck.readinessProbe.httpGet.port }}
+            {{- end }}
+            {{- if .Values.deployments.debugZero.backend.healthCheck.readinessProbe.initialDelaySeconds }}
+            initialDelaySeconds: {{ .Values.deployments.debugZero.backend.healthCheck.readinessProbe.initialDelaySeconds }}
+            {{- end }}
+            {{- if .Values.deployments.debugZero.backend.healthCheck.readinessProbe.periodSeconds }}
+            periodSeconds: {{ .Values.deployments.debugZero.backend.healthCheck.readinessProbe.periodSeconds }}
+            {{- end }}
+            {{- if .Values.deployments.debugZero.backend.healthCheck.readinessProbe.timeoutSeconds }}
+            timeoutSeconds: {{ .Values.deployments.debugZero.backend.healthCheck.readinessProbe.timeoutSeconds }}
+            {{- end }}
+            {{- if .Values.deployments.debugZero.backend.healthCheck.readinessProbe.failureThreshold }}
+            failureThreshold: {{ .Values.deployments.debugZero.backend.healthCheck.readinessProbe.failureThreshold }}
+            {{- end }}
+            {{- if .Values.deployments.debugZero.backend.healthCheck.readinessProbe.successThreshold }}
+            successThreshold: {{ .Values.deployments.debugZero.backend.healthCheck.readinessProbe.successThreshold }}
+            {{- end }}
+          {{- end }}
+          resources:
+            requests:
+              cpu: {{ .Values.deployments.debugZero.backend.resources.cpu }}
+              memory: {{ .Values.deployments.debugZero.backend.resources.memory }}
+            limits:
+              cpu: {{ .Values.deployments.debugZero.backend.resources.cpu }}
+              memory: {{ .Values.deployments.debugZero.backend.resources.memory }}
+          envFrom:
+            - secretRef:
+                name: {{ include "secrets.debugZero.backend.name" . }}
+      {{- if .Values.general.tolerations }}
+      tolerations:
+        {{ toYaml .Values.general.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.general.nodeSelector }}
+      nodeSelector:
+        {{ toYaml .Values.general.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.deployments.debugZero.backend.affinity }}
+      affinity:
+        {{ toYaml .Values.deployments.debugZero.backend.affinity | nindent 8 }}
+      {{- end }}
+{{- end -}}

@@ -150,6 +150,22 @@ general:
     ## This service runs the same application as the backend but with crons profiles activated
     ## It does not expose any external ports and focuses on background processing to improve backend performance
 
+  #####################
+  ## Debug Zero
+  #####################
+  debugZero:
+    enabled: true
+    ## If set to `true`, will deploy a debug zero service for processing debug zero operations
+    ## This service runs the same application as the backend but with debug zero profiles activated
+    ## It does not expose any external ports and focuses on debug zero processing to improve backend performance
+    backend:
+      profile: "dev"
+      ## Profile to use for the debug zero backend
+      ## possible values:
+      ##   dev
+      ##   prod
+
+
   ################################################
   ## Enable TLS communication between pods
   ################################################
@@ -257,6 +273,9 @@ general:
         deny_ips: ["all"]
       router_status:
         allow_ips: ["127.0.0.1/32"]
+        deny_ips: ["all"]
+      ai_admin: # Debug Zero AI admin endpoint
+        allow_ips: []
         deny_ips: ["all"]
 
     rate_limit:
@@ -1100,3 +1119,46 @@ deployments:
       worker_processes: 3
       worker_connections: 10240
       worker_rlimit_nofile: 20480 # hast to be less than ulimits of the system
+  debugZero:
+    backend:
+      useJsonLogFormat: false
+      replicas: 1 # It's always 1 if general.router.host_port.enabled is true
+      rollout_strategy: "RollingUpdate"
+      hpa:
+        enabled: false
+        cpu: 70
+        memory: 70
+        maxReplicas: 5
+      image:
+        repository: lightruncom/columbus-backend
+        tag: ""
+        pullPolicy: IfNotPresent
+      podSecurityContext: {}
+      containerSecurityContext: {}
+      podAnnotations: {}
+      podLabels: {}
+      resources:
+        cpu: 0
+        memory: 0
+      service:
+        type: ClusterIP
+        port: 3001
+        labels: {}
+        annotations: {}
+      podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
+      topologySpreadConstraints: []
+      affinity: {}
+      livenessProbe:
+        initialDelaySeconds: 10
+        periodSeconds: 20
+        timeoutSeconds: 10
+        successThreshold: 1
+        failureThreshold: 3
+      readinessProbe:
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        timeoutSeconds: 5
+        successThreshold: 1
+        failureThreshold: 3
+    extraVolumes: []
+    extraVolumeMounts: []        

@@ -639,7 +639,50 @@ Container SecurityContext of lightrun data_streamer
 {{ include "lightrun.fullname" . }}-artifacts
 {{- end -}}
 
+{{/*
+###################
+## Debug Zero ##
+###################
+*/}}
 
+{{/*
+Debug Zero Backend Name
+*/}}
+{{- define "debugZero.backend.name" -}}
+{{ include "lightrun.fullname" . }}-debug-zero-backend
+{{- end }}
+
+{{/*
+Create the backend name of the service account to use
+*/}}
+{{- define "debugZero.backend.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "debugZero.backend.name" .) .Values.serviceAccount.name  }}
+{{- else }}
+{{- default "default" .Values.serviceAccount.name  }}
+{{- end }}
+{{- end }}
+
+{{/*
+Container SecurityContext of debugZero backend
+*/}}
+{{- define "debugZero.backend.containerSecurityContext" -}}
+{{/*Define a local variable baseSecurityContext with the minimum required securityContext on the container level*/}}
+{{- $readOnlyRootFilesystem := dict "readOnlyRootFilesystem" (.Values.general.readOnlyRootFilesystem) -}}
+{{- $baseSecurityContext := include "baseSecurityContext" . | fromYaml -}}
+{{- $localSecurityContext := mustMerge $baseSecurityContext $readOnlyRootFilesystem -}}
+{{/*If user provided values for containerSecurityContext, merge them with the baseSecurityContext*/}}
+{{/*Values passed by user will override defaults*/}}
+{{- if .Values.debugZero.backend.containerSecurityContext -}}
+{{- $mergedSecurityContext := mergeOverwrite  $localSecurityContext (.Values.debugZero.backend.containerSecurityContext | default dict) -}}
+{{- $mergedSecurityContext | toYaml -}}
+{{- else if kindIs "invalid" .Values.debugZero.backend.containerSecurityContext -}}
+{{ default dict | toYaml -}}
+{{- else -}}
+{{/*use default values from baseSecurityContext*/}}
+{{- $localSecurityContext | toYaml -}}
+{{- end -}}
+{{- end -}}
 
 {{/*
 Create the name of the lightrun artifacts service account to use
