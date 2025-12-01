@@ -1,4 +1,4 @@
-{{ if .Values.deployments.debugZero.backend.enabled }}
+{{- if .Values.general.debugZero.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
