@@ -1,0 +1,2542 @@
+---
+# Source: lightrun-helm-chart/templates/artifacts/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: test-artifacts
+  name: test-artifacts
+  namespace: default
+automountServiceAccountToken: false
+---
+# Source: lightrun-helm-chart/templates/backend-serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: test-backend
+  name: test-backend
+  namespace: default
+automountServiceAccountToken: false
+---
+# Source: lightrun-helm-chart/templates/crons/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: test-crons
+  name: test-crons
+  namespace: default
+automountServiceAccountToken: false
+---
+# Source: lightrun-helm-chart/templates/debug_zero/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: test-debug-zero-backend
+  name: test-debug-zero-backend
+  namespace: default
+automountServiceAccountToken: false
+---
+# Source: lightrun-helm-chart/templates/frontend-serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: test-frontend
+  name: test-frontend
+  namespace: default
+automountServiceAccountToken: false
+---
+# Source: lightrun-helm-chart/templates/keycloak-serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: test-keycloak
+  name: test-keycloak
+  namespace: default
+automountServiceAccountToken: false
+---
+# Source: lightrun-helm-chart/templates/mysql-serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: test-mysql
+  name: test-mysql
+  namespace: default
+automountServiceAccountToken: false
+---
+# Source: lightrun-helm-chart/templates/rabbitmq-serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: test-mq
+  name: test-mq
+  namespace: default
+automountServiceAccountToken: false
+---
+# Source: lightrun-helm-chart/templates/redis-serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: test-redis
+  name: test-redis
+  namespace: default
+automountServiceAccountToken: false
+---
+# Source: lightrun-helm-chart/templates/router/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: test-router
+  name: test-router
+  namespace: default
+automountServiceAccountToken: false
+---
+# Source: lightrun-helm-chart/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: test
+automountServiceAccountToken: false
+---
+# Source: lightrun-helm-chart/templates/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-certificate
+data:
+  tls.crt: 
+  tls.key: 
+type: kubernetes.io/tls
+---
+# Source: lightrun-helm-chart/templates/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-lightrun-dockerhub
+data:
+  .dockerconfigjson: 
+type: kubernetes.io/dockerconfigjson
+---
+# Source: lightrun-helm-chart/templates/secrets.yaml
+kind: Secret
+apiVersion: v1
+metadata:
+  name: test-backend
+type: Opaque
+stringData:
+  # Mandatory fields
+  SPRING_SECURITY_KEYCLOAK_CLI_PASSWORD: ""
+  SPRING_MAIL_PASSWORD: ""
+  SPRING_FLYWAY_PASSWORD: ""
+  SPRING_FLYWAY_USER: ""
+  SPRING_DATASOURCE_USERNAME: ""
+  SPRING_DATASOURCE_PASSWORD: ""
+  KEYSTORE_PASSWORD: ""
+  LICENSE_CONTENT: ""
+  LICENSE_SIGNATURE: ""
+  SPRING_RABBITMQ_USERNAME: ""
+  SPRING_RABBITMQ_PASSWORD: ""
+  encryption-key-0: 
+            5CxZasvFmi9ZVNLGW+liQNR/rDD9qG/XWkYqeIz7O0I=
+        
+  
+  # Optional fields
+---
+# Source: lightrun-helm-chart/templates/secrets.yaml
+kind: Secret
+apiVersion: v1
+metadata:
+  name: test-keycloak
+type: Opaque
+stringData:
+  KEYCLOAK_USER: admin
+  KEYCLOAK_PASSWORD: ""
+  DB_USER: ""
+  DB_PASSWORD: ""
+---
+# Source: lightrun-helm-chart/templates/artifacts/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-artifacts-config
+data:
+  nginx.server.conf: |
+    listen 8080 default_server;
+    server_name _;
+
+    ## Headers
+    proxy_set_header X-Request-ID      $req_id;
+
+  nginx.http.conf: |
+    ## Logging settings
+    error_log /var/log/nginx/error.log notice;    
+    log_format main '$remote_addr - $remote_user [$time_local] '
+                          '"$request" $req_id $status $body_bytes_sent '
+                          '"$http_referer" "$http_user_agent" '
+                          '"$http_range" "$sent_http_content_range" '
+                          '$request_time $request_length '
+                          '"$content_type" "$ssl_protocol" "$ssl_cipher" ';
+    access_log /var/log/nginx/access.log main;
+    
+    # Map set generated request_id if header not exists
+    map $http_x_request_id $req_id {
+        ""        $request_id;
+        default   $http_x_request_id;
+    }
+---
+# Source: lightrun-helm-chart/templates/backend-jcache-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-backend-jcache-config
+data:
+  redisson-jcache-single.yaml: |
+    singleServerConfig:
+      idleConnectionTimeout: 10000
+      connectTimeout: 10000
+      timeout: 10000
+      retryAttempts: 3
+      retryInterval: 1500
+      password: ${SPRING_REDIS_PASSWORD:-null}
+      subscriptionsPerConnection: 5
+      clientName: null
+      address: "redis://test-redis:${SPRING_REDIS_PORT:-6379}"
+      sslEnableEndpointIdentification: false # Should be configurable to support known certificates
+      subscriptionConnectionMinimumIdleSize: 1
+      subscriptionConnectionPoolSize: 50
+      connectionMinimumIdleSize: 10
+      connectionPoolSize: 64
+      database: 0
+      dnsMonitoringInterval: 5000
+    threads: 0
+    nettyThreads: 0
+    codec: !<org.redisson.codec.JsonJacksonCodec> {}
+    transportMode: "NIO"
+  redisson-jcache-replicated.yaml: |
+    replicatedServersConfig:
+      idleConnectionTimeout: 10000
+      connectTimeout: 10000
+      timeout: 10000
+      retryAttempts: 3
+      retryInterval: 1500
+      failedSlaveReconnectionInterval: 3000
+      failedSlaveNodeDetector: !<org.redisson.client.FailedConnectionDetector> { checkInterval: 60000 }
+      password: ${SPRING_REDIS_PASSWORD:-null}
+      subscriptionsPerConnection: 5
+      clientName: null
+      loadBalancer: !<org.redisson.connection.balancer.RoundRobinLoadBalancer> {}
+      subscriptionConnectionMinimumIdleSize: 1
+      subscriptionConnectionPoolSize: 50
+      slaveConnectionMinimumIdleSize: 24
+      slaveConnectionPoolSize: 64
+      masterConnectionMinimumIdleSize: 24
+      masterConnectionPoolSize: 64
+      readMode: "MASTER_SLAVE"
+      subscriptionMode: "SLAVE"
+      nodeAddresses:
+        - "redis://redis-1.example.com:${SPRING_REDIS_PORT:-6379}"
+        - "redis://redis-2.example.com:${SPRING_REDIS_PORT:-6379}"
+      sslEnableEndpointIdentification: false # Should be configurable to support known certificates
+      scanInterval: 1000
+      monitorIPChanges: false
+    threads: 16
+    nettyThreads: 32
+    codec: !<org.redisson.codec.JsonJacksonCodec> {}
+    transportMode: "NIO"
+---
+# Source: lightrun-helm-chart/templates/frontend-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name:  test-frontend-config
+data:
+  default.conf: |
+  
+    server {
+      
+      listen 8080 default_server;
+      
+      
+
+      server_name _;
+
+      root /usr/share/nginx/html;
+      index index.html index.htm;
+
+      location = /health {
+                access_log off;
+                return 200 'ok';
+        }
+      location / {
+        gzip  on;        # compressing on the fly
+        gzip_types    text/plain application/javascript application/x-javascript text/javascript text/xml text/css;
+
+        gzip_static on;  # Works only if you have already compressed .gz files
+
+        index index.html
+        try_files $uri $uri/ @index;
+        error_page 404 = @index;
+        log_not_found off;
+      }
+
+      location = /index.html {
+        add_header Cache-Control 'no-store, no-cache, max-age=0';
+        add_header X-Frame-Options "DENY" always;
+        add_header Content-Security-Policy "frame-ancestors 'none'" always;
+      }
+
+      location @index {
+        add_header Cache-Control 'no-store, no-cache, max-age=0';
+        add_header X-Frame-Options "DENY" always;
+        add_header Content-Security-Policy "frame-ancestors 'none'" always;
+        try_files /index.html =404;
+      }
+
+    }
+---
+# Source: lightrun-helm-chart/templates/rabbitmq-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-mq-config
+data:
+  enabled_plugins: |
+    [rabbitmq_management].
+  definitions.json: |
+    {
+      "vhosts":[
+        {"name": "/"}
+      ], 
+      "policies": [
+        {
+          "vhost": "/",
+          "name": "bi-queue-limiter-policy",
+          "pattern": "^.*-events.*",
+          "apply-to": "queues",
+          "definition": {
+            "max-length": 2000,
+            "overflow": "reject-publish"
+          },
+          "priority": 2
+        },    
+        {
+          "vhost": "/",
+          "name": "total-memory-consumed-by-messages-in-queue-policy",
+          "pattern": "^.*-events.*",
+          "apply-to": "queues",
+          "definition": {
+            "max-length-bytes": 1000000
+          },
+          "priority": 1
+        },
+        {
+          "vhost": "/",
+          "name": "maximum-time-message-stay-in-queue-policy",
+          "pattern": "^.*-events.*",
+          "apply-to": "queues",
+          "definition": {
+            "message-ttl": 600000000
+          },
+          "priority": 0
+        }    
+      ],
+      "queues": [
+        {
+          "name": "mixpanel-events.dlq",
+          "vhost": "/",
+          "durable": true,
+          "auto_delete": false,
+          "arguments": {
+            "x-queue-type": "quorum",
+            "x-created-by": "lightrun-onprem-server-chart"
+          }
+        },
+        {
+          "name": "mixpanel-events",
+          "vhost": "/",
+          "durable": true,
+          "auto_delete": false,
+          "arguments": {
+            "x-dead-letter-exchange": "",
+            "x-dead-letter-routing-key": "mixpanel-events.dlq",
+            "x-queue-type": "quorum",
+            "x-created-by": "lightrun-onprem-server-chart"
+          }
+        },
+        {
+          "name": "keycloak-events.dlq",
+          "vhost": "/",
+          "durable": true,
+          "auto_delete": false,
+          "arguments": {
+            "x-queue-type": "quorum",
+            "x-created-by": "lightrun-onprem-server-chart"
+          }
+        },
+        {
+          "name": "keycloak-events",
+          "vhost": "/",
+          "durable": true,
+          "auto_delete": false,
+          "arguments": {
+            "x-dead-letter-exchange": "",
+            "x-dead-letter-routing-key": "keycloak-events.dlq",
+            "x-queue-type": "quorum",
+            "x-created-by": "lightrun-onprem-server-chart"
+          }
+        }
+      ]
+    }
+
+  rabbitmq.conf: |
+    queue_master_locator=min-masters
+    vm_memory_high_watermark.relative=0.4
+    total_memory_available_override_value = 1073741824
+    definitions.skip_if_unchanged = false
+    definitions.import_backend = local_filesystem
+    definitions.local.path = /etc/rabbitmq/conf.d/definitions.json
+    
+    log.default.level = info
+    log.console.level = info
+    log.console = true
+    log.file = false
+---
+# Source: lightrun-helm-chart/templates/redis_config_cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-redis-config
+data:
+  redis.conf: |
+      dir /data
+      port 6379
+      protected-mode no
+---
+# Source: lightrun-helm-chart/templates/router/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-router-conf
+data:
+  nginx.conf: |
+    worker_processes 3;
+    worker_rlimit_nofile 20480;
+    events {
+        worker_connections  10240;
+    }
+    
+    error_log  /var/log/nginx/error.log notice;
+    pid        /tmp/nginx.pid;
+    http {
+        proxy_temp_path /tmp/proxy_temp;
+        client_body_temp_path /tmp/client_temp;
+        fastcgi_temp_path /tmp/fastcgi_temp;
+        uwsgi_temp_path /tmp/uwsgi_temp;
+        scgi_temp_path /tmp/scgi_temp;
+
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for" "$req_id" '
+                          '"$upstream_status" "$upstream_response_time"';
+
+        access_log  /var/log/nginx/access.log  main;
+        sendfile        on;
+        keepalive_timeout  65;
+        include /etc/nginx/conf.d/*.conf;
+
+        # Map return $remote_addr if x-forwarded-for is empty
+        map $http_x_forwarded_for $xff {   
+            "" $remote_addr;
+            default $http_x_forwarded_for;
+        }
+
+        # Map return $scheme if x-forwarded-proto is empty
+        map $http_x_forwarded_proto $xf_proto {
+            "" $scheme;
+            default $http_x_forwarded_proto;
+        }
+
+        # Map set generated request_id if header not exists
+        map $http_x_request_id $req_id {
+            ""        $request_id;
+            default   $http_x_request_id;
+        } 
+    }
+  default.conf: |
+      ##########
+      ## http ##
+      ##########
+      ### Http Snippets start
+      
+      ### Http Snippets end
+
+      
+
+
+      upstream test-backend {
+        # 2nd server is for a retry to k8s service
+        server test-backend:8080 max_fails=0;
+        server test-backend:8080 max_fails=0;
+      }
+
+      upstream test-keycloak {
+        server test-keycloak:8080 max_fails=0;
+      }
+      
+      upstream test-frontend {
+        server test-frontend:8080 max_fails=0;
+      }
+
+      proxy_request_buffering   on;
+      large_client_header_buffers 4 16k;
+      client_max_body_size      25m;
+      proxy_http_version        1.1;
+      proxy_buffering           off;
+      proxy_buffer_size         8k;
+
+      # Timeouts
+      proxy_connect_timeout 5s;
+
+
+      
+
+
+      ############
+      ## Server ##
+      ############
+      server {
+        server_name lightrun.example.com;
+        
+        default_type text/html;
+
+        ### Server Snippets start
+        
+        ### Server Snippets end
+
+
+        ### TLS settings
+        
+        listen 8080 default_server;
+        
+
+        ### Headers
+        proxy_set_header Host              $host;
+        proxy_set_header X-Forwarded-For   $xff;
+        proxy_set_header X-Forwarded-Proto $xf_proto;
+        proxy_set_header X-Request-ID      $req_id;
+        
+        set_real_ip_from 0.0.0.0/0;
+        real_ip_header    X-Forwarded-For;
+        real_ip_recursive on;
+        
+
+        # Global access list
+
+
+        location = /health {
+                  access_log off;
+                  return 200 'ok';
+          }
+
+        # Custom errors
+        root /usr/share/nginx/html;
+        proxy_intercept_errors on;
+        error_page 500 502 503 504 =503 /50x.html;
+        error_page 403 /403.html;
+        error_page 429 /429.html;
+        location = /403.html {
+          internal;
+        }
+        location = /429.html {
+          internal;
+        }
+        location = /50x.html {
+          internal;
+        }
+
+        location /ai/admin/ {
+          deny all;
+          
+          
+          proxy_pass http://test-debug-zero-backend/admin/;
+        }
+
+        location /ai/ {
+          
+          
+          proxy_pass http://test-debug-zero-backend/;
+        }
+
+        location /auth/admin {
+          deny all;
+          
+          
+          proxy_pass http://test-keycloak;
+        }
+
+        location /auth {
+          
+          
+          proxy_pass http://test-keycloak;
+        }
+        
+        location /device {
+          
+          
+          proxy_pass http://test-frontend;
+        }
+
+        location /app {
+          
+          
+          proxy_pass http://test-frontend;
+        }
+
+        location /company {
+          
+          
+          proxy_pass http://test-frontend;
+        }
+
+        location /content {
+          
+          
+          proxy_pass http://test-frontend;
+        }
+
+        location = / {
+          
+          
+          proxy_pass http://test-frontend;
+        }
+
+        # Location for the snapshots upload
+        location ~ ^/debuggees/[\w-]+/breakpoints {
+        
+          # Big buffer size to support large snapshots
+          # It is important to note that the buffer size is per request, so if you have 10 requests with 1MB each, you will need 10MB of memory.
+          client_body_buffer_size 2m;
+          proxy_pass http://test-backend;
+        }
+
+        location /debuggees {
+        
+          proxy_pass http://test-backend;
+        }
+
+        location /socket {
+        
+          # WebSocket support
+          proxy_set_header Upgrade      $http_upgrade;
+          proxy_set_header Connection   "upgrade";
+          proxy_pass http://test-backend;
+        }
+
+        location /management/prometheus {
+          deny all;
+        
+          proxy_pass http://test-backend;
+        }
+
+        location /router_status {
+          allow 127.0.0.1/32;
+          deny all;
+          stub_status;
+          access_log off;
+        }
+
+        location / {
+        
+          proxy_pass http://test-backend;
+        }
+      }
+---
+# Source: lightrun-helm-chart/templates/artifacts/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-artifacts
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: test-artifacts
+---
+# Source: lightrun-helm-chart/templates/backend-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-backend
+  
+  
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: test-backend
+---
+# Source: lightrun-helm-chart/templates/debug_zero/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-debug-zero-backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3001
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: test-debug-zero-backend
+---
+# Source: lightrun-helm-chart/templates/frontend-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-frontend
+  
+  
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: test-frontend
+---
+# Source: lightrun-helm-chart/templates/keycloak-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-keycloak
+  
+  
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 9080
+      protocol: TCP
+      name: keycloak
+    - port: 9000
+      targetPort: 9000
+      protocol: TCP
+      name: mgmt      
+  selector:
+    app: test-keycloak
+---
+# Source: lightrun-helm-chart/templates/keycloak-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-keycloak-headless
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - port: 7800
+      targetPort: 7800
+      protocol: TCP
+      name: kc-cluster
+  selector:
+    app: test-keycloak
+---
+# Source: lightrun-helm-chart/templates/mysql.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-mysql
+  labels:
+    app: test-mysql
+    
+  
+spec:
+  ports:
+  - port: 3306
+  clusterIP: None
+  selector:
+    app: test-mysql
+---
+# Source: lightrun-helm-chart/templates/rabbitmq-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-mq
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+   - name: http
+     protocol: TCP
+     port: 15672
+   - name: prometheus
+     protocol: TCP
+     port: 15692
+   - name: amqp
+     protocol: TCP
+     port: 5672
+  selector:
+    app: test-mq
+---
+# Source: lightrun-helm-chart/templates/redis-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-redis
+  
+  
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: redis
+      port: 6379
+      protocol: TCP
+      targetPort: 6379
+  selector:
+    app: test-redis
+---
+# Source: lightrun-helm-chart/templates/router/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-router
+  
+  
+spec:
+  ports:
+  - port: 8443
+    protocol: TCP
+    targetPort: https
+    name: https
+  - port: 8080
+    protocol: TCP
+    targetPort: http
+    name: http
+  selector:
+    app: test-router
+  type: ClusterIP
+---
+# Source: lightrun-helm-chart/templates/artifacts/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-artifacts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-artifacts
+  template:
+    metadata:
+      labels:
+        app: test-artifacts
+    spec:
+      serviceAccountName: test-artifacts
+      imagePullSecrets:
+        - name: test-lightrun-dockerhub
+      containers:
+        - name: test-artifacts
+          securityContext:            
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 1000000
+            seccompProfile:
+              type: RuntimeDefault
+          resources:  
+            requests:
+              cpu: 500m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 128Mi
+          image: "lightruncom/artifacts:"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: HTTP
+              path: /health
+              port: http
+          readinessProbe:
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: HTTP
+              path: /health
+              port: http
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.server.conf
+              subPath: nginx.server.conf
+              readOnly: true
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.http.conf
+              subPath: nginx.http.conf
+              readOnly: true
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: test-artifacts-config
+---
+# Source: lightrun-helm-chart/templates/backend-deployment.yaml
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: test-backend
+  labels:
+    app: test-backend
+spec:
+  strategy: 
+      type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-backend
+  template:
+    metadata:
+      labels:
+        app: test-backend
+    spec:
+      serviceAccountName: test-backend
+      volumes:
+        
+        - name: encryption-keys
+          secret: 
+            secretName: test-backend
+            optional: true
+            items: 
+              # Only select items that start with encryption-key-
+              
+              
+              - key: encryption-key-0
+                path: encryption-key-0
+              
+        - name: jcache-config
+          configMap:
+            name: test-backend-jcache-config
+            items:
+              - key: "redisson-jcache-single.yaml"
+                path: "redisson-jcache-single.yaml"
+              - key: "redisson-jcache-replicated.yaml"
+                path: "redisson-jcache-replicated.yaml"
+        - name: certificates
+          secret:
+            secretName: test-certificate
+        - name: p12
+          emptyDir:
+            sizeLimit: 50Mi
+        
+        - name: dumps
+          emptyDir:
+            sizeLimit: 5Gi
+      imagePullSecrets:
+        - name: test-lightrun-dockerhub
+      
+      terminationGracePeriodSeconds: 45
+      
+      containers:
+        
+        - name: test-backend
+          securityContext:            
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 1000000
+            seccompProfile:
+              type: RuntimeDefault
+          image: "lightruncom/server:"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          command: ["sh", "-c"]
+          args:
+           - |
+             CMD="/usr/lib/jvm/default-jvm/bin/java"
+             # Add TLS opts if enabled
+
+             # Add async-profiler only if setup succeeded
+             if [ -f /async-profiler/lib/libasyncProfiler.so ]; then
+               CMD="$CMD "
+             fi
+
+             # Add the jar
+             CMD="$CMD -jar /usr/src/lightrun/LightrunServer.jar"
+
+             exec $CMD
+
+          volumeMounts:
+            
+            - name: encryption-keys
+              mountPath: /encryption-keys
+              readOnly: true
+            - name: jcache-config
+              mountPath: "/jcache-config"
+            - name: certificates
+              mountPath: /usr/src/lightrun/helm/tls
+            - name: p12
+              mountPath: /p12
+            - name: dumps
+              mountPath: /dumps
+            
+          startupProbe:
+            timeoutSeconds: 5
+            periodSeconds: 10
+            failureThreshold: 60
+            successThreshold: 1
+            httpGet:
+              scheme: HTTP
+              path: /management/health/readiness
+              port: 8080
+          livenessProbe:
+            initialDelaySeconds: 200
+            timeoutSeconds: 30
+            periodSeconds: 50
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: HTTP
+              path: /version
+              port: 8080
+          readinessProbe:
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: HTTP
+              path: /management/health/readiness
+              port: 8080
+          lifecycle:
+            
+            preStop:
+              exec:
+                command:
+                - sh
+                - -c
+                - sleep 10
+          resources:
+            requests:
+              cpu: 3000m
+              memory: 6Gi
+            limits:
+              cpu: 3000m
+              memory: 6Gi
+          envFrom:
+            - secretRef:
+                name: test-backend
+          env:
+            
+            - name: SERVER_SECURITY_ENCRYPTION-KEYS-PATH
+              value: file:/encryption-keys
+            - name: LIGHTRUN_HOSTNAME
+              value: client-name
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: INFO_DEPLOYMENT
+            
+              value: "on-prem"
+            
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mariadb://test-mysql:3306/lightrunserver?allowPublicKeyRetrieval=true&trustServerCertificate=true&useSSL=false&rewriteBatchedStatements=true"
+            - name: SPRING_CACHE_JCACHE_CONFIG
+              value: "file:///jcache-config/redisson-jcache-single.yaml"
+            - name: SPRING_FLYWAY_URL
+              value: "jdbc:mariadb://test-mysql:3306/lightrunserver?allowPublicKeyRetrieval=true&trustServerCertificate=true&useSSL=false"
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER-URI
+              value: "https://lightrun.example.com/auth/realms/lightrun"
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI
+              value: "https://lightrun.example.com/auth/realms/lightrun"
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI
+              value: "http://test-keycloak:8080/auth/realms/lightrun/protocol/openid-connect/certs"
+            - name: SPRING_SECURITY_KEYCLOAK_URL
+              value: "http://test-keycloak:8080/auth"
+            
+            
+            - name: SPRING_REDIS_PASSWORD #to disable password auth even if secret contains password, but auth_enabled is false
+              value: null
+            - name: SPRING_SECURITY_KEYCLOAK_PORT
+              value: "8080"
+            - name: SPRING_SECURITY_KEYCLOAK_EXTRA-REDIRECT-URLS
+              value: "https://lightrun.example.com/*"
+            - name: SPRING_SECURITY_KEYCLOAK_EXTERNAL-URL
+              value: "https://lightrun.example.com/auth"
+            - name: JHIPSTER_SLEEP
+              value: "5000" # gives time for other services to boot before the application
+            - name: INTEGRATIONS_ENABLE
+              value: "true"
+            - name: INTEGRATIONS_DATADOG_ENABLE
+              value: "false"
+            - name: SERVER_EXTERNAL_HOST
+              value: "lightrun.example.com"
+            - name: SERVER_EXTERNAL_PORT
+              value: "443"
+            - name: SPRING_REDIS_HOST
+              value: test-redis
+            - name: SPRING_REDIS_PORT
+              value: "6379"
+            - name: SERVER_DISPLAY_PORT
+              value: "443"
+            - name: SPRING_FLYWAY_SCHEMAS
+              value: lightrunserver
+            - name: KEYSTORE_PATH
+              value: "file:/p12/lightrun.p12"
+            - name: SYSTEM_DEFAULT_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: test-backend
+                  key: SPRING_SECURITY_KEYCLOAK_CLI_PASSWORD
+            - name: ARTIFACTS_ENABLE_S3_FEATURE #TODO: deprecated in favor of ARTIFACTS_ENABLE in 2.1.7
+              value: "true"
+            - name: ARTIFACTS_ENABLE
+              value: "true"
+            - name: ARTIFACTS_S3_URL   #TODO: deprecated in favor of ARTIFACTS_REPOSITORY_URL in 2.1.7
+              value: "https://artifacts.lightrun.com/"
+            - name: ARTIFACTS_REPOSITORY_URL
+              value: "https://artifacts.lightrun.com/"
+            - name: ARTIFACTS_SUPPORTED_VERSIONS_URL
+              value: "https://artifacts.lightrun.com/supported-versions.json"
+            - name: ARTIFACTS_DOWNLOAD_PRERELEASE #TODO: deprecated in favor of ARTIFACTS_VERSION_RESOLUTION_MODE in 2.1.7
+              value: "false"
+            - name: ARTIFACTS_VERSION_RESOLUTION_MODE
+              value: "latest"
+            - name: LIGHTRUN_ARTIFACTS_URL
+              value: "http://test-artifacts:8080"
+            - name: SPRING_RABBITMQ_HOST
+              value: test-mq
+            - name: SPRING_RABBITMQ_PORT
+              value: "5672"
+            - name: TRACKING_MIXPANEL_QUEUE_NAME
+              value: "mixpanel-events"
+            - name: KEYCLOAK_QUEUE_NAME
+              value: "keycloak-events"
+            - name: LOGGING_USE-JSON-FORMAT
+              value: "false"
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod,swagger,cluster"
+            - name: "_JAVA_OPTIONS"
+              value:
+                     -Xmx4608m -Xms4608m
+
+      # waiting for mysql, rabbitmq and keycloak initialization
+      initContainers:
+      - name: wait-for-keycloak
+        image: "lightruncom/chart-helper:0.3.0-alpine-3.22.0-r2.lr-0"
+        imagePullPolicy: 
+        securityContext:     
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1000000
+          seccompProfile:
+            type: RuntimeDefault
+        command: 
+          - sh
+          - /scripts/wait-for-200.sh
+        resources:
+          limits:
+            memory: "100Mi"
+            cpu: "100m"
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
+        env:
+          - name: URL
+            value: http://test-keycloak:9000/auth/health/started 
+      
+      - name: wait-for-rabbitmq
+        image: "lightruncom/chart-helper:0.3.0-alpine-3.22.0-r2.lr-0"
+        imagePullPolicy: 
+        securityContext:           
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                  - ALL
+                readOnlyRootFilesystem: false
+                runAsNonRoot: true
+                runAsUser: 1000000
+                seccompProfile:
+                  type: RuntimeDefault
+        command:
+          - sh
+          - /scripts/wait-for-200.sh
+        resources:
+          limits:
+            memory: "100Mi"
+            cpu: "100m"
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
+        env:
+          - name: MY_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: AUTH_USER
+            valueFrom:
+              secretKeyRef:
+                name: test-backend
+                key: SPRING_RABBITMQ_USERNAME
+          - name: AUTH_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: test-backend
+                key: SPRING_RABBITMQ_PASSWORD
+          - name: RABBITMQ_TCP_PORT
+            value: "15672"
+          - name: URL
+            value: http://test-mq:$(RABBITMQ_TCP_PORT)/api/overview 
+      - name: p12-creator
+        image: "lightruncom/chart-helper:0.3.0-alpine-3.22.0-r2.lr-0"
+        imagePullPolicy: 
+        securityContext:     
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1000000
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          limits:
+            memory: "200Mi"
+            cpu: "200m"
+          requests:
+            memory: "200Mi"
+            cpu: "200m"
+        env:
+        - name: KEYSTORE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: test-backend
+              key: KEYSTORE_PASSWORD
+        volumeMounts:
+        - name: certificates
+          mountPath: /tls
+        - name: p12
+          mountPath: /p12
+        command: ['sh', '-c', 'cp /tls/tls.crt /p12/crt.pem && cp /tls/tls.key /p12/key.pem && openssl pkcs12 -export -out /p12/lightrun.p12 -inkey /p12/key.pem -in /p12/crt.pem -passin pass:$KEYSTORE_PASSWORD -passout pass:$KEYSTORE_PASSWORD']
+---
+# Source: lightrun-helm-chart/templates/crons/deployment.yaml
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: test-crons
+  labels:
+    app: test-crons
+spec:
+  strategy: 
+      type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-crons
+  template:
+    metadata:
+      labels:
+        app: test-crons
+    spec:
+      serviceAccountName: test-crons
+      volumes:
+        
+        - name: encryption-keys
+          secret: 
+            secretName: test-backend
+            optional: true
+            items: 
+              # Only select items that start with encryption-key-
+              
+              
+              - key: encryption-key-0
+                path: encryption-key-0
+              
+        - name: jcache-config
+          configMap:
+            name: test-backend-jcache-config
+            items:
+              - key: "redisson-jcache-single.yaml"
+                path: "redisson-jcache-single.yaml"
+              - key: "redisson-jcache-replicated.yaml"
+                path: "redisson-jcache-replicated.yaml"
+        - name: certificates
+          secret:
+            secretName: test-certificate
+        - name: p12
+          emptyDir:
+            sizeLimit: 50Mi
+        
+        - name: dumps
+          emptyDir:
+            sizeLimit: 5Gi
+      imagePullSecrets:
+        - name: test-lightrun-dockerhub
+      
+      terminationGracePeriodSeconds: 45
+      
+      containers:
+        
+        - name: test-crons
+          securityContext:            
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 1000000
+            seccompProfile:
+              type: RuntimeDefault
+          image: "lightruncom/server:"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          command: ["sh", "-c"]
+          args:
+            - |
+              CMD="/usr/lib/jvm/default-jvm/bin/java"
+              
+              # Add TLS opts if enabled
+              
+              # Add async-profiler only if setup succeeded
+              if [ -f /async-profiler/lib/libasyncProfiler.so ]; then
+                CMD="$CMD "
+              fi
+              
+              # Add the jar
+              CMD="$CMD -jar /usr/src/lightrun/LightrunServer.jar"
+
+              exec $CMD
+
+          volumeMounts:
+            
+            - name: encryption-keys
+              mountPath: /encryption-keys
+              readOnly: true
+            - name: jcache-config
+              mountPath: "/jcache-config"
+            - name: certificates
+              mountPath: /usr/src/lightrun/helm/tls
+            - name: p12
+              mountPath: /p12
+            - name: dumps
+              mountPath: /dumps
+            
+          startupProbe:
+            timeoutSeconds: 5
+            periodSeconds: 10
+            failureThreshold: 60
+            successThreshold: 1
+            httpGet:
+              scheme: HTTP
+              path: /management/health/readiness
+              port: 8080
+          livenessProbe:
+            initialDelaySeconds: 200
+            timeoutSeconds: 30
+            periodSeconds: 50
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: HTTP
+              path: /version
+              port: 8080
+          readinessProbe:
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: HTTP
+              path: /management/health/readiness
+              port: 8080
+          lifecycle:
+            
+            preStop:
+              exec:
+                command:
+                - sh
+                - -c
+                - sleep 10
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+          envFrom:
+            - secretRef:
+                name: test-backend
+          env:
+            
+            - name: SERVER_SECURITY_ENCRYPTION-KEYS-PATH
+              value: file:/encryption-keys
+            - name: LIGHTRUN_HOSTNAME
+              value: client-name
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: INFO_DEPLOYMENT
+            
+              value: "on-prem"
+            
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mariadb://test-mysql:3306/lightrunserver?allowPublicKeyRetrieval=true&trustServerCertificate=true&useSSL=false&rewriteBatchedStatements=true"
+            - name: SPRING_CACHE_JCACHE_CONFIG
+              value: "file:///jcache-config/redisson-jcache-single.yaml"
+            - name: SPRING_FLYWAY_URL
+              value: "jdbc:mariadb://test-mysql:3306/lightrunserver?allowPublicKeyRetrieval=true&trustServerCertificate=true&useSSL=false"
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER-URI
+              value: "https://lightrun.example.com/auth/realms/lightrun"
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI
+              value: "https://lightrun.example.com/auth/realms/lightrun"
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI
+              value: "http://test-keycloak:8080/auth/realms/lightrun/protocol/openid-connect/certs"
+            - name: SPRING_SECURITY_KEYCLOAK_URL
+              value: "http://test-keycloak:8080/auth"
+            
+            
+            - name: SPRING_REDIS_PASSWORD #to disable password auth even if secret contains password, but auth_enabled is false
+              value: null
+            - name: SPRING_SECURITY_KEYCLOAK_PORT
+              value: "8080"
+            - name: SPRING_SECURITY_KEYCLOAK_EXTRA-REDIRECT-URLS
+              value: "https://lightrun.example.com/*"
+            - name: SPRING_SECURITY_KEYCLOAK_EXTERNAL-URL
+              value: "https://lightrun.example.com/auth"
+            - name: JHIPSTER_SLEEP
+              value: "5000" # gives time for other services to boot before the application
+            - name: INTEGRATIONS_ENABLE
+              value: "true"
+            - name: INTEGRATIONS_DATADOG_ENABLE
+              value: "false"
+            - name: SERVER_EXTERNAL_HOST
+              value: "lightrun.example.com"
+            - name: SERVER_EXTERNAL_PORT
+              value: "443"
+            - name: SPRING_REDIS_HOST
+              value: test-redis
+            - name: SPRING_REDIS_PORT
+              value: "6379"
+            - name: SERVER_DISPLAY_PORT
+              value: "443"
+            - name: SPRING_FLYWAY_SCHEMAS
+              value: lightrunserver
+            - name: KEYSTORE_PATH
+              value: "file:/p12/lightrun.p12"
+            - name: SYSTEM_DEFAULT_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: test-backend
+                  key: SPRING_SECURITY_KEYCLOAK_CLI_PASSWORD
+            - name: ARTIFACTS_ENABLE_S3_FEATURE #TODO: deprecated in favor of ARTIFACTS_ENABLE in 2.1.7
+              value: "true"
+            - name: ARTIFACTS_ENABLE
+              value: "true"
+            - name: ARTIFACTS_S3_URL   #TODO: deprecated in favor of ARTIFACTS_REPOSITORY_URL in 2.1.7
+              value: "https://artifacts.lightrun.com/"
+            - name: ARTIFACTS_REPOSITORY_URL
+              value: "https://artifacts.lightrun.com/"
+            - name: ARTIFACTS_SUPPORTED_VERSIONS_URL
+              value: "https://artifacts.lightrun.com/supported-versions.json"
+            - name: ARTIFACTS_DOWNLOAD_PRERELEASE #TODO: deprecated in favor of ARTIFACTS_VERSION_RESOLUTION_MODE in 2.1.7
+              value: "false"
+            - name: ARTIFACTS_VERSION_RESOLUTION_MODE
+              value: "latest"
+            - name: LIGHTRUN_ARTIFACTS_URL
+              value: "http://test-artifacts:8080"
+            - name: SPRING_RABBITMQ_HOST
+              value: test-mq
+            - name: SPRING_RABBITMQ_PORT
+              value: "5672"
+            - name: TRACKING_MIXPANEL_QUEUE_NAME
+              value: "mixpanel-events"
+            - name: KEYCLOAK_QUEUE_NAME
+              value: "keycloak-events"
+            - name: LOGGING_USE-JSON-FORMAT
+              value: "false"
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod,swagger,cluster,cron"
+            - name: "_JAVA_OPTIONS"
+              value:
+                     -Xmx1536m -Xms512m
+
+      # waiting for mysql, rabbitmq and keycloak initialization
+      initContainers:
+      - name: wait-for-keycloak
+        image: "lightruncom/chart-helper:0.3.0-alpine-3.22.0-r2.lr-0"
+        imagePullPolicy: 
+        securityContext:     
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1000000
+          seccompProfile:
+            type: RuntimeDefault
+        command: 
+          - sh
+          - /scripts/wait-for-200.sh
+        resources:
+          limits:
+            memory: "100Mi"
+            cpu: "100m"
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
+        env:
+          - name: URL
+            value: http://test-keycloak:9000/auth/health/started 
+      
+      - name: wait-for-rabbitmq
+        image: "lightruncom/chart-helper:0.3.0-alpine-3.22.0-r2.lr-0"
+        imagePullPolicy: 
+        securityContext:           
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                  - ALL
+                readOnlyRootFilesystem: false
+                runAsNonRoot: true
+                runAsUser: 1000000
+                seccompProfile:
+                  type: RuntimeDefault
+        command:
+          - sh
+          - /scripts/wait-for-200.sh
+        resources:
+          limits:
+            memory: "100Mi"
+            cpu: "100m"
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
+        env:
+          - name: MY_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: AUTH_USER
+            valueFrom:
+              secretKeyRef:
+                name: test-backend
+                key: SPRING_RABBITMQ_USERNAME
+          - name: AUTH_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: test-backend
+                key: SPRING_RABBITMQ_PASSWORD
+          - name: RABBITMQ_TCP_PORT
+            value: "15672"
+          - name: URL
+            value: http://test-mq:$(RABBITMQ_TCP_PORT)/api/overview 
+      - name: p12-creator
+        image: "lightruncom/chart-helper:0.3.0-alpine-3.22.0-r2.lr-0"
+        imagePullPolicy: 
+        securityContext:     
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1000000
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          limits:
+            memory: "200Mi"
+            cpu: "200m"
+          requests:
+            memory: "200Mi"
+            cpu: "200m"
+        env:
+        - name: KEYSTORE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: test-backend
+              key: KEYSTORE_PASSWORD
+        volumeMounts:
+        - name: certificates
+          mountPath: /tls
+        - name: p12
+          mountPath: /p12
+        command: ['sh', '-c', 'cp /tls/tls.crt /p12/crt.pem && cp /tls/tls.key /p12/key.pem && openssl pkcs12 -export -out /p12/lightrun.p12 -inkey /p12/key.pem -in /p12/crt.pem -passin pass:$KEYSTORE_PASSWORD -passout pass:$KEYSTORE_PASSWORD']
+---
+# Source: lightrun-helm-chart/templates/debug_zero/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-debug-zero-backend
+  labels:
+    app: test-debug-zero-backend
+spec:
+  strategy:
+      type: RollingUpdate
+  replicas: 1
+  selector:
+    matchLabels:
+     app: test-debug-zero-backend
+  template:
+    metadata:
+      labels:
+        app: test-debug-zero-backend
+    spec:
+      serviceAccountName: test-debug-zero-backend
+      imagePullSecrets:
+        - name: test-lightrun-dockerhub
+      securityContext:
+        {}
+      containers:
+        - name: test-debug-zero-backend
+          securityContext:            
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 1000000
+            seccompProfile:
+              type: RuntimeDefault
+          image: "lightruncom/columbus-backend:"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: NODE_ENV
+              value: 
+            - name: REDIS_HOST
+              value: test-redis
+            - name: REDIS_PORT
+              value: "6379"
+          ports:
+            - name: http
+              containerPort: 3001
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+          readinessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+          resources:
+            requests:
+              cpu: 0
+              memory: 0
+            limits:
+              cpu: 0
+              memory: 0
+          envFrom:
+            - secretRef:
+                name: test-debug-zero-backend
+---
+# Source: lightrun-helm-chart/templates/frontend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-frontend
+  labels:
+    app: test-frontend
+spec:
+  replicas: 1
+  strategy: 
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: test-frontend
+  template:
+    metadata:
+      labels:
+        app: test-frontend
+    spec:
+      serviceAccountName: test-frontend
+      imagePullSecrets:
+        - name: test-lightrun-dockerhub
+      containers:
+        - name: test-frontend
+          securityContext:            
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 1000000
+            seccompProfile:
+              type: RuntimeDefault
+          image: "lightruncom/webapp:"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: HTTP
+              path: /health
+              port: http
+          readinessProbe:
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: HTTP
+              path: /health
+              port: http
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          env:
+            - name: BACKEND_URI
+              value: test-backend
+            - name: KEYCLOAK_URI
+              value: test-keycloak
+          volumeMounts:
+          - name: frontend-config
+            mountPath: /etc/nginx/conf.d/default.conf
+            subPath: default.conf
+            readOnly: false
+      volumes:
+      - name: frontend-config
+        configMap:
+          name: test-frontend-config
+          items:
+            - key: default.conf
+              path: default.conf
+---
+# Source: lightrun-helm-chart/templates/redis-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-redis
+  template:
+    metadata:
+      labels:
+        app: test-redis
+
+    spec:
+      serviceAccountName: test-redis
+      imagePullSecrets:
+        - name: test-lightrun-dockerhub
+      containers:
+        - name: test-redis
+          securityContext:            
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 1000000
+            seccompProfile:
+              type: RuntimeDefault
+          resources:  
+            requests:
+              cpu: 2000m
+              memory: 6500Mi
+            limits:
+              cpu: 2000m
+              memory: 6500Mi
+          image: lightruncom/redis:7.2.10-alpine-3.22.0-r2.lr-0
+          imagePullPolicy: IfNotPresent
+          livenessProbe: 
+            exec:
+              command:
+              - redis-cli
+              - -p
+              - "6379"
+              - ping
+            initialDelaySeconds: 50
+            periodSeconds: 30
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe: 
+            exec:
+              command:
+              - redis-cli
+              - -p
+              - "6379"
+              - ping
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          command:
+            - redis-server
+            - /usr/local/etc/redis/redis.conf
+          volumeMounts:
+          - name: data
+            mountPath: /data
+            readOnly: false
+          - name: redis-conf
+            mountPath: /usr/local/etc/redis/redis.conf
+            subPath: redis.conf
+            readOnly: true
+      volumes:
+      - name: redis-conf
+        configMap:
+          name: test-redis-config
+          items:
+            - key: redis.conf
+              path: redis.conf
+      - name: data
+        emptyDir:
+          sizeLimit: 5Gi
+---
+# Source: lightrun-helm-chart/templates/router/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-router
+  labels:
+    app: test-router
+spec:
+  strategy:
+      type: RollingUpdate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-router
+  template:
+    metadata:
+      annotations:
+        checksum/config: 78b3a1aabac90b9fdff539696e82a9379cc02dcdfbb201ff5bb43891887ad843
+      labels:
+        app: test-router
+    spec:
+      imagePullSecrets:
+        - name: test-lightrun-dockerhub
+      serviceAccountName: test-router
+      containers:
+        - name: test-router
+          securityContext:            
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 1000000
+            seccompProfile:
+              type: RuntimeDefault
+          image: "lightruncom/router:1.28.0-alpine-3.22.0-r2.lr-0"
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+              readOnly: true
+            - name: nginx-conf
+              mountPath: /etc/nginx/nginx.conf  
+              subPath: nginx.conf
+              readOnly: true
+          resources:
+            requests:
+              cpu: 300m
+              memory: 256Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+          ports:
+          - containerPort: 8080
+            name: http
+            
+          livenessProbe:
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: HTTP
+              path: /health
+              port: http
+          readinessProbe:
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: HTTP
+              path: /health
+              port: http
+      volumes:
+      - name: nginx-conf
+        configMap:
+          name: test-router-conf
+---
+# Source: lightrun-helm-chart/templates/keycloak-statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: test-keycloak
+  labels:
+    app: test-keycloak
+spec:
+  serviceName: test-keycloak
+  updateStrategy: 
+    type: RollingUpdate
+  # For clusters with more than 3 pods, consider changing the number of "owner nodes" as described in
+  # https://www.keycloak.org/server/caching#_configuring_caches -> Configuring caches for availability
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-keycloak
+  template:
+    metadata:
+      labels:
+        app: test-keycloak
+    spec:
+      serviceAccountName: test-keycloak
+      imagePullSecrets:
+        - name: test-lightrun-dockerhub
+      containers:        
+        - name: test-keycloak
+          securityContext:            
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 1000000
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+          image: "lightruncom/keycloak:"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: mgmt
+              containerPort: 9000
+              protocol: TCP          
+            - name: http
+              containerPort: 9080
+              protocol: TCP
+            - name: kc-cluster
+              containerPort: 7800
+              protocol: TCP
+          command: ["sh", "-c"]
+          args:
+            - |
+              # Base JAVA_OPTS_APPEND
+              JAVA_OPTS_APPEND="-Djgroups.dns.query=test-keycloak-headless"
+
+              # Append async-profiler only if setup succeeded
+              if [ -f /async-profiler/lib/libasyncProfiler.so ]; then
+                JAVA_OPTS_APPEND="$JAVA_OPTS_APPEND "
+              fi
+
+              export JAVA_OPTS_APPEND
+
+              # Build startup command
+              CMD="/opt/keycloak/bin/kc.sh start --optimized --http-port 9080"
+
+              echo "JAVA_OPTS_APPEND at runtime: $JAVA_OPTS_APPEND"
+
+              exec $CMD
+          readinessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: HTTP
+              path: /auth
+              port: 9080
+          livenessProbe:
+            initialDelaySeconds: 200
+            timeoutSeconds: 30
+            periodSeconds: 50
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: HTTP
+              path: /auth
+              port: 9080
+          env:
+            - name: RABBITMQ_HOST
+              value: test-mq
+            - name: RABBITMQ_PORT
+              value: "5672"
+            - name: KEYCLOAK_QUEUE_NAME
+              value: "keycloak-events"
+            - name: RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: test-backend
+                  key: SPRING_RABBITMQ_USERNAME
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: test-backend
+                  key: SPRING_RABBITMQ_PASSWORD          
+            - name: INFO_DEPLOYMENT
+            
+              value: "on-prem"
+            
+            - name: KC_PROXY_HEADERS
+              value: "xforwarded"
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: test-keycloak
+                  key: KEYCLOAK_USER
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: test-keycloak
+                  key: KEYCLOAK_PASSWORD
+            
+            - name: KC_HTTPS_CERTIFICATE_FILE
+            - name: KC_HTTPS_CERTIFICATE_KEY_FILE
+            - name: KC_HTTP_ENABLED
+              value: "true"
+            
+            - name: KC_DB
+              value: mysql
+            - name: KC_DB_URL
+              value: jdbc:mariadb://test-mysql:3306/lightrunserver?useSSL=false&allowPublicKeyRetrieval=true&trustServerCertificate=true&serverTimezone=UTC
+            - name: KC_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: test-keycloak
+                  key: DB_USER
+            - name: KC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: test-keycloak
+                  key: DB_PASSWORD
+            - name: DB_ADDR
+              value: test-mysql
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_DATABASE
+              value: lightrunserver
+            - name: JDBC_PARAMS
+              value: "useSSL=false&allowPublicKeyRetrieval=true"
+            - name: KEYCLOAK_STATISTICS
+              value: "db,http"
+            - name: KC_CACHE
+              value: ispn
+            - name: KC_CACHE_STACK
+              value: jdbc-ping
+            - name: JAVASCRIPT_FILES
+              value: js/keycloak.js
+            - name: "_JAVA_OPTIONS"
+              value:
+                     -Xmx1536m -Xms1536m
+            - name: KC_HOSTNAME
+              value: 'https://lightrun.example.com/auth'
+      initContainers:
+      
+      
+      - name: wait-for-rabbitmq
+        image: "lightruncom/chart-helper:0.3.0-alpine-3.22.0-r2.lr-0"
+        imagePullPolicy: 
+        securityContext:           
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                  - ALL
+                readOnlyRootFilesystem: false
+                runAsNonRoot: true
+                runAsUser: 1000000
+                seccompProfile:
+                  type: RuntimeDefault
+        command:
+          - sh
+          - /scripts/wait-for-200.sh
+        resources:
+          limits:
+            memory: "100Mi"
+            cpu: "100m"
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
+        env:
+          - name: MY_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: AUTH_USER
+            valueFrom:
+              secretKeyRef:
+                name: test-backend
+                key: SPRING_RABBITMQ_USERNAME
+          - name: AUTH_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: test-backend
+                key: SPRING_RABBITMQ_PASSWORD
+          - name: RABBITMQ_TCP_PORT
+            value: "15672"
+          - name: URL
+            value: http://test-mq:$(RABBITMQ_TCP_PORT)/api/overview 
+      - name: wait-for-mysql
+        image: mysql:8.0.38
+        imagePullPolicy: IfNotPresent
+        securityContext:            
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            runAsUser: 1000000
+            seccompProfile:
+              type: RuntimeDefault
+        resources:
+          limits:
+            memory: "100Mi"
+            cpu: "100m"
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
+        command: ["sh", "-c"]
+        args: 
+          - while ! mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" -h test-mysql -e "SELECT 1" --ssl-mode=DISABLED --connect-timeout 2; do sleep 1; done
+        env:
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: test-keycloak
+                key: DB_USER
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: test-keycloak
+                key: DB_PASSWORD
+          - name: MYSQL_TCP_PORT
+            value: "3306"
+---
+# Source: lightrun-helm-chart/templates/mysql.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: test-mysql
+  labels:
+    app: test-mysql
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: test-mysql
+  serviceName: test-mysql
+  # minReadySeconds: 10 # by default is 0
+  template:
+    metadata:
+
+      labels:
+        app: test-mysql
+    spec:
+      terminationGracePeriodSeconds: 10
+      securityContext:        
+        fsGroup: 1000000
+      serviceAccountName: test-mysql
+      imagePullSecrets:
+        - name: test-lightrun-dockerhub
+      containers:
+        - name: test-mysql
+          securityContext:            
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            runAsUser: 1000000
+            seccompProfile:
+              type: RuntimeDefault
+          image: "mysql:8.0.38"
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            initialDelaySeconds: 200
+            timeoutSeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3
+            exec:
+              command:
+                - bash 
+                - -c
+                - mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" -h 127.0.0.1 -e 'SELECT 1' --ssl-mode=DISABLED --get-server-public-key
+          readinessProbe:
+            exec:
+              command:
+                - bash 
+                - -c
+                - mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" -h 127.0.0.1 -e 'SELECT 1' --ssl-mode=DISABLED --get-server-public-key
+            initialDelaySeconds: 5
+            periodSeconds: 2
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 2000m
+              memory: 8Gi
+            limits:
+              cpu: 2000m
+              memory: 8Gi        
+          args: [
+            "--lower_case_table_names=1",
+            "--skip-log-bin",
+            "--skip-ssl",
+            "--character_set_server=utf8mb4",
+            "--explicit_defaults_for_timestamp",
+            "--max_connections=1000"
+                ]
+          env:
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: test-keycloak
+                  key: DB_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: test-keycloak
+                  key: DB_PASSWORD
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: test-keycloak
+                  key: DB_PASSWORD
+            - name: MYSQL_DATABASE
+              value: lightrunserver
+            - name: MYSQL_TCP_PORT
+              value: "3306"
+          ports:
+          - containerPort: 3306
+          volumeMounts:
+          - name: mysql
+            mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: gp2
+      resources:
+        requests:
+          storage: 100Gi
+---
+# Source: lightrun-helm-chart/templates/rabbitmq.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: test-mq
+  labels:
+    app: test-mq
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: test-mq
+  serviceName: test-mq
+  template:
+    metadata:
+      labels:
+        app: test-mq
+      
+    spec:
+      terminationGracePeriodSeconds: 10
+      securityContext:        
+        fsGroup: 1000000
+      serviceAccountName: test-mq
+      imagePullSecrets:
+        - name: test-lightrun-dockerhub
+      initContainers:
+      # Since config maps mount read-only volumes and rabbitmq also writes to the config file,
+      # the file must be mounted as read-write. We use init containers to copy from the config map read-only
+      # path, to a read-write path
+      - name: "rabbitmq-config"
+        securityContext:          
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1000000
+          seccompProfile:
+            type: RuntimeDefault
+        image: "lightruncom/chart-helper:0.3.0-alpine-3.22.0-r2.lr-0"
+        imagePullPolicy: 
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+        volumeMounts:
+        - name: test-mq-config
+          mountPath: /tmp/rabbitmq
+        - name: test-mq-config-rw
+          mountPath: /etc/rabbitmq
+        - name: test-mq-config-plugins
+          mountPath: /var/lib/rabbitmq
+        command:
+        - sh
+        - -c
+        # the newline is needed since the Docker image entrypoint scripts appends to the config file
+        - cp /tmp/rabbitmq/rabbitmq.conf /etc/rabbitmq/rabbitmq.conf && echo '' >> /etc/rabbitmq/rabbitmq.conf;
+          cp /tmp/rabbitmq/enabled_plugins /var/lib/rabbitmq/enabled_plugins;
+          cp /tmp/rabbitmq/definitions.json /etc/rabbitmq/definitions.json >> /etc/rabbitmq/definitions.json
+      containers:
+        - name: test-mq
+          securityContext:            
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 1000000
+            seccompProfile:
+              type: RuntimeDefault
+          image: "lightruncom/rabbitmq:4.0.9-alpine.lr-0"
+          imagePullPolicy: IfNotPresent
+          # Learn more at https://www.rabbitmq.com/monitoring.html#health-checks.
+          livenessProbe:
+            exec:
+              command: ["rabbitmq-diagnostics", "status"]
+            initialDelaySeconds: 60
+            # See https://www.rabbitmq.com/monitoring.html for monitoring frequency recommendations.
+            periodSeconds: 45
+            timeoutSeconds: 15
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe: # probe to know when RMQ is ready to accept traffic
+            exec:
+              command: ["rabbitmq-diagnostics", "ping"]
+            initialDelaySeconds: 20
+            periodSeconds: 45
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          lifecycle:
+            
+            postStart:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - |
+                  rabbitmqctl wait --pid 1 --timeout 60 && \
+                  rabbitmqctl list_users | grep -q $RABBITMQ_DEFAULT_USER || \
+                  (rabbitmqctl add_user $RABBITMQ_DEFAULT_USER $RABBITMQ_DEFAULT_PASS && \
+                  rabbitmqctl set_user_tags $RABBITMQ_DEFAULT_USER administrator && \
+                  rabbitmqctl set_permissions -p / $RABBITMQ_DEFAULT_USER ".*" ".*" ".*")
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 500m
+              memory: 1Gi        
+          env:
+          - name: RABBITMQ_DEFAULT_USER
+            valueFrom:
+              secretKeyRef:
+                name: test-backend
+                key: SPRING_RABBITMQ_USERNAME
+          - name: RABBITMQ_DEFAULT_PASS
+            valueFrom:
+              secretKeyRef:
+                name: test-backend
+                key: SPRING_RABBITMQ_PASSWORD
+          - name: MY_POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: MY_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: RABBITMQ_ENABLED_PLUGINS_FILE
+            value: /etc/rabbitmq/enabled_plugins
+          - name: K8S_SERVICE_NAME
+            value: test-mq
+          - name: RABBITMQ_USE_LONGNAME
+            value: 'true'
+          - name: RABBITMQ_NODENAME
+            value: rabbit@$(MY_POD_NAME).$(K8S_SERVICE_NAME).$(MY_POD_NAMESPACE).svc.cluster.local
+          ports:
+          - name: amqp
+            containerPort: 5672
+            protocol: TCP
+          - name: management
+            containerPort: 15672
+            protocol: TCP
+          - name: prometheus
+            containerPort: 15692
+            protocol: TCP
+          volumeMounts:
+            # rabbitmq.conf and enabled_plugins -> should have writeable access
+          - name: test-mq-config-rw
+            mountPath: /etc/rabbitmq/conf.d/rabbitmq.conf
+            subPath: rabbitmq.conf
+          - name: test-mq-config-plugins
+            mountPath: /etc/rabbitmq/enabled_plugins
+            subPath: enabled_plugins
+          - name: test-mq-config
+            mountPath: /etc/rabbitmq/conf.d/definitions.json
+            subPath: definitions.json
+          # rabbitmq data directory
+          - name: test-mq-data
+            mountPath: "/var/lib/rabbitmq/mnesia"
+          
+      volumes:
+      - name: test-mq-config
+        configMap:
+          name: test-mq-config
+          items:
+          - key: enabled_plugins
+            path: "enabled_plugins"
+          - key: rabbitmq.conf
+            path: "rabbitmq.conf"
+          - key: definitions.json
+            path: "definitions.json"
+      # read-write volume into which to copy the rabbitmq.conf and enabled_plugins files
+      # this is needed since the docker image writes to the rabbitmq.conf file
+      # and Kubernetes Config Maps are mounted as read-only
+      - name: test-mq-config-rw
+        emptyDir:
+          sizeLimit: 50Mi
+      - name: test-mq-config-plugins
+        emptyDir:
+          sizeLimit: 50Mi
+      - name: test-mq-data
+        emptyDir:
+          sizeLimit: 5Gi
+---
+# Source: lightrun-helm-chart/templates/router/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: test-router
+  
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+      - lightrun.example.com
+      secretName: test-certificate
+  rules:
+    - host: lightrun.example.com
+      http:
+        paths:
+        - backend:
+            service:
+              name: test-router
+              port:
+                name: http
+          path: /
+          pathType: Prefix
+---
+# Source: lightrun-helm-chart/templates/hpa.yaml
+---
+---
+# Source: lightrun-helm-chart/templates/pdb.yaml
+---
+---
+# Source: lightrun-helm-chart/templates/pdb.yaml
+---

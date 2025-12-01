@@ -500,6 +500,22 @@ Usage:
 {{- end -}}
 {{- end -}}
 
+{{- define "secrets.debugZero.backend.name" -}}
+{{- if (kindIs "bool" .Values.general.deploy_secrets)  -}}
+{{ include "lightrun.fullname" . }}-debug-zero-backend
+{{- else -}}
+    {{- if .Values.general.deploy_secrets.enabled -}}
+{{ include "lightrun.fullname" . }}-debug-zero-backend
+    {{- else -}}
+        {{- if .Values.general.deploy_secrets.existing_secrets.debugZeroBackend -}}
+{{ .Values.general.deploy_secrets.existing_secrets.debugZeroBackend }}
+        {{- else -}}
+{{ include "lightrun.fullname" . }}-debug-zero-backend
+        {{- end -}}
+    {{- end -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "secrets.dockerhub.name" -}}
 {{- if contains "lightrun" (include "lightrun.fullname" .)  -}}
 {{ include "lightrun.fullname" . }}-dockerhub
@@ -673,10 +689,10 @@ Container SecurityContext of debugZero backend
 {{- $localSecurityContext := mustMerge $baseSecurityContext $readOnlyRootFilesystem -}}
 {{/*If user provided values for containerSecurityContext, merge them with the baseSecurityContext*/}}
 {{/*Values passed by user will override defaults*/}}
-{{- if .Values.debugZero.backend.containerSecurityContext -}}
-{{- $mergedSecurityContext := mergeOverwrite  $localSecurityContext (.Values.debugZero.backend.containerSecurityContext | default dict) -}}
+{{- if .Values.deployments.debugZero.backend.containerSecurityContext -}}
+{{- $mergedSecurityContext := mergeOverwrite  $localSecurityContext (.Values.deployments.debugZero.backend.containerSecurityContext | default dict) -}}
 {{- $mergedSecurityContext | toYaml -}}
-{{- else if kindIs "invalid" .Values.debugZero.backend.containerSecurityContext -}}
+{{- else if kindIs "invalid" .Values.deployments.debugZero.backend.containerSecurityContext -}}
 {{ default dict | toYaml -}}
 {{- else -}}
 {{/*use default values from baseSecurityContext*/}}

@@ -10,11 +10,11 @@ env:
   - name: NODE_ENV
     value: {{ .Values.deployments.debugZero.backend.profile }}
   - name: REDIS_HOST
-    value: {{ include "lightrun.redis.endpoint" . }}
+    value: {{ include "lightrun-redis.endpoint" . }}
   - name: REDIS_PORT
     value: {{ .Values.deployments.redis.port | quote }}
-{{- if .Values.debugZero.backend.extraEnvs -}}
-{{- toYaml .Values.debugZero.backend.extraEnvs | nindent 2 -}}
+{{- if .Values.deployments.debugZero.backend.extraEnvs -}}
+{{- toYaml .Values.deployments.debugZero.backend.extraEnvs | nindent 2 -}}
 {{- end -}}
 {{- end -}}
 

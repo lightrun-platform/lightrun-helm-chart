@@ -40,9 +40,9 @@ spec:
         - name: {{ .Values.secrets.defaults.dockerhub_config.existingSecret }}
       {{- else }}
         - name: {{ include "secrets.dockerhub.name" . }}
-      {{- end -}}
+      {{- end }}
       securityContext:
-        {{- toYaml .Values.debugZero.backend.podSecurityContext | nindent 8 }}
+        {{- toYaml .Values.deployments.debugZero.backend.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ include "debugZero.backend.name" . }}
           securityContext: {{- include "debugZero.backend.containerSecurityContext" . | indent 12 }}
@@ -57,50 +57,50 @@ spec:
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}              
-          {{- if and .Values.deployments.debugZero.backend.healthCheck.enabled .Values.deployments.debugZero.backend.healthCheck.livenessProbe.enabled }}
+          {{- if and .Values.deployments.debugZero.backend.livenessProbe.enabled .Values.deployments.debugZero.backend.livenessProbe.enabled }}
           livenessProbe:
-            {{- if .Values.deployments.debugZero.backend.healthCheck.livenessProbe.httpGet }}
+            {{- if .Values.deployments.debugZero.backend.livenessProbe.httpGet }}
             httpGet:
-              path: {{ .Values.deployments.debugZero.backend.healthCheck.livenessProbe.httpGet.path }}
-              port: {{ .Values.deployments.debugZero.backend.healthCheck.livenessProbe.httpGet.port }}
+              path: {{ .Values.deployments.debugZero.backend.livenessProbe.httpGet.path }}
+              port: {{ .Values.deployments.debugZero.backend.livenessProbe.httpGet.port }}
             {{- end }}
-            {{- if .Values.deployments.debugZero.backend.healthCheck.livenessProbe.initialDelaySeconds }}
-            initialDelaySeconds: {{ .Values.deployments.debugZero.backend.healthCheck.livenessProbe.initialDelaySeconds }}
+            {{- if .Values.deployments.debugZero.backend.livenessProbe.initialDelaySeconds }}
+            initialDelaySeconds: {{ .Values.deployments.debugZero.backend.livenessProbe.initialDelaySeconds }}
             {{- end }}
-            {{- if .Values.deployments.debugZero.backend.healthCheck.livenessProbe.periodSeconds }}
-            periodSeconds: {{ .Values.deployments.debugZero.backend.healthCheck.livenessProbe.periodSeconds }}
+            {{- if .Values.deployments.debugZero.backend.livenessProbe.periodSeconds }}
+            periodSeconds: {{ .Values.deployments.debugZero.backend.livenessProbe.periodSeconds }}
             {{- end }}
-            {{- if .Values.deployments.debugZero.backend.healthCheck.livenessProbe.timeoutSeconds }}
-            timeoutSeconds: {{ .Values.deployments.debugZero.backend.healthCheck.livenessProbe.timeoutSeconds }}
+            {{- if .Values.deployments.debugZero.backend.livenessProbe.timeoutSeconds }}
+            timeoutSeconds: {{ .Values.deployments.debugZero.backend.livenessProbe.timeoutSeconds }}
             {{- end }}
-            {{- if .Values.deployments.debugZero.backend.healthCheck.livenessProbe.failureThreshold }}
-            failureThreshold: {{ .Values.deployments.debugZero.backend.healthCheck.livenessProbe.failureThreshold }}
+            {{- if .Values.deployments.debugZero.backend.livenessProbe.failureThreshold }}
+            failureThreshold: {{ .Values.deployments.debugZero.backend.livenessProbe.failureThreshold }}
             {{- end }}
-            {{- if .Values.deployments.debugZero.backend.healthCheck.livenessProbe.successThreshold }}
-            successThreshold: {{ .Values.deployments.debugZero.backend.healthCheck.livenessProbe.successThreshold }}
+            {{- if .Values.deployments.debugZero.backend.livenessProbe.successThreshold }}
+            successThreshold: {{ .Values.deployments.debugZero.backend.livenessProbe.successThreshold }}
             {{- end }}
           {{- end }}
-          {{- if and .Values.deployments.debugZero.backend.healthCheck.enabled .Values.deployments.debugZero.backend.healthCheck.readinessProbe.enabled }}
+          {{- if and .Values.deployments.debugZero.backend.readinessProbe.enabled .Values.deployments.debugZero.backend.readinessProbe.enabled }}
           readinessProbe:
-            {{- if .Values.deployments.debugZero.backend.healthCheck.readinessProbe.httpGet }}
+            {{- if .Values.deployments.debugZero.backend.readinessProbe.httpGet }}
             httpGet:
-              path: {{ .Values.deployments.debugZero.backend.healthCheck.readinessProbe.httpGet.path }}
-              port: {{ .Values.deployments.debugZero.backend.healthCheck.readinessProbe.httpGet.port }}
+              path: {{ .Values.deployments.debugZero.backend.readinessProbe.httpGet.path }}
+              port: {{ .Values.deployments.debugZero.backend.readinessProbe.httpGet.port }}
             {{- end }}
-            {{- if .Values.deployments.debugZero.backend.healthCheck.readinessProbe.initialDelaySeconds }}
-            initialDelaySeconds: {{ .Values.deployments.debugZero.backend.healthCheck.readinessProbe.initialDelaySeconds }}
+            {{- if .Values.deployments.debugZero.backend.readinessProbe.initialDelaySeconds }}
+            initialDelaySeconds: {{ .Values.deployments.debugZero.backend.readinessProbe.initialDelaySeconds }}
             {{- end }}
-            {{- if .Values.deployments.debugZero.backend.healthCheck.readinessProbe.periodSeconds }}
-            periodSeconds: {{ .Values.deployments.debugZero.backend.healthCheck.readinessProbe.periodSeconds }}
+            {{- if .Values.deployments.debugZero.backend.readinessProbe.periodSeconds }}
+            periodSeconds: {{ .Values.deployments.debugZero.backend.readinessProbe.periodSeconds }}
             {{- end }}
-            {{- if .Values.deployments.debugZero.backend.healthCheck.readinessProbe.timeoutSeconds }}
-            timeoutSeconds: {{ .Values.deployments.debugZero.backend.healthCheck.readinessProbe.timeoutSeconds }}
+            {{- if .Values.deployments.debugZero.backend.readinessProbe.timeoutSeconds }}
+            timeoutSeconds: {{ .Values.deployments.debugZero.backend.readinessProbe.timeoutSeconds }}
             {{- end }}
-            {{- if .Values.deployments.debugZero.backend.healthCheck.readinessProbe.failureThreshold }}
-            failureThreshold: {{ .Values.deployments.debugZero.backend.healthCheck.readinessProbe.failureThreshold }}
+            {{- if .Values.deployments.debugZero.backend.readinessProbe.failureThreshold }}
+            failureThreshold: {{ .Values.deployments.debugZero.backend.readinessProbe.failureThreshold }}
             {{- end }}
-            {{- if .Values.deployments.debugZero.backend.healthCheck.readinessProbe.successThreshold }}
-            successThreshold: {{ .Values.deployments.debugZero.backend.healthCheck.readinessProbe.successThreshold }}
+            {{- if .Values.deployments.debugZero.backend.readinessProbe.successThreshold }}
+            successThreshold: {{ .Values.deployments.debugZero.backend.readinessProbe.successThreshold }}
             {{- end }}
           {{- end }}
           resources:
