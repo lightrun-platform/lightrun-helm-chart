@@ -1,6 +1,42 @@
 
+<a name="v3.32.0"></a>
+## [v3.32.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.31.0...v3.32.0) - 2025-12-02
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.73.0-release.266933c051    |
+| backend       | 1.73.0-release.266933c051    |
+| crons         | 1.73.0-release.266933c051    |
+| data_streamer | 4.71.0-alpine-3.22.0-r2.lr-0 |
+| frontend      | 1.73.0-release.266933c051    |
+| keycloak      | 1.73.0-release.266933c051    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine.lr-0            |
+| redis         | 7.2.10-alpine-3.22.0-r2.lr-0 |
+| router        | 1.28.0-alpine-3.22.0-r2.lr-0 |
+
+
+ 
+ 
+
+
+### Fixed (1 change)
+
+- [data-streamer-cve-2025-58187 (#161)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/6971447)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.31.0"></a>
-## [v3.31.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.30.2...v3.31.0) - 2025-11-18
+## [v3.31.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.30.3...v3.31.0) - 2025-11-18
 
 
 
@@ -38,6 +74,32 @@
 
 - [cleanup (#154)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/192e800)
  
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.30.3"></a>
+## [v3.30.3](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.30.2...v3.30.3) - 2025-11-30
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.71.3-release.a447b644a6    |
+| backend       | 1.71.3-release.a447b644a6    |
+| crons         | 1.71.3-release.a447b644a6    |
+| data_streamer | 4.68.0-alpine-3.22.0-r2.lr-0 |
+| frontend      | 1.71.3-release.a447b644a6    |
+| keycloak      | 1.71.3-release.a447b644a6    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine.lr-0            |
+| redis         | 7.2.10-alpine-3.22.0-r2.lr-0 |
+| router        | 1.28.0-alpine-3.22.0-r2.lr-0 |
  
  
  
