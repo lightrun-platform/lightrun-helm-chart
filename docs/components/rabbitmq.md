@@ -117,30 +117,6 @@ general:
 
 This configuration **prevents queue overload** and ensures messages are retained only as needed.
 
-
-#### **Storage Configuration (Only if `general.mq.local: true`)**
-
-```yaml
-general:
-  mq:
-    persistentVolumeClaimRetentionPolicy:
-      whenDeleted: "Retain"
-      whenScaled: "Retain"
-    storageClassName: "gp3"
-    storage: "10Gi"
-    pvc_name: ""
-```
-
-|Property|Description|
-|---|---|
-|**`storageClassName: "gp3"`**|The storage class for the PersistentVolumeClaim (PVC).|
-|**`storage: "10Gi"`**|Amount of storage allocated for RabbitMQ.|
-|**`pvc_name: ""`**|PVC name (default: `{{ .Release.Name }}-mq-data`).|
-|**`persistentVolumeClaimRetentionPolicy`**|Controls PVC retention when the StatefulSet is deleted or scaled down.|
-
-> [!WARNING]
-> To **disable persistent storage**, set `storage: "0"` (all data will be lost on pod restart). This creates a deployment instead of statefulset.
-
 #### **Metrics Configuration**
 
 - **`general.mq.metrics: false`** – If `true`, enables the **RabbitMQ Prometheus plugin**.
@@ -232,14 +208,3 @@ deployments:
 ```
 
 #### **Example of Local RabbitMQ Configuration**
-
-#### **Deploy a Local RabbitMQ Instance with 10Gi Storage**
-```yaml
-general:
-  mq:
-    enabled: true
-    local: true
-    storageClassName: "gp3"
-    storage: "10Gi"
-    metrics: true
-```

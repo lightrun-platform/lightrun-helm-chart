@@ -53,7 +53,7 @@ general:
 
   statefulset:
     ## Details of the database's stateful set, if any.
-    ## If `enabled: false`, a regular depolyment will be created.
+    ## If `enabled: false`, a regular deployment will be created.
     ## if `db_local: false`, a stateful set will not be created.
     enabled: true
     pvc_name: ""
@@ -110,22 +110,6 @@ general:
     ## if `local: true`, a mq_endpoint will be ignored.
     port: "5672"
 
-    ##
-    ## if `local: false`, all properties below will be ignored
-    ##
-    persistentVolumeClaimRetentionPolicy:
-      {}
-      # whenDeleted: "Retain"
-      # whenScaled: "Retain"
-    storageClassName: "gp2"
-    ## adjust to proper class
-    # AWS - `gp2`
-    # GCP - `standard`
-    storage: "0"
-    ## For environments requiring persistent storage, set to "10Gi" or higher
-    ## For environments without PV/PVC access, keep as "0" to use ephemeral storage (EmptyDir)
-    pvc_name: ""
-    ## If empty, will be set to default: {{ .Release.Name }}-mq-data
     metrics: false
     ## If true, will enable prometheus plugin of RabbitMQ
     ## metrics will be served on mq service, port 15692

@@ -349,11 +349,7 @@ Pod SecurityContext of lightrun mysql
 {{- end -}}
 
 {{- define "lightrun-mq.storage.name" -}}
-    {{- if and .Values.general.mq.pvc_name (ne (.Values.general.mq.storage | toString) "0") -}}
-    {{ .Values.general.mq.pvc_name }}
-    {{- else -}}
-    {{ include "lightrun-mq.name" . }}-data
-    {{- end -}}
+{{ include "lightrun-mq.name" . }}-data
 {{- end -}}
 
 {{- define "lightrun-mq.endpoint" -}}
