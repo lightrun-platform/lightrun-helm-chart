@@ -208,3 +208,80 @@ deployments:
 ```
 
 #### **Example of Local RabbitMQ Configuration**
+
+
+## PVC Removal in Chart Version 3.32.1
+
+Starting with chart version 3.32.1, Persistent Volume Claim (PVC) support has been removed for RabbitMQ. RabbitMQ now exclusively uses ephemeral storage (`emptyDir`) for all data persistence.
+
+### **What Changed**
+
+- **Removed PVC Support**: RabbitMQ now exclusively uses ephemeral storage (`emptyDir`) for data persistence. The `general.mq.storage` configuration value no longer creates PVCs.
+- **Deprecated Configuration Options**: The following configuration properties are no longer supported and should be removed from your `values.yaml`:
+  - `general.mq.persistentVolumeClaimRetentionPolicy`
+  - `general.mq.storageClassName`
+  - `general.mq.storage` (no longer creates PVCs)
+  - `general.mq.pvc_name`
+
+### **Impact**
+
+- **Data Persistence**: RabbitMQ data is stored in ephemeral storage only. **All data will be lost** when the pod is restarted or deleted.
+- **Storage Configuration**: The `general.mq.storage` setting in `values.yaml` is now ignored. RabbitMQ uses the `emptyDir` size limit defined in `deployments.rabbitmq.emptyDir.sizeLimit` (default: `5Gi`).
+
+### **Upgrade Considerations**
+
+> [!WARNING]
+> **Direct Helm Upgrade Will Fail**: Attempting to upgrade directly from a version using PVCs to version 3.32.1 will result in an error.
+
+If you attempt a direct upgrade, you will encounter an error similar to:
+
+```
+Error: UPGRADE FAILED: cannot patch "lightrun-mq" with kind StatefulSet: 
+StatefulSet.apps "lightrun-mq" is invalid: spec: Forbidden: updates to statefulset spec 
+for fields other than 'replicas', 'ordinals', 'template', 'updateStrategy', 
+'persistentVolumeClaimRetentionPolicy' and 'minReadySeconds' are forbidden
+```
+
+### **Migration Process**
+
+If you are upgrading from a previous version that used PVCs, follow these steps to migrate to ephemeral storage:
+
+**Step 1: Scale Down and Remove Existing Resources**
+
+Scale down the StatefulSet, wait for pods to terminate, then delete the StatefulSet and associated PVC:
+
+```bash
+# Scale down the StatefulSet
+kubectl scale statefulset <STATEFULSET_NAME> --replicas=0 -n <NAMESPACE>
+
+# Verify pods are fully terminated
+kubectl get pods -n <NAMESPACE>
+
+# Delete the StatefulSet
+kubectl delete statefulset <STATEFULSET_NAME> -n <NAMESPACE>
+
+# Delete the associated PVC (optional, but recommended to free up storage)
+kubectl delete pvc <PVC_NAME> -n <NAMESPACE>
+```
+
+**Step 2: Update Configuration**
+
+Remove the following deprecated values from your `values.yaml`:
+
+- `general.mq.persistentVolumeClaimRetentionPolicy`
+- `general.mq.storageClassName`
+- `general.mq.storage`
+- `general.mq.pvc_name`
+
+**Step 3: Upgrade Helm Release**
+
+Upgrade your Helm release and verify the new deployment:
+
+```bash
+# Upgrade the Helm release
+helm upgrade --install <RELEASE> . -n <NAMESPACE>
+
+# Verify the pod is using emptyDir (not PVC)
+kubectl describe pod <LIGHTRUN-MQ-POD> -n <NAMESPACE>
+# Check the "Volumes" section to confirm no PVC is mounted
+```
