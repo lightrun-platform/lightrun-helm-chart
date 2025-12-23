@@ -210,9 +210,9 @@ deployments:
 #### **Example of Local RabbitMQ Configuration**
 
 
-## PVC Removal in Chart Version 3.32.1
+## PVC Removal in Chart Version 3.34.0
 
-Starting with chart version 3.32.1, Persistent Volume Claim (PVC) support has been removed for RabbitMQ. RabbitMQ now exclusively uses ephemeral storage (`emptyDir`) for all data persistence.
+Starting with chart version 3.34.0, Persistent Volume Claim (PVC) support has been removed for RabbitMQ. RabbitMQ now exclusively uses ephemeral storage (`emptyDir`) for all data persistence.
 
 ### **What Changed**
 
@@ -231,7 +231,7 @@ Starting with chart version 3.32.1, Persistent Volume Claim (PVC) support has be
 ### **Upgrade Considerations**
 
 > [!WARNING]
-> **Direct Helm Upgrade Will Fail**: Attempting to upgrade directly from a version using PVCs to version 3.32.1 will result in an error.
+> **Direct Helm Upgrade Will Fail**: Attempting to upgrade directly from a version using PVCs to version 3.34.0 will result in an error.
 
 If you attempt a direct upgrade, you will encounter an error similar to:
 
