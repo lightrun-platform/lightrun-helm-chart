@@ -539,48 +539,170 @@ false
 #####################
 */}}
 
+{{- /* Convert a memory string like "1024Mi" or "2Gi" to Mi (int). Unknown/empty -> 0 */ -}}
+{{- define "mem-to-mi" -}}
+{{- $m := . | default "" -}}
+{{- if $m | hasSuffix "Gi" -}}
+{{- mul (trimSuffix "Gi" $m | int) 1024 -}}
+{{- else if $m | hasSuffix "Mi" -}}
+{{- trimSuffix "Mi" $m | int -}}
+{{- else -}}
+0
+{{- end -}}
+{{- end -}}
+
+{{- define "get-env" -}}
+{{- $list := index . 0 -}}
+{{- $name := index . 1 -}}
+{{- $out := "" -}}
+{{- range $list -}}
+  {{- if and (hasKey . "name") (eq .name $name) -}}
+    {{- if hasKey . "value" -}}
+      {{- $out = (printf "%v" .value) -}}
+    {{- else -}}
+      {{- $out = "" -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $out -}}
+{{- end -}}
+
 {{- define "calculate-heap-size" -}}
 {{- $deployment := . -}}
 {{- $xmsRatio := 1 -}}
 {{- $xmxRatio := 1 -}}
-{{- $heap:= "" -}}
-{{- $xms:= "" -}}
-{{/* Check if called with parameters: deployment, xmsRatio, xmxRatio */}}
 {{- if kindIs "slice" . -}}
-    {{- $deployment = index . 0 -}}
-    {{- if ge (len .) 2 -}}
-        {{- $xmsRatio = index . 1 | int -}}
-    {{- end -}}
-    {{- if ge (len .) 3 -}}
-        {{- $xmxRatio = index . 2 | int -}}
-    {{- end -}}
+  {{- $deployment = index . 0 -}}
+  {{- if ge (len .) 2 -}}{{- $xmsRatio = index . 1 | int -}}{{- end -}}
+  {{- if ge (len .) 3 -}}{{- $xmxRatio = index . 2 | int -}}{{- end -}}
 {{- end -}}
-{{/* Validate ratios - only allow sensible ratios like 1:1, 1:2, 1:3, 1:4, 1:5 */}}
-{{- if ne $xmsRatio 1 -}}
-    {{- fail "calculate-heap-size: xmsRatio must be 1. Only ratios like 1:1, 1:2, 1:3, 1:4, 1:5 are supported." -}}
+{{- if ne $xmsRatio 1 -}}{{- fail "calculate-heap-size: xmsRatio must be 1 (supported: 1:1..1:5)" -}}{{- end -}}
+{{- if or (lt $xmxRatio 1) (gt $xmxRatio 5) -}}{{- fail "calculate-heap-size: xmxRatio must be 1..5 (supported: 1:1..1:5)" -}}{{- end -}}
+
+{{- $memMi := include "mem-to-mi" ($deployment.resources.memory | default "") | int -}}
+{{- if le $memMi 0 -}}
+{{- "" -}}
+{{- else -}}
+  {{- $xmx := div (mul $memMi 75) 100 -}}   {{/* 75% of container memory */}}
+  {{- $xms := div $xmx $xmxRatio -}}        {{/* Xms = Xmx / xmxRatio   */}}
+  {{- printf "-Xmx%vm -Xms%vm" $xmx $xms -}}
 {{- end -}}
-{{- if or (lt $xmxRatio 1) (gt $xmxRatio 5) -}}
-    {{- fail "calculate-heap-size: xmxRatio must be between 1 and 5. Only ratios like 1:1, 1:2, 1:3, 1:4, 1:5 are supported." -}}
-{{- end -}}
-{{- if contains "Gi" $deployment.resources.memory -}}
-    {{- $heap = div ($deployment.resources.memory | replace "Gi" "" | int | mul 1024 | mul 75 ) 100  -}}
-{{- else if contains "Mi" $deployment.resources.memory -}}
-    {{- $heap = div ($deployment.resources.memory | replace "Mi" "" | int | mul 75) 100  -}}
-{{- end -}}
-{{/* Calculate Xms = Xmx / xmxRatio */}}
-{{- $xms = div $heap $xmxRatio -}}
-{{- printf "-Xmx%vm -Xms%vm" $heap $xms -}}
 {{- end -}}
 
-{{- define "list-of-maps-contains" }}
-    {{- $arg1 := index . 0 }}
-    {{- $arg2 := index . 1 }}
-    {{- range $arg1 }}
-        {{- if eq .name $arg2 }}
-            true
-        {{- end }}
-    {{- end }}
-{{- end }}
+{{- /* Parse existing _JAVA_OPTIONS to extract Xms and Xmx values */ -}}
+{{- define "parse-java-options" -}}
+{{- $javaOpts := . | default "" -}}
+{{- $xms := "" -}}
+{{- $xmx := "" -}}
+{{- $otherOpts := "" -}}
+{{- if ne $javaOpts "" -}}
+  {{- $parts := split " " $javaOpts -}}
+  {{- range $parts -}}
+    {{- $part := . | trim -}}
+    {{- if hasPrefix "-Xms" $part -}}
+      {{- $xms = $part -}}
+    {{- else if hasPrefix "-Xmx" $part -}}
+      {{- $xmx = $part -}}
+    {{- else if ne $part "" -}}
+      {{- if eq $otherOpts "" -}}
+        {{- $otherOpts = $part -}}
+      {{- else -}}
+        {{- $otherOpts = printf "%s %s" $otherOpts $part -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- printf "%s|%s|%s" $xms $xmx $otherOpts -}}
+{{- end -}}
+
+{{- /* Calculate enhanced _JAVA_OPTIONS based on existing options and memory */ -}}
+{{- define "calculate-enhanced-java-options" -}}
+{{- $deployment := .deployment -}}
+{{- $existingJavaOpts := .existingJavaOpts | default "" -}}
+{{- $memMi := include "mem-to-mi" ($deployment.resources.memory | default "") | int -}}
+
+{{- $hasXms := false -}}
+{{- $hasXmx := false -}}
+{{- $existingXms := "" -}}
+{{- $existingXmx := "" -}}
+{{- $otherOpts := "" -}}
+
+{{- /* Parse existing options */ -}}
+{{- if ne $existingJavaOpts "" -}}
+  {{- $parts := split " " $existingJavaOpts -}}
+  {{- range $parts -}}
+    {{- $part := . | trim -}}
+    {{- if or (hasPrefix "-Xms" $part) (hasPrefix "Xms" $part) -}}
+      {{- $hasXms = true -}}
+      {{- if hasPrefix "-Xms" $part -}}
+        {{- $existingXms = $part -}}
+      {{- else -}}
+        {{- $existingXms = printf "-%s" $part -}}
+      {{- end -}}
+    {{- else if or (hasPrefix "-Xmx" $part) (hasPrefix "Xmx" $part) -}}
+      {{- $hasXmx = true -}}
+      {{- if hasPrefix "-Xmx" $part -}}
+        {{- $existingXmx = $part -}}
+      {{- else -}}
+        {{- $existingXmx = printf "-%s" $part -}}
+      {{- end -}}
+    {{- else if ne $part "" -}}
+      {{- if eq $otherOpts "" -}}
+        {{- $otherOpts = $part -}}
+      {{- else -}}
+        {{- $otherOpts = printf "%s %s" $otherOpts $part -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- $result := "" -}}
+{{- $xms := "" -}}
+{{- $xmx := "" -}}
+
+{{- /* Calculate Xms and Xmx only if memory > 0 AND neither Xms nor Xmx is provided by user */ -}}
+{{- if and (gt $memMi 0) (not $hasXms) (not $hasXmx) -}}
+  {{- $calculatedXmx := div (mul $memMi 75) 100 -}}
+  {{- $calculatedXms := $calculatedXmx -}}
+  {{- $xms = printf "-Xms%vm" $calculatedXms -}}
+  {{- $xmx = printf "-Xmx%vm" $calculatedXmx -}}
+{{- else -}}
+  {{- /* Use existing values if provided, do not calculate missing ones */ -}}
+  {{- if $hasXms -}}{{- $xms = $existingXms -}}{{- end -}}
+  {{- if $hasXmx -}}{{- $xmx = $existingXmx -}}{{- end -}}
+{{- end -}}
+
+{{- /* Build the final result */ -}}
+{{- if ne $xms "" -}}
+  {{- $result = $xms -}}
+{{- end -}}
+{{- if ne $xmx "" -}}
+  {{- if ne $result "" -}}
+    {{- $result = printf "%s %s" $result $xmx -}}
+  {{- else -}}
+    {{- $result = $xmx -}}
+  {{- end -}}
+{{- end -}}
+{{- if ne $otherOpts "" -}}
+  {{- if ne $result "" -}}
+    {{- $result = printf "%s %s" $result $otherOpts -}}
+  {{- else -}}
+    {{- $result = $otherOpts -}}
+  {{- end -}}
+{{- end -}}
+
+{{- $result -}}
+{{- end -}}
+
+{{- /* Unchanged: check if a list of {name,value} maps contains a given name */ -}}
+{{- define "list-of-maps-contains" -}}
+  {{- $arg1 := index . 0 -}}
+  {{- $arg2 := index . 1 -}}
+  {{- range $arg1 -}}
+    {{- if eq .name $arg2 -}}true{{- end -}}
+  {{- end -}}
+{{- end -}}
+
 
 
 {{/*
