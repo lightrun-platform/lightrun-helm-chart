@@ -61,14 +61,6 @@ general:
     storageClassName: gp3
 ```
 
-#### RabbitMQ Configuration (If used locally):
-
-```yaml
-general:
-  mq:
-    storageClassName: gp3
-```
-
 ### 4. Configure OpenShift Ingress (HAProxy)
 
 If using OpenShift's default HAProxy ingress controller, adjust the router configuration accordingly. Follow the guide: [Install Lightrun Router on openshift with HAProxy](openshift_haproxy.md).

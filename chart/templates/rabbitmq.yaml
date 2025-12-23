@@ -6,10 +6,6 @@ metadata:
   labels:
     app: {{ include "lightrun-mq.name" . }}
 spec:
-  {{- with .Values.general.mq.persistentVolumeClaimRetentionPolicy }}
-  persistentVolumeClaimRetentionPolicy:
-    {{ . | toYaml | nindent 4 }}
-  {{- end }}
   replicas: 1 
   selector:
     matchLabels:
@@ -200,20 +196,8 @@ spec:
           secretName: {{ .Values.general.internal_tls.certificates.existing_certificates.rabbitmq }}
           {{- end }}
       {{- end }}
-{{- if eq (.Values.general.mq.storage | toString) "0" }}
       - name: {{ include "lightrun-mq.storage.name" . }}
         emptyDir:
           sizeLimit: {{ .Values.deployments.rabbitmq.emptyDir.sizeLimit }}
-{{- else }}
-  volumeClaimTemplates:
-  - metadata:
-      name: {{ include "lightrun-mq.storage.name" . }}
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      storageClassName: {{ .Values.general.mq.storageClassName }}
-      resources:
-        requests:
-          storage: {{ .Values.general.mq.storage }}
-{{- end }}
 
 {{ end }}

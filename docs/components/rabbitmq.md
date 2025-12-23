@@ -117,30 +117,6 @@ general:
 
 This configuration **prevents queue overload** and ensures messages are retained only as needed.
 
-
-#### **Storage Configuration (Only if `general.mq.local: true`)**
-
-```yaml
-general:
-  mq:
-    persistentVolumeClaimRetentionPolicy:
-      whenDeleted: "Retain"
-      whenScaled: "Retain"
-    storageClassName: "gp3"
-    storage: "10Gi"
-    pvc_name: ""
-```
-
-|Property|Description|
-|---|---|
-|**`storageClassName: "gp3"`**|The storage class for the PersistentVolumeClaim (PVC).|
-|**`storage: "10Gi"`**|Amount of storage allocated for RabbitMQ.|
-|**`pvc_name: ""`**|PVC name (default: `{{ .Release.Name }}-mq-data`).|
-|**`persistentVolumeClaimRetentionPolicy`**|Controls PVC retention when the StatefulSet is deleted or scaled down.|
-
-> [!WARNING]
-> To **disable persistent storage**, set `storage: "0"` (all data will be lost on pod restart). This creates a deployment instead of statefulset.
-
 #### **Metrics Configuration**
 
 - **`general.mq.metrics: false`** – If `true`, enables the **RabbitMQ Prometheus plugin**.
@@ -233,13 +209,79 @@ deployments:
 
 #### **Example of Local RabbitMQ Configuration**
 
-#### **Deploy a Local RabbitMQ Instance with 10Gi Storage**
-```yaml
-general:
-  mq:
-    enabled: true
-    local: true
-    storageClassName: "gp3"
-    storage: "10Gi"
-    metrics: true
+
+## PVC Removal in Chart Version 3.34.0
+
+Starting with chart version 3.34.0, Persistent Volume Claim (PVC) support has been removed for RabbitMQ. RabbitMQ now exclusively uses ephemeral storage (`emptyDir`) for all data persistence.
+
+### **What Changed**
+
+- **Removed PVC Support**: RabbitMQ now exclusively uses ephemeral storage (`emptyDir`) for data persistence. The `general.mq.storage` configuration value no longer creates PVCs.
+- **Deprecated Configuration Options**: The following configuration properties are no longer supported and should be removed from your `values.yaml`:
+  - `general.mq.persistentVolumeClaimRetentionPolicy`
+  - `general.mq.storageClassName`
+  - `general.mq.storage` (no longer creates PVCs)
+  - `general.mq.pvc_name`
+
+### **Impact**
+
+- **Data Persistence**: RabbitMQ data is stored in ephemeral storage only. **All data will be lost** when the pod is restarted or deleted.
+- **Storage Configuration**: The `general.mq.storage` setting in `values.yaml` is now ignored. RabbitMQ uses the `emptyDir` size limit defined in `deployments.rabbitmq.emptyDir.sizeLimit` (default: `5Gi`).
+
+### **Upgrade Considerations**
+
+> [!WARNING]
+> **Direct Helm Upgrade Will Fail**: Attempting to upgrade directly from a version using PVCs to version 3.34.0 will result in an error.
+
+If you attempt a direct upgrade, you will encounter an error similar to:
+
+```
+Error: UPGRADE FAILED: cannot patch "lightrun-mq" with kind StatefulSet: 
+StatefulSet.apps "lightrun-mq" is invalid: spec: Forbidden: updates to statefulset spec 
+for fields other than 'replicas', 'ordinals', 'template', 'updateStrategy', 
+'persistentVolumeClaimRetentionPolicy' and 'minReadySeconds' are forbidden
+```
+
+### **Migration Process**
+
+If you are upgrading from a previous version that used PVCs, follow these steps to migrate to ephemeral storage:
+
+**Step 1: Scale Down and Remove Existing Resources**
+
+Scale down the StatefulSet, wait for pods to terminate, then delete the StatefulSet and associated PVC:
+
+```bash
+# Scale down the StatefulSet
+kubectl scale statefulset <STATEFULSET_NAME> --replicas=0 -n <NAMESPACE>
+
+# Verify pods are fully terminated
+kubectl get pods -n <NAMESPACE>
+
+# Delete the StatefulSet
+kubectl delete statefulset <STATEFULSET_NAME> -n <NAMESPACE>
+
+# Delete the associated PVC (optional, but recommended to free up storage)
+kubectl delete pvc <PVC_NAME> -n <NAMESPACE>
+```
+
+**Step 2: Update Configuration**
+
+Remove the following deprecated values from your `values.yaml`:
+
+- `general.mq.persistentVolumeClaimRetentionPolicy`
+- `general.mq.storageClassName`
+- `general.mq.storage`
+- `general.mq.pvc_name`
+
+**Step 3: Upgrade Helm Release**
+
+Upgrade your Helm release and verify the new deployment:
+
+```bash
+# Upgrade the Helm release
+helm upgrade --install <RELEASE> . -n <NAMESPACE>
+
+# Verify the pod is using emptyDir (not PVC)
+kubectl describe pod <LIGHTRUN-MQ-POD> -n <NAMESPACE>
+# Check the "Volumes" section to confirm no PVC is mounted
 ```
