@@ -9,6 +9,8 @@ This page provides a compatibility overview for Kubernetes and OpenShift version
 
 | Kubernetes Release | Compatibility | Comments |
 | ------------------ | ------------- | -------- |
+| 1.33               | Compatible    |          |
+| 1.32               | Compatible    |          |
 | 1.31               | Compatible    |          |
 | 1.30               | Compatible    |          |
 | 1.29               | Compatible    |          |
