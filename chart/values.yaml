@@ -274,6 +274,11 @@ general:
     #   proxy_read_timeout      60s;
     http_snippets: ""
 
+    mcp_endpoint:
+      # Timeout configuration for /mcp endpoint (in seconds)
+      # MCP operations require longer upstream timeout
+      timeout_seconds: 600  # 1 hour max
+
   ################
   ## Node selection
   ################
