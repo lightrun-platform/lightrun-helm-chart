@@ -19,3 +19,25 @@ spec:
       name: http
   selector:
     app: {{ include "lightrun-be.name" . }}
+
+{{- if .Values.general.router.mcp_sticky_sessions.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "lightrun-be.name" . }}-headless
+  labels:
+    app: {{ include "lightrun-be.name" . }}
+    purpose: mcp-sticky-sessions
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ include "lightrun-be.name" . }}
+{{- end }}

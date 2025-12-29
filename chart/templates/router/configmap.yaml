@@ -30,7 +30,18 @@ data:
         access_log  /var/log/nginx/access.log  main;
         sendfile        on;
         keepalive_timeout  65;
+        {{- if .Values.general.router.mcp_sticky_sessions.enabled }}
+        resolver kube-dns.kube-system.svc.cluster.local valid=5s ipv6=off;
+        resolver_timeout 2s;
+        {{- end }}
         include /etc/nginx/conf.d/*.conf;
+
+        {{- if .Values.general.router.mcp_sticky_sessions.enabled }}
+        map $http_mcp_session_id $mcp_key {
+          default $http_mcp_session_id;
+          ""      $remote_addr;
+        }
+        {{- end }}
 
         # Map return $remote_addr if x-forwarded-for is empty
         map $http_x_forwarded_for $xff {   
@@ -85,13 +96,11 @@ data:
       }
 
       {{- if .Values.general.router.mcp_sticky_sessions.enabled }}
-      # Upstream for MCP endpoints with sticky sessions based on Mcp-Session-Id header
-      # Uses hash directive to ensure requests with the same session ID are routed to the same backend
       upstream {{ include "lightrun-be.name" . }}-mcp {
-        hash $http_mcp_session_id;
-        # 2nd server is for a retry to k8s service
-        server {{ include "lightrun-be.name" . }}:8080 max_fails=0;
-        server {{ include "lightrun-be.name" . }}:8080 max_fails=0;
+        zone {{ include "lightrun-be.name" . }}-mcp 64k;
+        hash $mcp_key consistent;
+        server {{ include "lightrun-be.name" . }}-headless.{{ .Release.Namespace }}.svc.cluster.local:8080 resolve;
+        keepalive 64;
       }
       {{- end }}
 
@@ -297,15 +306,18 @@ data:
         }
 
         {{- if .Values.general.router.mcp_sticky_sessions.enabled }}
-        # MCP endpoints with sticky sessions
-        # Routes requests to backend based on Mcp-Session-Id header
-        # This ensures all requests for the same MCP session go to the same backend instance
         location /mcp {
         {{ if .Values.general.internal_tls.enabled }}
           proxy_ssl_name $host;
         {{- end }}
-          # Preserve the Mcp-Session-Id header for backend processing
+          proxy_http_version 1.1;
+          proxy_buffering off;
+          proxy_read_timeout 1h;
+          proxy_send_timeout 1h;
           proxy_set_header Mcp-Session-Id $http_mcp_session_id;
+          proxy_set_header X-Forwarded-For $xff;
+          proxy_set_header Host $host;
+          add_header X-Upstream $upstream_addr always;
           proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-be.name" . }}-mcp;
         }
         {{- end }}
