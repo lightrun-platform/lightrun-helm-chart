@@ -84,6 +84,17 @@ data:
         server {{ include "lightrun-be.name" . }}:8080 max_fails=0;
       }
 
+      {{- if .Values.general.router.mcp_sticky_sessions.enabled }}
+      # Upstream for MCP endpoints with sticky sessions based on Mcp-Session-Id header
+      # Uses hash directive to ensure requests with the same session ID are routed to the same backend
+      upstream {{ include "lightrun-be.name" . }}-mcp {
+        hash $http_mcp_session_id;
+        # 2nd server is for a retry to k8s service
+        server {{ include "lightrun-be.name" . }}:8080 max_fails=0;
+        server {{ include "lightrun-be.name" . }}:8080 max_fails=0;
+      }
+      {{- end }}
+
       upstream {{ include "lightrun-keycloak.name" . }} {
         server {{ include "lightrun-keycloak.name" . }}:8080 max_fails=0;
       }
@@ -284,6 +295,20 @@ data:
         {{- end }}
           proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-be.name" . }};
         }
+
+        {{- if .Values.general.router.mcp_sticky_sessions.enabled }}
+        # MCP endpoints with sticky sessions
+        # Routes requests to backend based on Mcp-Session-Id header
+        # This ensures all requests for the same MCP session go to the same backend instance
+        location /mcp {
+        {{ if .Values.general.internal_tls.enabled }}
+          proxy_ssl_name $host;
+        {{- end }}
+          # Preserve the Mcp-Session-Id header for backend processing
+          proxy_set_header Mcp-Session-Id $http_mcp_session_id;
+          proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-be.name" . }}-mcp;
+        }
+        {{- end }}
 
         location /router_status {
         {{- range .Values.general.router.acl.router_status.allow_ips }}

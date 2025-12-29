@@ -250,6 +250,12 @@ general:
         rps_per_ip: 50
         zone_size: 10m # size of the shared memory zone for rate limiting
 
+    # MCP sticky sessions configuration
+    # Enables sticky sessions for /mcp endpoints based on Mcp-Session-Id header
+    # Required for MCP STREAMABLE mode with keep-alives in HA deployments
+    mcp_sticky_sessions:
+      enabled: true
+
     server_snippets: ""
     ## Example:
     # server_snippets: |
