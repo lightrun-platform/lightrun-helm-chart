@@ -296,6 +296,18 @@ data:
           access_log off;
         }
 
+        location /mcp {
+        {{ if .Values.general.internal_tls.enabled }}
+          proxy_ssl_name $host;
+        {{- end }}
+          # MCP endpoint requires longer upstream timeout for processing
+          proxy_connect_timeout 300s;
+          proxy_read_timeout    {{ .Values.general.router.mcp_endpoint.timeout_seconds }}s;
+          proxy_send_timeout    {{ .Values.general.router.mcp_endpoint.timeout_seconds }}s;
+          send_timeout 300s;
+          proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-be.name" . }};
+        }
+
         location / {
         {{ if .Values.general.internal_tls.enabled }}
           proxy_ssl_name $host;
