@@ -94,7 +94,7 @@ data:
 
       proxy_request_buffering   on;
       large_client_header_buffers 4 16k;
-      client_max_body_size      25m;
+      client_max_body_size      50m;
       proxy_http_version        1.1;
       proxy_buffering           off;
       proxy_buffer_size         8k;
