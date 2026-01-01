@@ -37,7 +37,7 @@ router:
     enabled: true  
     ingress_class_name: "azure-application-gateway"  
     # If your ingress limiting the body size, you can override it with annotation  
-    # example for nginx-ingress: "nginx.ingress.kubernetes.io/proxy-body-size": "25m"
+    # example for nginx-ingress: "nginx.ingress.kubernetes.io/proxy-body-size": "50m"
     annotations:  
       appgw.ingress.kubernetes.io/backend-protocol: "https" 
     labels: {}  
@@ -87,7 +87,7 @@ router:
     enabled: true  
     ingress_class_name: "azure-application-gateway"  
     # If your ingress limiting the body size, you can override it with annotation  
-    # example for nginx-ingress: "nginx.ingress.kubernetes.io/proxy-body-size": "25m"
+    # example for nginx-ingress: "nginx.ingress.kubernetes.io/proxy-body-size": "50m"
     annotations: {}
     labels: {}  
   
