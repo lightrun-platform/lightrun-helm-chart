@@ -18,7 +18,7 @@ In the "values.yaml" of the lightrun helm chart navigate to "general.router" and
 * general.router.ingress.annotations at the minimum have:
 	* `nginx.ingress.kubernetes.io/proxy-read-timeout: "90"`
 	* `nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"`
-	* `nginx.ingress.kubernetes.io/proxy-body-size: "25m"`
+	* `nginx.ingress.kubernetes.io/proxy-body-size: "50m"`
     * `nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"`
 * general.router.service.enabled: true
 * general.router.service.type: ClusterIP
@@ -39,7 +39,7 @@ router:
     annotations:  
       nginx.ingress.kubernetes.io/proxy-read-timeout: "90"  
       nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"  
-      nginx.ingress.kubernetes.io/proxy-body-size: "25m"
+      nginx.ingress.kubernetes.io/proxy-body-size: "50m"
       nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     labels: {}  
   
@@ -73,7 +73,7 @@ In the "values.yaml" of the lightrun helm chart navigate to "general.router" and
 * general.router.ingress.annotations at the minimum have:
 	* `nginx.ingress.kubernetes.io/proxy-read-timeout: "90"`
 	* `nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"`
-	* `nginx.ingress.kubernetes.io/proxy-body-size: "25m"`
+	* `nginx.ingress.kubernetes.io/proxy-body-size: "50m"`
 * general.router.service.enabled: true
 * general.router.service.type: ClusterIP
 * general.router.host_port.enabled: false  
@@ -93,7 +93,7 @@ router:
     annotations:  
       nginx.ingress.kubernetes.io/proxy-read-timeout: "90"  
       nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"  
-      nginx.ingress.kubernetes.io/proxy-body-size: "25m"  
+      nginx.ingress.kubernetes.io/proxy-body-size: "50m"  
     labels: {}  
   
   service:  
