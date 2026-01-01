@@ -32,7 +32,7 @@ router:
     enabled: false  
     ingress_class_name: ""  
     # If your ingress limiting the body size, you can override it with annotation  
-    # example for nginx-ingress: "nginx.ingress.kubernetes.io/proxy-body-size": "25m"
+    # example for nginx-ingress: "nginx.ingress.kubernetes.io/proxy-body-size": "50m"
     annotations: {}
     labels: {}  
   

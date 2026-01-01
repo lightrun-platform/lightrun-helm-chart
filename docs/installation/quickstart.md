@@ -21,7 +21,7 @@ general:
     ingress:
       annotations:
         nginx.ingress.kubernetes.io/proxy-read-timeout: "90"  
-        nginx.ingress.kubernetes.io/proxy-body-size: "25m"
+        nginx.ingress.kubernetes.io/proxy-body-size: "50m"
 certificate:
   tls:
     crt: "<BASE64_CRT>"
