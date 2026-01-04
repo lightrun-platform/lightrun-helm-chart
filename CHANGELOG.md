@@ -1,4 +1,56 @@
 
+<a name="v3.34.0"></a>
+## [v3.34.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.33.0...v3.34.0) - 2026-01-04
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.75.0-release.d75d889a4c    |
+| backend       | 1.75.0-release.d75d889a4c    |
+| crons         | 1.75.0-release.d75d889a4c    |
+| data_streamer | 4.73.0-alpine-3.22.0-r2.lr-0 |
+| frontend      | 1.75.0-release.d75d889a4c    |
+| keycloak      | 1.75.0-release.d75d889a4c    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine.lr-0            |
+| redis         | 7.2.10-alpine-3.22.0-r2.lr-0 |
+| router        | 1.28.0-alpine-3.22.0-r2.lr-0 |
+
+
+ 
+ 
+
+
+### Changed (1 change)
+
+- [client-max-body-size-to-50m-to-support-artifacts-upgrade-without-version-upgrade (#169)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2c9ba88)
+ 
+ 
+ 
+
+
+### Removed (1 change)
+
+- [pvc-from-rabbitmq (#162)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/a64e103)
+ 
+ 
+ 
+
+
+### Security (1 change)
+
+- [update-data-streamer-tag-fix-cve (#163)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/d4ac678)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.33.0"></a>
 ## [v3.33.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.32.1...v3.33.0) - 2025-12-21
 
@@ -92,7 +144,7 @@
 
 
 <a name="v3.31.0"></a>
-## [v3.31.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.30.4...v3.31.0) - 2025-11-18
+## [v3.31.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.30.5...v3.31.0) - 2025-11-18
 
 
 
@@ -130,6 +182,32 @@
 
 - [cleanup (#154)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/192e800)
  
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.30.5"></a>
+## [v3.30.5](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.30.4...v3.30.5) - 2025-12-30
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.71.5-release.47928d5d12    |
+| backend       | 1.71.5-release.47928d5d12    |
+| crons         | 1.71.5-release.47928d5d12    |
+| data_streamer | 4.68.0-alpine-3.22.0-r2.lr-0 |
+| frontend      | 1.71.5-release.47928d5d12    |
+| keycloak      | 1.71.5-release.47928d5d12    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine.lr-0            |
+| redis         | 7.2.10-alpine-3.22.0-r2.lr-0 |
+| router        | 1.28.0-alpine-3.22.0-r2.lr-0 |
  
  
  
