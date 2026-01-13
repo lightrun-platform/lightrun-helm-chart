@@ -30,7 +30,7 @@ In the "values.yaml" of the Lightrun helm chart navigate to "general.router" and
 	* `alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'`
 	* `alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS`
 	* `alb.ingress.kubernetes.io/backend-protocol: HTTPS`
-  * `alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=90`
+  * `alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=600`
 	* [OPTIONAL] - if you need to control the subnets where LB will be created
 		* `alb.ingress.kubernetes.io/subnets: subnet-xxxx, mySubnet`
 * general.router.service.enabled: true
@@ -57,7 +57,7 @@ router:
       alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'  
       alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS  
       alb.ingress.kubernetes.io/backend-protocol: HTTPS
-      alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=90
+      alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=600
     labels: {}  
   
   service:  
@@ -96,7 +96,7 @@ In the "values.yaml" of the Lightrun helm chart navigate to "general.router" and
 	* `alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'`
 	* `alb.ingress.kubernetes.io/healthcheck-protocol: HTTP`
 	* `alb.ingress.kubernetes.io/backend-protocol: HTTP`
-	* `alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=90`
+	* `alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=600`
 	* [OPTIONAL] - if you need to control the subnets where LB will be created
 		* `alb.ingress.kubernetes.io/subnets: subnet-xxxx, mySubnet`
 * general.router.service.enabled: true
@@ -123,7 +123,7 @@ router:
       alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'  
       alb.ingress.kubernetes.io/healthcheck-protocol: HTTP  
       alb.ingress.kubernetes.io/backend-protocol: HTTP  
-      alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=90
+      alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=600
     labels: {}  
   
   service:  
