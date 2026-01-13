@@ -39,9 +39,9 @@ spec:
           protocol: tls
       enableWebsockets: true
       timeoutPolicy:
-        request: 90s      # Timeout for the entire request
-        idle: 90s         # Timeout for idle connections
-        response: 90s     # Timeout for waiting on a response from the backend
+        request: 600s      # Timeout for the entire request
+        idle: 600s         # Timeout for idle connections
+        response: 600s     # Timeout for waiting on a response from the backend
 ```
 
 
@@ -114,9 +114,9 @@ spec:
       port: 8080
       enableWebsockets: true
       timeoutPolicy:
-        request: 90s      # Timeout for the entire request
-        idle: 90s         # Timeout for idle connections
-        response: 90s     # Timeout for waiting on a response from the backend
+        request: 600s      # Timeout for the entire request
+        idle: 600s         # Timeout for idle connections
+        response: 600s     # Timeout for waiting on a response from the backend
 ```
 ##### 2.2 - Configure the Lightrun Router in the Helm chart
 In the "values.yaml" of the lightrun Helm chart navigate to "general.router" and ensure at the minimum the following configuration is set:
