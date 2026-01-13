@@ -1,4 +1,62 @@
 
+<a name="v3.35.0"></a>
+## [v3.35.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.34.0...v3.35.0) - 2026-01-13
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.76.0-release.fe5eaad5af    |
+| backend       | 1.76.0-release.fe5eaad5af    |
+| crons         | 1.76.0-release.fe5eaad5af    |
+| data_streamer | 4.73.0-alpine-3.22.0-r2.lr-0 |
+| frontend      | 1.76.0-release.fe5eaad5af    |
+| keycloak      | 1.76.0-release.fe5eaad5af    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine.lr-0            |
+| redis         | 7.2.10-alpine-3.22.0-r2.lr-0 |
+| router        | 1.28.0-alpine-3.22.0-r2.lr-0 |
+
+
+ 
+ 
+
+
+### Changed (1 change)
+
+- [client-max-body-size-to-50m-to-support-artifacts-upgrade-without-version-upgrade (#168)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/db20f49)
+ 
+ 
+ 
+
+
+### Added (1 change)
+
+- [support-for-higher-timout-for-lightrun-mcp (#165)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/c88dc02)
+
+
+  Co-authored-by: erezke <erezk@lightrun.com>
+ 
+ 
+ 
+
+
+### Removed (2 changes)
+
+- [workaround-for-kc-after-its-upgrade-revert (#166)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2492944)
+ 
+
+- [workaround-for-kc-after-its-upgrade (#155)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/42d7bac)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.34.0"></a>
 ## [v3.34.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.33.0...v3.34.0) - 2026-01-04
 
