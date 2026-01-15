@@ -99,6 +99,9 @@ spec:
 
               # Build startup command
               CMD="/opt/keycloak/bin/kc.sh start --optimized --{{ include "http.scheme" . }}-port 9080"
+              {{- if not .Values.general.internal_tls.enabled }}
+              CMD="$CMD --http-enabled=true"
+              {{- end }}
 
               {{- if .Values.deployments.keycloak.useJsonLogFormat }}
               CMD="$CMD --log-console-output=json"
