@@ -263,6 +263,8 @@ spec:
                   key: KEYSTORE_PASSWORD
             {{- end }}
             {{ else }}
+            - name: KC_HTTPS_ENABLED
+              value: "false"
             - name: KC_HTTP_ENABLED
               value: "true"
             {{ end }}
