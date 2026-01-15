@@ -66,6 +66,8 @@ steps:
       deployment_type: on-prem
       statefulset:
         enabled: false
+      internal_tls:
+        enabled: false
     
     secrets:
       license:
