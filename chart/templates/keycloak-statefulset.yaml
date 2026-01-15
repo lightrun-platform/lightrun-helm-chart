@@ -101,7 +101,7 @@ spec:
               {{- if .Values.general.internal_tls.enabled }}
               CMD="/opt/keycloak/bin/kc.sh start --optimized --https-port 9080"
               {{- else }}
-              CMD="/opt/keycloak/bin/kc.sh start-dev --http-port 9080 --https-enabled=false"
+              CMD="/opt/keycloak/bin/kc.sh start-dev --http-port 9080 --http-enabled=true"
               {{- end }}
 
               {{- if .Values.deployments.keycloak.useJsonLogFormat }}
