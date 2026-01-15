@@ -98,7 +98,11 @@ spec:
               export JAVA_OPTS_APPEND
 
               # Build startup command
-              CMD="/opt/keycloak/bin/kc.sh start --optimized --{{ include "http.scheme" . }}-port 9080"
+              {{- if .Values.general.internal_tls.enabled }}
+              CMD="/opt/keycloak/bin/kc.sh start --optimized --https-port 9080"
+              {{- else }}
+              CMD="/opt/keycloak/bin/kc.sh start --optimized --http-port 9080 --http-enabled=true --https-port=disabled"
+              {{- end }}
 
               {{- if .Values.deployments.keycloak.useJsonLogFormat }}
               CMD="$CMD --log-console-output=json"
@@ -259,8 +263,6 @@ spec:
                   key: KEYSTORE_PASSWORD
             {{- end }}
             {{ else }}
-            - name: KC_HTTPS_CERTIFICATE_FILE
-            - name: KC_HTTPS_CERTIFICATE_KEY_FILE
             - name: KC_HTTP_ENABLED
               value: "true"
             {{ end }}
