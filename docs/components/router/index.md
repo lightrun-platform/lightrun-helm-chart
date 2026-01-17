@@ -63,7 +63,7 @@ general:
 To extend timeout settings, update `server_snippets`:
 ```yaml
 server_snippets: |
-  proxy_connect_timeout   60s;
-  proxy_send_timeout      60s;
-  proxy_read_timeout      60s;
+  proxy_connect_timeout   900s;
+  proxy_send_timeout      900s;
+  proxy_read_timeout      900s;
 ```

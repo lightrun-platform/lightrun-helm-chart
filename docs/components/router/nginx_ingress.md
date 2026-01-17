@@ -16,7 +16,7 @@ In the "values.yaml" of the lightrun helm chart navigate to "general.router" and
 * general.router.ingress.enabled: true
 * general.router.ingress.ingress_class_name: "nginx"
 * general.router.ingress.annotations at the minimum have:
-	* `nginx.ingress.kubernetes.io/proxy-read-timeout: "90"`
+	* `nginx.ingress.kubernetes.io/proxy-read-timeout: "600"`
 	* `nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"`
 	* `nginx.ingress.kubernetes.io/proxy-body-size: "50m"`
     * `nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"`
@@ -37,7 +37,7 @@ router:
     enabled: true  
     ingress_class_name: "nginx"  
     annotations:  
-      nginx.ingress.kubernetes.io/proxy-read-timeout: "90"  
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "600"  
       nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"  
       nginx.ingress.kubernetes.io/proxy-body-size: "50m"
       nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
@@ -71,7 +71,7 @@ In the "values.yaml" of the lightrun helm chart navigate to "general.router" and
 * general.router.ingress.enabled: true
 * general.router.ingress.ingress_class_name: "nginx"
 * general.router.ingress.annotations at the minimum have:
-	* `nginx.ingress.kubernetes.io/proxy-read-timeout: "90"`
+	* `nginx.ingress.kubernetes.io/proxy-read-timeout: "600"`
 	* `nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"`
 	* `nginx.ingress.kubernetes.io/proxy-body-size: "50m"`
 * general.router.service.enabled: true
@@ -91,7 +91,7 @@ router:
     enabled: true  
     ingress_class_name: "nginx"  
     annotations:  
-      nginx.ingress.kubernetes.io/proxy-read-timeout: "90"  
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "600"  
       nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"  
       nginx.ingress.kubernetes.io/proxy-body-size: "50m"  
     labels: {}  
