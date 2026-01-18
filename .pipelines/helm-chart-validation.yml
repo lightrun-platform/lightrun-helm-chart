@@ -35,7 +35,7 @@ steps:
     # Read the version from versions_mapping.md
     # Skip header and separator, get first data row with actual version numbers
     CHART_VERSION=$(awk -F'|' 'NR > 2 && $2 !~ /^[[:space:]]*-+[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$2); if ($2 != "") {print $2; exit}}' docs/installation/versions_mapping.md)
-    APP_VERSION="1.77.0-kc-upgrade-v4"
+    APP_VERSION="1.77.0-kc-upgrade-v5"
     
     # Verify that we got the versions
     if [ -z "$CHART_VERSION" ] || [ -z "$APP_VERSION" ]; then
