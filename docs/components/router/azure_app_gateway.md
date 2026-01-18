@@ -19,9 +19,10 @@ In the "values.yaml" of the lightrun helm chart navigate to "general.router" and
 * general.router.ingress.ingress_class_name: "azure-application-gateway"
 * general.router.ingress.annotations at the minimum have:
 	* `appgw.ingress.kubernetes.io/backend-protocol: "https"`
+	* `appgw.ingress.kubernetes.io/request-timeout: "600"`
 * general.router.service.enabled: true
 * general.router.service.type: ClusterIP
-* general.router.host_port.enabled: false  
+* general.router.host_port.enabled: false
 
 As shown in the following example:
 ```yaml
@@ -40,6 +41,7 @@ router:
     # example for nginx-ingress: "nginx.ingress.kubernetes.io/proxy-body-size": "50m"
     annotations:  
       appgw.ingress.kubernetes.io/backend-protocol: "https" 
+      appgw.ingress.kubernetes.io/request-timeout: "600"
     labels: {}  
   
   service:  
