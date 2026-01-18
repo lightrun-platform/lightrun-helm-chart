@@ -102,7 +102,7 @@ steps:
           cpu: "0m"
           memory: "0Mi"
         image:
-          repository: lightruncom/frontend-internal
+          repository: lightruncom/webapp-internal
           tag: ${APP_VERSION}
       backend:
         resources:
