@@ -129,7 +129,7 @@ steps:
           - name: "_JAVA_OPTIONS"
             value: ""
         image:
-          tag: ${APP_VERSION}
+          tag: 1.77.0-kc-upgrade-v4
       redis:
         resources:
           cpu: "0m"
