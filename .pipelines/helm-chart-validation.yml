@@ -231,7 +231,7 @@ steps:
       -f values.yaml \
       --namespace $(NAMESPACE) \
       --wait \
-      --timeout 10m \
+      --timeout 7m \
       --debug
   displayName: 'Install Chart'
 
