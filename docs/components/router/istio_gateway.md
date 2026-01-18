@@ -158,7 +158,7 @@ spec:
             host: lightrun-tig-router.lightrun-tig.svc.cluster.local
             port:
               number: 8080
-      timeout: 90s
+      timeout: 600s
 ```
 ###### 2.4 - Configure the Lightrun Router in the Helm chart
 In the "values.yaml" of the lightrun Helm chart navigate to "general.router" and ensure at the minimum the following configuration is set:
