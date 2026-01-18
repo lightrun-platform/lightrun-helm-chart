@@ -743,7 +743,6 @@ deployments:
     replicas: 1
     image:
       repository: lightruncom/keycloak
-      # tag: "1.77.0-kc-upgrade-v5"
       tag: ""
       pullPolicy: IfNotPresent
     resources:

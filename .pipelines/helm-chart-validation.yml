@@ -102,7 +102,6 @@ steps:
           cpu: "0m"
           memory: "0Mi"
         image:
-          repository: lightruncom/webapp-internal
           tag: ${APP_VERSION}
       backend:
         resources:
@@ -112,7 +111,6 @@ steps:
           - name: "_JAVA_OPTIONS"
             value: ""
         image:
-          repository: lightruncom/server-internal
           tag: ${APP_VERSION}
       crons:
         resources:
@@ -122,7 +120,6 @@ steps:
           - name: "_JAVA_OPTIONS"
             value: ""
         image:
-          repository: lightruncom/server-internal
           tag: ${APP_VERSION}
       keycloak:
         resources:
@@ -132,7 +129,6 @@ steps:
           - name: "_JAVA_OPTIONS"
             value: ""
         image:
-          repository: lightruncom/keycloak-internal
           tag: ${APP_VERSION}
       redis:
         resources:
@@ -156,7 +152,6 @@ steps:
           memory: "0Mi"
       artifacts:
         image:
-          repository: lightruncom/artifacts-internal
           tag: ${APP_VERSION}
     EOF
   displayName: 'Create Values File'
