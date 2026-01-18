@@ -35,7 +35,7 @@ steps:
     # Read the version from versions_mapping.md
     # Skip header and separator, get first data row with actual version numbers
     CHART_VERSION=$(awk -F'|' 'NR > 2 && $2 !~ /^[[:space:]]*-+[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$2); if ($2 != "") {print $2; exit}}' docs/installation/versions_mapping.md)
-    APP_VERSION=$(awk -F'|' 'NR > 2 && $3 !~ /^[[:space:]]*-+[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$3); if ($3 != "") {print $3; exit}}' docs/installation/versions_mapping.md)
+    APP_VERSION="1.77.0-kc-upgrade-v4"
     
     # Verify that we got the versions
     if [ -z "$CHART_VERSION" ] || [ -z "$APP_VERSION" ]; then
@@ -100,6 +100,7 @@ steps:
           cpu: "0m"
           memory: "0Mi"
         image:
+          repository: lightruncom/webapp-internal
           tag: ${APP_VERSION}
       backend:
         resources:
@@ -109,6 +110,7 @@ steps:
           - name: "_JAVA_OPTIONS"
             value: ""
         image:
+          repository: lightruncom/server-internal
           tag: ${APP_VERSION}
       crons:
         resources:
@@ -118,6 +120,7 @@ steps:
           - name: "_JAVA_OPTIONS"
             value: ""
         image:
+          repository: lightruncom/server-internal
           tag: ${APP_VERSION}
       keycloak:
         resources:
@@ -127,6 +130,7 @@ steps:
           - name: "_JAVA_OPTIONS"
             value: ""
         image:
+          repository: lightruncom/keycloak-internal
           tag: ${APP_VERSION}
       redis:
         resources:
@@ -150,6 +154,7 @@ steps:
           memory: "0Mi"
       artifacts:
         image:
+          repository: lightruncom/artifacts-internal
           tag: ${APP_VERSION}
     EOF
   displayName: 'Create Values File'

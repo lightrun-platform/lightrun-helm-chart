@@ -261,6 +261,8 @@ spec:
             {{ else }}
             - name: KC_HTTP_ENABLED
               value: "true"
+            - name: KC_HTTPS_ENABLED
+              value: "false"
             {{ end }}
             - name: KC_DB
               value: mysql
