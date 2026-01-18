@@ -173,6 +173,11 @@ steps:
     set -euo pipefail
     helm lint $(CHART_PATH) -f values.yaml 2>&1 | grep -v "SECRET" || exit ${PIPESTATUS[0]}
   displayName: 'Lint Helm Chart'
+
+- script: |
+    set -euo pipefail
+    helm template $(RELEASE_NAME) $(CHART_PATH) -f values.yaml --namespace $(NAMESPACE) --debug
+  displayName: 'Helm Template'
   
 - script: |
     set -euo pipefail
