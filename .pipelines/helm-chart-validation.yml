@@ -156,6 +156,7 @@ steps:
           memory: "0Mi"
       artifacts:
         image:
+          repository: lightruncom/artifacts-internal
           tag: ${APP_VERSION}
     EOF
   displayName: 'Create Values File'
