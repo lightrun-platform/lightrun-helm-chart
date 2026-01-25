@@ -202,7 +202,7 @@
 
 
 <a name="v3.31.0"></a>
-## [v3.31.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.30.6...v3.31.0) - 2025-11-18
+## [v3.31.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.30.7...v3.31.0) - 2025-11-18
 
 
 
@@ -239,6 +239,51 @@
 ### Changed (1 change)
 
 - [cleanup (#154)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/192e800)
+ 
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.30.7"></a>
+## [v3.30.7](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.30.6...v3.30.7) - 2026-01-25
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.71.7-release.b8a11c3689    |
+| backend       | 1.71.7-release.b8a11c3689    |
+| crons         | 1.71.7-release.b8a11c3689    |
+| data_streamer | 4.73.0-alpine-3.23.0-r1.lr-0 |
+| frontend      | 1.71.7-release.b8a11c3689    |
+| keycloak      | 1.71.7-release.b8a11c3689    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine.lr-0            |
+| redis         | 7.2.10-alpine-3.23.0-r1.lr-0 |
+| router        | 1.28.0-alpine-3.23.0-r1.lr-0 |
+ 
+ 
+
+
+### Security (1 change)
+
+- [cherry-pick-alpine (#176)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/27a9bd9)
+ 
+ 
+ 
+
+
+### Fixed (1 change)
+
+- [chart-to-fit-new-KC-version-cherry-pick (#174)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/07b4936)
+
+
+  Co-authored-by: Gal Mor <galm@lightrun.com>
  
  
  
