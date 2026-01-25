@@ -750,13 +750,8 @@ deployments:
       wait_for_rabbitmq:
         image:
           repository: lightruncom/chart-helper
-<<<<<<< HEAD
-          tag: "0.3.0-alpine-3.22.0-r2.lr-0"
-          pullPolicy: ""
-=======
           tag: "0.3.0-alpine-3.23.0-r1.lr-0"
           pullPolicy: ""          
->>>>>>> 1b28c5b (bump image version)
     topologySpreadConstraints: []
     affinity: {}
     startupProbe:
@@ -950,11 +945,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/data-streamer
-<<<<<<< HEAD
-      tag: "4.68.0-alpine-3.22.0-r2.lr-0"
-=======
       tag: "4.73.0-alpine-3.23.0-r1.lr-0"
->>>>>>> 1b28c5b (bump image version)
       pullPolicy: IfNotPresent
     resources:
       cpu: 100m
