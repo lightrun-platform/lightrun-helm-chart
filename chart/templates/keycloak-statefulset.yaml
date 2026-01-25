@@ -259,10 +259,10 @@ spec:
                   key: KEYSTORE_PASSWORD
             {{- end }}
             {{ else }}
-            - name: KC_HTTPS_CERTIFICATE_FILE
-            - name: KC_HTTPS_CERTIFICATE_KEY_FILE
             - name: KC_HTTP_ENABLED
               value: "true"
+            - name: KC_HTTPS_ENABLED
+              value: "false"
             {{ end }}
             - name: KC_DB
               value: mysql
