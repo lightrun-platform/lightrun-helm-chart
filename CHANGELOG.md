@@ -1,4 +1,59 @@
 
+<a name="v3.36.0"></a>
+## [v3.36.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.35.0...v3.36.0) - 2026-01-27
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.77.0-release.b059f02cd1    |
+| backend       | 1.77.0-release.b059f02cd1    |
+| crons         | 1.77.0-release.b059f02cd1    |
+| data_streamer | 4.73.0-alpine-3.23.0-r1.lr-0 |
+| frontend      | 1.77.0-release.b059f02cd1    |
+| keycloak      | 1.77.0-release.b059f02cd1    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine.lr-0            |
+| redis         | 7.2.10-alpine-3.23.0-r1.lr-0 |
+| router        | 1.28.0-alpine-3.23.0-r1.lr-0 |
+
+
+ 
+ 
+
+
+### Security (1 change)
+
+- [cherry-pick-alpine-336 (#177)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/827a0e0)
+ 
+ 
+ 
+
+
+### Fixed (1 change)
+
+- [chart-to-fit-new-KC-version (#171)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/45b3303)
+
+
+  Co-authored-by: yonik-lr <yonik@lightrun.com>
+ 
+ 
+ 
+
+
+### Added (1 change)
+
+- [support-for-higher-timout-for-lightrun-mcp-for-onprem-documentation (#172)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/aaddcde)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.35.0"></a>
 ## [v3.35.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.34.0...v3.35.0) - 2026-01-13
 
