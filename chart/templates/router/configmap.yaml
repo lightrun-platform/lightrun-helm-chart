@@ -206,7 +206,13 @@ data:
           {{ include "router.internal_tls_use_ca_cert" . | nindent 10 }}
           proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-keycloak.name" . }};
         }
-        
+
+        location ^~ /.well-known/oauth-authorization-server {
+          {{ include "router.internal_tls_use_ca_cert" . | nindent 10 }}
+          rewrite ^ /auth/realms/lightrun/.well-known/oauth-authorization-server break;
+          proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-keycloak.name" . }};
+        }
+
         location /device {
           {{ include "router.internal_tls_use_ca_cert" . | nindent 10 }}
           proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-fe.name" . }};

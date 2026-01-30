@@ -17,7 +17,8 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
     {{- if contains "nginx" $.Values.general.router.ingress.ingress_class_name }}
-    nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
     {{- if eq (include "router.use-tls" .) "true" }}
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     {{- end }}
