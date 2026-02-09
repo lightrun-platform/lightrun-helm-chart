@@ -219,6 +219,13 @@ data:
           proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-keycloak.name" . }};
         }
 
+        # hack for Amazon Q
+        location = /auth/realms/.well-known/openid-configuration {
+          {{ include "router.internal_tls_use_ca_cert" . | nindent 10 }}
+          rewrite ^ /auth/realms/lightrun/.well-known/openid-configuration break;
+          proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-keycloak.name" . }};
+        }
+
         location /device {
           {{ include "router.internal_tls_use_ca_cert" . | nindent 10 }}
           proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-fe.name" . }};
