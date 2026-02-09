@@ -197,6 +197,8 @@ spec:
               port: 9080
           {{- end }}
           env:
+            - name: KC_SPI_LOGIN_PROVIDER
+              value: "lightrun-login-form"
             {{- if .Values.general.mq.enabled }}
             - name: RABBITMQ_HOST
               value: {{ include "lightrun-mq.endpoint" . }}
