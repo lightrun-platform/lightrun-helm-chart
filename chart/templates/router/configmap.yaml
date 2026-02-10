@@ -219,7 +219,7 @@ data:
           proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-keycloak.name" . }};
         }
 
-        # hack for Amazon Q
+        # Work around non-compliant OIDC clients (Amazon Q) that drop the realm path and request /.well-known/openid-configuration under /auth/realms/
         location = /auth/realms/.well-known/openid-configuration {
           {{ include "router.internal_tls_use_ca_cert" . | nindent 10 }}
           rewrite ^ /auth/realms/lightrun/.well-known/openid-configuration break;
