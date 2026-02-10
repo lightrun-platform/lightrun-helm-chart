@@ -909,7 +909,7 @@ deployments:
     useJsonLogFormat: false
     image:
       repository: lightruncom/rabbitmq
-      tag: 4.0.9-alpine.lr-0
+      tag: 4.0.9-alpine.lr-1
       pullPolicy: IfNotPresent
     resources:
       cpu: 500m
