@@ -1,4 +1,54 @@
 
+<a name="v3.37.0"></a>
+## [v3.37.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.36.0...v3.37.0) - 2026-02-22
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.78.0-release.740474a489    |
+| backend       | 1.78.0-release.740474a489    |
+| crons         | 1.78.0-release.740474a489    |
+| data_streamer | 4.73.0-alpine-3.23.0-r2.lr-0 |
+| frontend      | 1.78.0-release.740474a489    |
+| keycloak      | 1.78.0-release.740474a489    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine.lr-1            |
+| redis         | 7.2.10-alpine-3.23.0-r2.lr-0 |
+| router        | 1.28.0-alpine-3.23.0-r2.lr-0 |
+
+
+ 
+ 
+
+
+### Security (3 changes)
+
+- [178-fix-cve-2025-15467 (#185)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/9f94b0e)
+ 
+
+- [CVE-2025-15467-images-defaults (#178)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/7872043)
+ 
+
+- [update-image-versions (#175)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/6acf2e7)
+ 
+ 
+ 
+
+
+### Added (1 change)
+
+- [keycloak-authorization-server-metadata-endpoint-proxy (#181)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/037b124)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.36.0"></a>
 ## [v3.36.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.35.0...v3.36.0) - 2026-01-27
 
