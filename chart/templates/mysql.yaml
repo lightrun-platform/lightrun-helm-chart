@@ -123,6 +123,9 @@ spec:
             {{- end }}
             "--character_set_server=utf8mb4",
             "--explicit_defaults_for_timestamp",
+            {{- if .Values.deployments.mysql.initialize }}
+            "--initialize",
+            {{- end }}
             "--max_connections=1000"
                 ]
           env:
