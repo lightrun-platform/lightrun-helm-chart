@@ -1,4 +1,48 @@
 
+<a name="v3.38.0"></a>
+## [v3.38.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.37.0...v3.38.0) - 2026-02-24
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.79.0-release.2ace7a8e84    |
+| backend       | 1.79.0-release.2ace7a8e84    |
+| crons         | 1.79.0-release.2ace7a8e84    |
+| data_streamer | 4.73.0-alpine-3.23.0-r2.lr-0 |
+| frontend      | 1.79.0-release.2ace7a8e84    |
+| keycloak      | 1.79.0-release.2ace7a8e84    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine.lr-1            |
+| redis         | 7.2.10-alpine-3.23.0-r2.lr-0 |
+| router        | 1.28.0-alpine-3.23.0-r2.lr-0 |
+
+
+ 
+ 
+
+
+### Security (1 change)
+
+- [cve-2025-15467-rabbitmq (#183)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2eae0fa)
+ 
+ 
+ 
+
+
+### Added (1 change)
+
+- [mcp-authentication-path-rewrite-for-amazon-q (#182)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/71f0416)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.37.0"></a>
 ## [v3.37.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.36.0...v3.37.0) - 2026-02-22
 
