@@ -971,7 +971,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/data-streamer
-      tag: "4.73.0-alpine-3.23.0-r2.lr-0"
+      tag: "4.81.0-alpine-3.23.0-r2.lr-0"
       pullPolicy: IfNotPresent
     resources:
       cpu: 100m
