@@ -867,8 +867,6 @@ deployments:
       failureThreshold: 3
 
   mysql:
-    ## If true, pass --initialize to mysql server (e.g. for initializing data directory)
-    initialize: false
     nodeSelector: {}
     podSecurityContext:
       # when using PVC , it is necessarily to set fsGroup so pod will have write permission to the mounted volume
