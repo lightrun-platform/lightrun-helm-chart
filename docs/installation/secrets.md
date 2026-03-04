@@ -4,11 +4,11 @@ Lightrun requires various secrets for authentication, database access, message q
 ### **Secrets Deployment Options**
 
 - If `deploy_secrets: true`, the Helm chart will create and manage secrets.
-- If `deploy_secrets: false`, secrets **must be pre-created** in Kubernetes. The chart will look for an existing secret named:
-```go
-{{ .Release.name }}-backend
-```
-To use a **custom secret name**, set:
+- If `deploy_secrets: false`, secrets **must be pre-created** in Kubernetes. The chart will look for two existing secrets:
+  - **Backend secret:** `{{ .Release.name }}-backend`
+  - **Keycloak secret:** `{{ .Release.name }}-keycloak`
+
+To use **custom secret names**, set:
 ```yaml
 general:
   deploy_secrets:
@@ -19,13 +19,15 @@ general:
 Note that this is only relevant when `deploy_secrets: false`.
 
 > [!WARNING]
-> When managing secrets externally, ensure all required fields are present. See the [secrets template](https://github.com/lightrun-platform/lightrun-helm-chart/blob/main/chart/templates/secrets.yaml#L31) for reference.
+> When managing secrets externally, ensure all required fields are present in both the backend and Keycloak secrets. See the [secrets template](https://github.com/lightrun-platform/lightrun-helm-chart/blob/main/chart/templates/secrets.yaml#L31) for reference.
 
 - _(This is relevant only when `deploy_secrets: false`.)_
 
 ### **Mandatory Secret Fields**
 
-When managing secrets externally, ensure the following fields are present in your secret (See the [secrets template](https://github.com/lightrun-platform/lightrun-helm-chart/blob/main/chart/templates/secrets.yaml#L31) for reference):
+When managing secrets externally, ensure the following fields are present in each secret (See the [secrets template](https://github.com/lightrun-platform/lightrun-helm-chart/blob/main/chart/templates/secrets.yaml#L31) for reference).
+
+#### **Backend secret** (`{{ .Release.name }}-backend`)
 
 | Environment Variable | Description | Value Source |
 |---------------------|-------------|--------------|
@@ -41,6 +43,15 @@ When managing secrets externally, ensure the following fields are present in you
 | `SPRING_RABBITMQ_USERNAME` | RabbitMQ username | `secrets.mq.user` |
 | `SPRING_RABBITMQ_PASSWORD` | RabbitMQ password | `secrets.mq.password` |
 | `encryption-key-0` | Backend encryption key (default) | `secrets.keysEncryption.userEncryptionKey` |
+
+#### **Keycloak secret** (`{{ .Release.name }}-keycloak`)
+
+| Secret Key | Description | Value Source |
+|------------|-------------|--------------|
+| `DB_PASSWORD` | Database password for Keycloak | `secrets.db.password` |
+| `DB_USER` | Database username for Keycloak | `secrets.db.user` |
+| `KEYCLOAK_PASSWORD` | Keycloak admin password | `secrets.keycloak.password` |
+| `KEYCLOAK_USER` | Keycloak admin username | Fixed as `admin` in chart template; set same value when using external secret |
 
 > [!WARNING]
 > For encryption keys, it's strongly recommended to provide them as external secrets rather than letting the chart manage them. See [Encryption Keys Documentation](../advanced/encryption_keys.md) for details.
