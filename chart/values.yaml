@@ -867,6 +867,7 @@ deployments:
       failureThreshold: 3
 
   mysql:
+    rollout_strategy: "Recreate"
     nodeSelector: {}
     podSecurityContext:
       # when using PVC , it is necessarily to set fsGroup so pod will have write permission to the mounted volume
