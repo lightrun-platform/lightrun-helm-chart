@@ -740,7 +740,7 @@ deployments:
         image:
           repository: lightruncom/chart-helper
           tag: "0.3.0-alpine-3.23.0-r3.lr-0"
-          pullPolicy: ""          
+          pullPolicy: ""
     topologySpreadConstraints: []
     affinity: {}
     startupProbe:
