@@ -63,7 +63,7 @@
 
 
 <a name="v3.38.0"></a>
-## [v3.38.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.37.0...v3.38.0) - 2026-02-24
+## [v3.38.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.37.1...v3.38.0) - 2026-02-24
 
 
 
@@ -98,6 +98,46 @@
 ### Added (1 change)
 
 - [mcp-authentication-path-rewrite-for-amazon-q (#182)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/71f0416)
+ 
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.37.1"></a>
+## [v3.37.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.37.0...v3.37.1) - 2026-03-10
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.78.1-release.50c00dd094    |
+| backend       | 1.78.1-release.50c00dd094    |
+| crons         | 1.78.1-release.50c00dd094    |
+| data_streamer | 4.81.0-alpine-3.23.0-r3.lr-0 |
+| frontend      | 1.78.1-release.50c00dd094    |
+| keycloak      | 1.78.1-release.50c00dd094    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine.lr-2            |
+| redis         | 7.2.10-alpine-3.23.0-r3.lr-0 |
+| router        | 1.28.0-alpine-3.23.0-r3.lr-0 |
+ 
+ 
+
+
+### Security (2 changes)
+
+- [cves-fix-to-qsr (#192)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/9c902a2)
+ 
+
+- [bump-datastreamer-to-4-81-0-alpine-3-23-0-r-2-lr-0 (#187)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/c8ed68d)
+
+
+  Co-authored-by: eliranb <eliranb@lightrun.com>
  
  
  
