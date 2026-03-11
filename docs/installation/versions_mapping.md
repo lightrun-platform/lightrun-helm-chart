@@ -5,6 +5,7 @@
 | 3.38.2        | 1.79.0-release.2ace7a8e84  |
 | 3.38.1        | 1.79.0-release.2ace7a8e84  |
 | 3.38.0        | 1.79.0-release.2ace7a8e84  |
+| 3.37.2        | 1.78.2-release.fe2a3d8d24  |
 | 3.37.1        | 1.78.1-release.50c00dd094  |
 | 3.37.0        | 1.78.0-release.740474a489  |
 | 3.36.0        | 1.77.0-release.b059f02cd1  |
