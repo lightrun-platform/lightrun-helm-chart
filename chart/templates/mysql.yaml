@@ -155,11 +155,6 @@ spec:
           volumeMounts:
           - name: {{ include "mysql.pvc.name" . }}
             mountPath: /var/lib/mysql
-      volumes:
-        - name: {{ include "mysql.pvc.name" . }}
-          emptyDir:
-            medium: Memory
-            sizeLimit: {{ .Values.deployments.mysql.emptyDir.sizeLimit }}
       {{- if .Values.general.tolerations }}
       tolerations:
         {{ toYaml .Values.general.tolerations | nindent 8 }}
@@ -172,4 +167,22 @@ spec:
       affinity:
         {{ toYaml .Values.deployments.mysql.affinity | nindent 8 }}
       {{- end }}
+{{- if .Values.general.statefulset.enabled }}
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ include "mysql.pvc.name" . }}
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: {{ .Values.general.statefulset.storageClassName }}
+      resources:
+        requests:
+          storage: {{ .Values.general.statefulset.storageSize }}
+{{- else }}
+      volumes:
+        - name: {{ include "mysql.pvc.name" . }}
+          emptyDir:
+            medium: Memory
+            sizeLimit: {{ .Values.deployments.mysql.emptyDir.sizeLimit }}
+{{- end }}
+
 {{ end }}
