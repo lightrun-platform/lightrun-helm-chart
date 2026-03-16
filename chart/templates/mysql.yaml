@@ -116,6 +116,8 @@ spec:
           args: [
             "--lower_case_table_names=1",
             "--skip-log-bin",
+            "--innodb-flush-log-at-trx-commit=0",
+            "--innodb-doublewrite=0",
             {{- if semverCompare ">=8.4.0" .Values.deployments.mysql.image.tag }}
             "--mysql-native-password=ON",
             {{- end }}
@@ -153,6 +155,11 @@ spec:
           volumeMounts:
           - name: {{ include "mysql.pvc.name" . }}
             mountPath: /var/lib/mysql
+      volumes:
+        - name: {{ include "mysql.pvc.name" . }}
+          emptyDir:
+            medium: Memory
+            sizeLimit: {{ .Values.deployments.mysql.emptyDir.sizeLimit }}
       {{- if .Values.general.tolerations }}
       tolerations:
         {{ toYaml .Values.general.tolerations | nindent 8 }}
@@ -165,21 +172,4 @@ spec:
       affinity:
         {{ toYaml .Values.deployments.mysql.affinity | nindent 8 }}
       {{- end }}
-{{- if .Values.general.statefulset.enabled }}
-  volumeClaimTemplates:
-  - metadata:
-      name: {{ include "mysql.pvc.name" . }}
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      storageClassName: {{ .Values.general.statefulset.storageClassName }}
-      resources:
-        requests:
-          storage: {{ .Values.general.statefulset.storageSize }}
-{{- else }}
-      volumes:
-        - name: {{ include "mysql.pvc.name" . }}
-          emptyDir:
-            sizeLimit: {{ .Values.deployments.mysql.emptyDir.sizeLimit }}
-{{- end }}
-
 {{ end }}
