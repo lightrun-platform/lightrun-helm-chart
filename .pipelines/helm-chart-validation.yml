@@ -29,7 +29,7 @@ steps:
 
 - task: Docker@2
   displayName: 'Login to DockerHub'
-  condition: eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')
+  # condition: eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')
   inputs:
     command: login
     containerRegistry: 'dockerhub lightrunint readonly'
@@ -42,7 +42,8 @@ steps:
     # Read the version from versions_mapping.md
     # Skip header and separator, get first data row with actual version numbers
     CHART_VERSION=$(awk -F'|' 'NR > 2 && $2 !~ /^[[:space:]]*-+[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$2); if ($2 != "") {print $2; exit}}' docs/installation/versions_mapping.md)
-    if [ "$SYSTEM_PULLREQUEST_TARGETBRANCH" = "refs/heads/main" ]; then
+    # if [ "$SYSTEM_PULLREQUEST_TARGETBRANCH" = "refs/heads/main" ]; then
+    if [ "1" = "1" ]; then
       echo "PR targets main branch - fetching latest RC version from DockerHub"
 
       AUTH=$(jq -r '.auths["https://index.docker.io/v1/"].auth // empty' ~/.docker/config.json)
