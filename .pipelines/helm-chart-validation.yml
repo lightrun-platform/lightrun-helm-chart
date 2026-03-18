@@ -47,40 +47,13 @@ steps:
     if [ "1" = "1" ]; then
       echo "PR targets main branch - fetching latest RC version from DockerHub"
 
-      AUTH=$(jq -r '.auths["https://index.docker.io/v1/"].auth // empty' ~/.docker/config.json)
-      if [ -z "$AUTH" ]; then
-        # Credentials may be in a credential helper
-        CREDS_STORE=$(jq -r '.credsStore // empty' ~/.docker/config.json)
-        if [ -n "$CREDS_STORE" ]; then
-          CREDS=$(echo "https://index.docker.io/v1/" | docker-credential-"$CREDS_STORE" get)
-          USERNAME=$(echo "$CREDS" | jq -r '.Username')
-          SECRET=$(echo "$CREDS" | jq -r '.Secret')
-          AUTH=$(printf '%s:%s' "$USERNAME" "$SECRET" | base64)
-        else
-          echo "Error: Could not extract DockerHub credentials from docker config"
-          exit 1
-        fi
-      fi
-      TOKEN=$(curl -s -H "Authorization: Basic $AUTH" \
-        "https://auth.docker.io/token?service=registry.docker.io&scope=repository:lightruncom/server-internal:pull" \
-        | jq -r '.token')
+      # Install crane for listing tags (uses Docker config auth automatically)
+      curl -sL "https://github.com/google/go-containerregistry/releases/latest/download/go-containerregistry_Linux_x86_64.tar.gz" \
+        | sudo tar -xz -C /usr/local/bin crane
 
-      # Fetch all tags with pagination
-      ALL_TAGS=""
-      NEXT="/v2/lightruncom/server-internal/tags/list?n=1000"
-      while [ -n "$NEXT" ]; do
-        RESP_HEADERS=$(mktemp)
-        RESP_BODY=$(curl -s -D "$RESP_HEADERS" -H "Authorization: Bearer $TOKEN" \
-          "https://registry-1.docker.io${NEXT}")
-        PAGE_TAGS=$(echo "$RESP_BODY" | jq -r '.tags[]' 2>/dev/null)
-        ALL_TAGS="${ALL_TAGS}${PAGE_TAGS}"$'\n'
-        NEXT=$(sed -n 's/.*<\([^>]*\)>.*/\1/p' "$RESP_HEADERS" | head -1)
-        NEXT=$(echo "$NEXT" | sed 's|https://registry-1.docker.io||')
-        rm -f "$RESP_HEADERS"
-      done
-
-      # Find latest RC tag: highest X.Y.Z, then highest rcN
+      # List all tags and find latest RC
       # Tag format: X.Y.Z-rcN.HASH (e.g. 1.81.0-rc9.450548a82)
+      ALL_TAGS=$(crane ls lightruncom/server-internal)
       APP_VERSION=$(echo "$ALL_TAGS" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+\.[a-f0-9]+$' | \
         awk -F'[-.]' '{printf "%05d%05d%05d%05d %s\n", $1, $2, $3, substr($4,3), $0}' | \
         sort -k1,1 | tail -1 | awk '{print $2}')
