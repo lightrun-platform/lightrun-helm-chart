@@ -36,15 +36,13 @@ steps:
 
 - script: |
     set -euo pipefail
-    set -x
     # Install required tools
     sudo apt-get update && sudo apt-get install -y gawk
     
     # Read the version from versions_mapping.md
     # Skip header and separator, get first data row with actual version numbers
     CHART_VERSION=$(awk -F'|' 'NR > 2 && $2 !~ /^[[:space:]]*-+[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$2); if ($2 != "") {print $2; exit}}' docs/installation/versions_mapping.md)
-    # if [ "$SYSTEM_PULLREQUEST_TARGETBRANCH" = "refs/heads/main" ]; then
-    if [ "1" = "1" ]; then
+    if [ "$SYSTEM_PULLREQUEST_TARGETBRANCH" = "refs/heads/main" ]; then
       echo "PR targets main branch - fetching latest RC version from DockerHub"
 
       # Install crane for listing tags (uses Docker config auth automatically)
