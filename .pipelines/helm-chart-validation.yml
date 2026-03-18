@@ -75,7 +75,9 @@ steps:
 
     # Create values.yaml file
     # if the chart version >= 3.30.0 then use license v2 othewise fallback to license v1
-    if [[ "$(echo "$CHART_VERSION" | sed 's/\..*//')" -ge 3 && "$(echo "$CHART_VERSION" | sed 's/[^.]*\.//; s/\..*//')" -ge 30 ]]; then
+    MAJOR=$(echo "$CHART_VERSION" | sed 's/\..*//')
+    MINOR=$(echo "$CHART_VERSION" | sed 's/[^.]*\.//; s/\..*//')
+    if [[ "$MAJOR" -gt 3 || ("$MAJOR" -eq 3 && "$MINOR" -ge 30) ]]; then
       echo "License version: v2"
       LICENSE_CONTENT=$(LICENSE_CONTENT_V2)
       LICENSE_SIGNATURE=$(LICENSE_SIGNATURE_V2)
