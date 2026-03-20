@@ -27,6 +27,13 @@ steps:
   displayName: 'Cleanup Previous Cluster'
   continueOnError: true
 
+- task: Docker@2
+  displayName: 'Login to DockerHub'
+  condition: eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')
+  inputs:
+    command: login
+    containerRegistry: 'dockerhub lightrunint readonly'
+
 - script: |
     set -euo pipefail
     # Install required tools
@@ -35,21 +42,42 @@ steps:
     # Read the version from versions_mapping.md
     # Skip header and separator, get first data row with actual version numbers
     CHART_VERSION=$(awk -F'|' 'NR > 2 && $2 !~ /^[[:space:]]*-+[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$2); if ($2 != "") {print $2; exit}}' docs/installation/versions_mapping.md)
-    APP_VERSION=$(awk -F'|' 'NR > 2 && $3 !~ /^[[:space:]]*-+[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$3); if ($3 != "") {print $3; exit}}' docs/installation/versions_mapping.md)
-    
+    if [ "$SYSTEM_PULLREQUEST_TARGETBRANCH" = "refs/heads/main" ]; then
+      echo "PR targets main branch - fetching latest RC version from DockerHub"
+
+      # Install crane for listing tags (uses Docker config auth automatically)
+      curl -sL "https://github.com/google/go-containerregistry/releases/latest/download/go-containerregistry_Linux_x86_64.tar.gz" \
+        | sudo tar -xz -C /usr/local/bin crane
+
+      # List all tags and find latest RC
+      # Tag format: X.Y.Z-rcN.HASH (e.g. 1.81.0-rc9.450548a82)
+      ALL_TAGS=$(crane ls lightruncom/server-internal)
+      APP_VERSION=$(echo "$ALL_TAGS" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+\.[a-f0-9]+$' | \
+        awk -F'[-.]' '{printf "%05d%05d%05d%05d %s\n", $1, $2, $3, substr($4,3), $0}' | \
+        sort -k1,1 | tail -1 | awk '{print $2}')
+
+      if [ -z "$APP_VERSION" ]; then
+        echo "Failed to find an RC tag in lightruncom/server-internal"
+        exit 1
+      fi
+    else
+      APP_VERSION=$(awk -F'|' 'NR > 2 && $3 !~ /^[[:space:]]*-+[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$3); if ($3 != "") {print $3; exit}}' docs/installation/versions_mapping.md)
+    fi
+
     # Verify that we got the versions
     if [ -z "$CHART_VERSION" ] || [ -z "$APP_VERSION" ]; then
-      echo "Failed to extract versions from versions_mapping.md"
-      cat docs/installation/versions_mapping.md
+      echo "Failed to extract versions"
       exit 1
     fi
-    
+
     echo "Chart version: $CHART_VERSION"
     echo "App version: $APP_VERSION"
 
     # Create values.yaml file
     # if the chart version >= 3.30.0 then use license v2 othewise fallback to license v1
-    if [[ "$(echo "$CHART_VERSION" | sed 's/\..*//')" -ge 3 && "$(echo "$CHART_VERSION" | sed 's/[^.]*\.//; s/\..*//')" -ge 30 ]]; then
+    MAJOR=$(echo "$CHART_VERSION" | sed 's/\..*//')
+    MINOR=$(echo "$CHART_VERSION" | sed 's/[^.]*\.//; s/\..*//')
+    if [[ "$MAJOR" -gt 3 || ("$MAJOR" -eq 3 && "$MINOR" -ge 30) ]]; then
       echo "License version: v2"
       LICENSE_CONTENT=$(LICENSE_CONTENT_V2)
       LICENSE_SIGNATURE=$(LICENSE_SIGNATURE_V2)
@@ -100,6 +128,7 @@ steps:
           cpu: "0m"
           memory: "0Mi"
         image:
+          repository: lightruncom/webapp-internal
           tag: ${APP_VERSION}
       backend:
         resources:
@@ -109,6 +138,7 @@ steps:
           - name: "_JAVA_OPTIONS"
             value: ""
         image:
+          repository: lightruncom/server-internal
           tag: ${APP_VERSION}
       crons:
         resources:
@@ -118,6 +148,7 @@ steps:
           - name: "_JAVA_OPTIONS"
             value: ""
         image:
+          repository: lightruncom/server-internal
           tag: ${APP_VERSION}
       keycloak:
         resources:
@@ -127,6 +158,7 @@ steps:
           - name: "_JAVA_OPTIONS"
             value: ""
         image:
+          repository: lightruncom/keycloak-internal
           tag: ${APP_VERSION}
       redis:
         resources:
@@ -150,6 +182,7 @@ steps:
           memory: "0Mi"
       artifacts:
         image:
+          repository: lightruncom/artifacts-internal
           tag: ${APP_VERSION}
     EOF
   displayName: 'Create Values File'
