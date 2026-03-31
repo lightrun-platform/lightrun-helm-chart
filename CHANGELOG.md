@@ -1,4 +1,38 @@
 
+<a name="v3.39.2"></a>
+## [v3.39.2](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.39.1...v3.39.2) - 2026-03-31
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.80.1-release.706194ee77    |
+| backend       | 1.80.1-release.706194ee77    |
+| crons         | 1.80.1-release.706194ee77    |
+| data_streamer | 4.84.0-alpine-3.23.0-r0.lr-0 |
+| frontend      | 1.80.1-release.706194ee77    |
+| keycloak      | 1.80.1-release.706194ee77    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine.lr-2            |
+| redis         | 7.2.10-alpine-3.23.0-r3.lr-0 |
+| router        | 1.28.0-alpine-3.23.0-r3.lr-0 |
+ 
+ 
+
+
+### Security (1 change)
+
+- [CVE-2026-33186-data-streamer (#202)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/ad6af2f)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.39.1"></a>
 ## [v3.39.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.39.0...v3.39.1) - 2026-03-15
 
@@ -154,7 +188,7 @@
 
 
 <a name="v3.38.0"></a>
-## [v3.38.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.37.2...v3.38.0) - 2026-02-24
+## [v3.38.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.37.4...v3.38.0) - 2026-02-24
 
 
 
@@ -189,6 +223,77 @@
 ### Added (1 change)
 
 - [mcp-authentication-path-rewrite-for-amazon-q (#182)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/71f0416)
+ 
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.37.4"></a>
+## [v3.37.4](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.37.3...v3.37.4) - 2026-03-31
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.78.3-release.7549694948    |
+| backend       | 1.78.3-release.7549694948    |
+| crons         | 1.78.3-release.7549694948    |
+| data_streamer | 4.84.0-alpine-3.23.0-r0.lr-0 |
+| frontend      | 1.78.3-release.7549694948    |
+| keycloak      | 1.78.3-release.7549694948    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine.lr-2            |
+| redis         | 7.2.10-alpine-3.23.0-r3.lr-0 |
+| router        | 1.28.0-alpine-3.23.0-r3.lr-0 |
+ 
+ 
+
+
+### Security (1 change)
+
+- [CVE-2026-33186-data-streamer (#201)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/faabc8d)
+ 
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.37.3"></a>
+## [v3.37.3](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.37.2...v3.37.3) - 2026-03-30
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.78.3-release.7549694948    |
+| backend       | 1.78.3-release.7549694948    |
+| crons         | 1.78.3-release.7549694948    |
+| data_streamer | 4.83.0-alpine-3.23.0-r3.lr-0 |
+| frontend      | 1.78.3-release.7549694948    |
+| keycloak      | 1.78.3-release.7549694948    |
+| mysql         | 8.0.38                       |
+| rabbitmq      | 4.0.9-alpine.lr-2            |
+| redis         | 7.2.10-alpine-3.23.0-r3.lr-0 |
+| router        | 1.28.0-alpine-3.23.0-r3.lr-0 |
+ 
+ 
+
+
+### Changed (1 change)
+
+- [bump-data-streamer-to-4-83-0 (#196) (#197)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/bc7ca3e)
+
+
+  Co-authored-by: eliranb <eliranb@lightrun.com>
  
  
  
