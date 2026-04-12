@@ -116,9 +116,12 @@ spec:
           args: [
             "--lower_case_table_names=1",
             "--skip-log-bin",
+            {{- if semverCompare ">=8.4.0" .Values.deployments.mysql.image.tag }}
+            "--mysql-native-password=ON",
+            {{- end }}
             {{- if .Values.general.db_require_secure_transport }}
             "--require-secure-transport=ON",
-            {{- else }}
+            {{- else if semverCompare "<8.4.0" .Values.deployments.mysql.image.tag }}
             "--skip-ssl",
             {{- end }}
             "--character_set_server=utf8mb4",
