@@ -35,7 +35,7 @@ CREATE DATABASE lightrunserver;
 
 ### **[MANDATORY] External Database Requirements**
 
-- **MySQL Version**: `>= 8.0.34`
+- **MySQL Version**: `>= 8.4.3`
 - **Database Size**: Minimum requirements are 2vCPU with 8GB memory & 100GB disk. Specific size according to planned capacity should be coordinated with Lightrun support engineer.
 - **Database Engine**: **Must be MySQL** (MySQL-compatible databases like **Aurora are NOT supported**).
 ---
@@ -139,7 +139,7 @@ deployments:
     containerSecurityContext: {}
     image:
       repository: mysql
-      tag: 8.0.38
+      tag: 8.4.3
       pullPolicy: IfNotPresent
     resources:
       cpu: 2000m
