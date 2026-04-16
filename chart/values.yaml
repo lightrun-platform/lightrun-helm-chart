@@ -509,7 +509,7 @@ deployments:
     replicas: 1
     image:
       repository: lightruncom/webapp
-      tag: "1.78.3-release.7549694948"
+      tag: "1.78.4-release.694920015c"
       pullPolicy: IfNotPresent
     resources:
       cpu: 100m
@@ -550,7 +550,7 @@ deployments:
     rollout_strategy: "Recreate"
     image:
       repository: lightruncom/server
-      tag: "1.78.3-release.7549694948"
+      tag: "1.78.4-release.694920015c"
       pullPolicy: IfNotPresent
     resources:
       cpu: 3000m
@@ -643,7 +643,7 @@ deployments:
   crons:
     image:
       repository: "lightruncom/server"
-      tag: "1.78.3-release.7549694948"
+      tag: "1.78.4-release.694920015c"
       pullPolicy: IfNotPresent
     resources:
       cpu: 1000m
@@ -712,7 +712,7 @@ deployments:
     replicas: 1
     image:
       repository: lightruncom/keycloak
-      tag: "1.78.3-release.7549694948"
+      tag: "1.78.4-release.694920015c"
       pullPolicy: IfNotPresent
     resources:
       cpu: 1000m
@@ -740,7 +740,7 @@ deployments:
         image:
           repository: lightruncom/chart-helper
           tag: "0.3.0-alpine-3.23.0-r4.lr-0"
-          pullPolicy: ""          
+          pullPolicy: ""
     topologySpreadConstraints: []
     affinity: {}
     startupProbe:
@@ -974,7 +974,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/artifacts
-      tag: "1.78.3-release.7549694948"
+      tag: "1.78.4-release.694920015c"
       pullPolicy: IfNotPresent
     resources:
       cpu: 500m
