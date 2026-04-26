@@ -18,6 +18,10 @@ Shared environment variables for backend and crons services
   value: file:/encryption-keys
 - name: LIGHTRUN_HOSTNAME
   value: {{ .Values.general.name }}
+{{- if .Values.certificate.security_pinned_hashes }}
+- name: LIGHTRUN_SECURITY_PINNED_HASHES
+  value: {{ join "," .Values.certificate.security_pinned_hashes | quote }}
+{{- end }}
 - name: POD_NAME
   valueFrom:
     fieldRef:
