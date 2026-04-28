@@ -430,6 +430,11 @@ certificate:
   ## To reuse an already deployed certificate
   ## This secret has to be deployed in the same namespace as the rest of this chart
 
+  ## Optional SHA-256 SPKI pin hashes for the backend (see docs/installation/certificate.md).
+  ## Supplied as a YAML list; rendered into env LIGHTRUN_SECURITY_PINNED_HASHES as a comma-separated string.
+  ## Use when you need more than one accepted hash (for example overlapping rotation of certificate and private key).
+  security_pinned_hashes: []
+
   tls:
     crt: ""
     key: ""

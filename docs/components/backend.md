@@ -58,6 +58,8 @@ backend:
 extraEnvs: []
 ```
 
+The chart may also set `LIGHTRUN_SECURITY_PINNED_HASHES` when you define `certificate.security_pinned_hashes` (comma-separated SPKI SHA-256 hashes). See [Managing the TLS Certificate](../installation/certificate.md).
+
 #### Security Contexts
 
 ```yaml

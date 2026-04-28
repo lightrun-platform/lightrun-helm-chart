@@ -5,6 +5,8 @@ By default, internal communication between pods within the cluster is not encryp
 > [!WARNING]
 > Enabling internal TLS increases resource consumption, as additional computational power is required for SSL operations.
 
+When internal TLS is enabled, the backend continues to use the **same mandatory TLS certificate** as for IDE/agent traffic (including certificate pinning). To configure **multiple** accepted pinning hashes during certificate rotation, use `certificate.security_pinned_hashes` in `values.yaml`; see [Managing the TLS Certificate](../installation/certificate.md) (section *Optional: multiple certificate pinning hashes*).
+
 ### Enable Internal TLS
 
 To activate internal TLS, set the `enabled` flag to `true`:
