@@ -1,14 +1,15 @@
 This section configures **Lightrun Router** with the **AWS Load Balancer Controller** (formerly known as AWS ALB ingress controller).
+
 This guide covers provisioning load balancer based on the following options:  
 Kubernetes [Ingress resources](https://kubernetes.io/docs/concepts/services-networking/ingress/) by provisioning [Application Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html).  
 Kubernetes [Service resources](https://kubernetes.io/docs/concepts/services-networking/service/) by provisioning [Network Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/introduction.html).
 # Prerequisites
-1. When using an application load balancer (instead of network load balancer), a certificate will be served by the ALB load balancer for SSL termination.
+1. When using an application load balancer (instead of a network load balancer), a certificate will be served by the load balancer for SSL termination.
 2. Ability to create a DNS A record that points to the AWS load balancer record.
-3. [AWS load balancer controller installed](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/deploy/installation/#load-balancer-controller-installation) in the cluster.
+3. [AWS load balancer controller installed](https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/deploy/installation/) in the cluster.
 # Setup AWS Load Balancer Controller
 
-## Configure the Lightrun Router in the helm chart
+## Configure the Lightrun Router in the Helm chart
 Choose the most suitable option from the list below:  
 [1 - AWS Application Load Balancer SSL <> Lightrun Router SSL](#1-aws-application-load-balancer-ssl-lightrun-router-ssl)  
 [2 - AWS Application Load Balancer SSL <> Lightrun router Non-SSL](#2-aws-application-load-balancer-ssl-lightrun-router-non-ssl)  
@@ -20,22 +21,23 @@ Choose the most suitable option from the list below:
   
 [Import certificate to ACM](#import-certificate-to-aws-certificate-manager-acm)
 
-In the "values.yaml" of the Lightrun helm chart navigate to "general.router" and ensure at the minimum the following configuration is set:
-* general.router.enabled: true
-* general.router.tls.enabled: true
-* general.router.ingress.enabled: true
-* general.router.ingress.ingress_class_name: "alb" <<< Rename if you've used a custom ingress class name for your AWS Load Balancer Controller.
-* general.router.ingress.annotations at the minimum have:
-	* `alb.ingress.kubernetes.io/target-type: ip` Remove this annotation if you want to use the default target-type `instance` instead
+In the `values.yaml` file of the Lightrun Helm chart navigate to `general.router` and ensure at the minimum the following configuration is set:
+
+* `general.router.enabled: true`
+* `general.router.tls.enabled: true`
+* `general.router.ingress.enabled: true`
+* `general.router.ingress.ingress_class_name: "alb"` <<< Rename if you've used a custom ingress class name for your AWS Load Balancer Controller.
+* `general.router.ingress.annotations` at the minimum have:
+	* `alb.ingress.kubernetes.io/target-type: ip` (You can remove this annotation if you want to use the default target-type `instance` instead)
 	* `alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'`
 	* `alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS`
 	* `alb.ingress.kubernetes.io/backend-protocol: HTTPS`
   * `alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=600`
 	* [OPTIONAL] - if you need to control the subnets where LB will be created
 		* `alb.ingress.kubernetes.io/subnets: subnet-xxxx, mySubnet`
-* general.router.service.enabled: true
-* general.router.service.type: ClusterIP
-* general.router.host_port.enabled: false  
+* `general.router.service.enabled: true`
+* `general.router.service.type: ClusterIP`
+* `general.router.host_port.enabled: false`
 
 As shown in the following example:
 ```yaml
@@ -86,22 +88,22 @@ router:
 [Import certificate to ACM](#import-certificate-to-aws-certificate-manager-acm)
 
 
-In the "values.yaml" of the Lightrun helm chart navigate to "general.router" and ensure at the minimum the following configuration is set:
-* general.router.enabled: true
-* general.router.tls.enabled: false
-* general.router.ingress.enabled: true
-* general.router.ingress.ingress_class_name: "alb" <<< Rename if you've used a custom ingress class name for your AWS Load Balancer Controller.
-* general.router.ingress.annotations at the minimum have:
-	* `alb.ingress.kubernetes.io/target-type: ip` Remove this annotation if you want to use the default target-type `instance` instead
+In the `values.yaml` of the Lightrun Helm chart navigate to "general.router" and ensure at the minimum the following configuration is set:
+* `general.router.enabled: true`
+* `general.router.tls.enabled: false`
+* `general.router.ingress.enabled: true`
+* `general.router.ingress.ingress_class_name: "alb"` <<< Rename if you've used a custom ingress class name for your AWS Load Balancer Controller.
+* `general.router.ingress.annotations` at the minimum have:
+	* `alb.ingress.kubernetes.io/target-type: ip` (You can remove this annotation if you want to use the default target-type `instance` instead)
 	* `alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'`
 	* `alb.ingress.kubernetes.io/healthcheck-protocol: HTTP`
 	* `alb.ingress.kubernetes.io/backend-protocol: HTTP`
 	* `alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=600`
 	* [OPTIONAL] - if you need to control the subnets where LB will be created
 		* `alb.ingress.kubernetes.io/subnets: subnet-xxxx, mySubnet`
-* general.router.service.enabled: true
-* general.router.service.type: ClusterIP
-* general.router.host_port.enabled: false  
+* `general.router.service.enabled: true`
+* `general.router.service.type: ClusterIP`
+* `general.router.host_port.enabled: false`
 
 As shown in the following example:
 ```yaml
@@ -144,11 +146,23 @@ router:
       http: 80  
       https: 443
 ```
+###### Additional ALB annotations
+The following annotations can be added under `general.router.ingress.annotations` when you need extra control over the AWS Application Load Balancer:
+
+* `alb.ingress.kubernetes.io/certificate-arn` - Attaches an ACM certificate to the ALB HTTPS listener. Use the ARN of the certificate that should be presented to clients.
+* `alb.ingress.kubernetes.io/group.name` - Places this ingress into a named ALB group so multiple ingresses can share the same load balancer when managed together by the controller.
+* `alb.ingress.kubernetes.io/healthcheck-path: /health` - Configures the ALB target group health check endpoint. Use `/health` when you want the load balancer to validate router health through that path.
+* `alb.ingress.kubernetes.io/inbound-cidrs` - Restricts which source CIDR ranges can access the ALB listener, allowing you to limit inbound traffic to trusted networks.
+* `alb.ingress.kubernetes.io/scheme` - Controls whether the ALB is internet-facing or internal. Common values are `internet-facing` and `internal`.
+* `alb.ingress.kubernetes.io/ssl-redirect: "443"` - Redirects HTTP requests to HTTPS on port `443`, helping enforce encrypted client connections.
+* `alb.ingress.kubernetes.io/tags` - Adds AWS tags to the ALB and related resources for ownership, cost allocation, or automation purposes.
+* `alb.ingress.kubernetes.io/wafv2-acl-arn` - Associates an AWS WAFv2 web ACL with the ALB to apply additional Layer 7 filtering and protection policies.
+
 ##### 3 - AWS Network Load Balancer Non-SSL <> Lightrun router SSL
    >Network load balancer listens on protocol/port TCP:443 for incoming requests and forwards traffic to the Lightrun router listen on protocol/port HTTPS:8443.
    >The Lightrun router then performs SSL termination and forwards traffic to Lightrun services inside the cluster.
 
-In the "values.yaml" of the Lightrun helm chart navigate to "general.router" and ensure at the minimum the following configuration is set:
+In the "values.yaml" of the Lightrun Helm chart navigate to "general.router" and ensure at the minimum the following configuration is set:
 * general.router.enabled: true
 * general.router.tls.enabled: true
 * general.router.ingress.enabled: false
@@ -210,7 +224,7 @@ router:
 [Import certificate to ACM](#import-certificate-to-aws-certificate-manager-acm)
 
 
-In the "values.yaml" of the Lightrun helm chart navigate to "general.router" and ensure at the minimum the following configuration is set:
+In the "values.yaml" of the Lightrun Helm chart navigate to "general.router" and ensure at the minimum the following configuration is set:
 * general.router.enabled: true
 * general.router.tls.enabled: true
 * general.router.ingress.enabled: false
