@@ -2,8 +2,6 @@
 
 This page provides a compatibility overview for Kubernetes and OpenShift versions with the Helm charts in this repository.
 
-> **Support policy:** Only versions listed in the tables below are actively tested and officially supported with each release. Versions not listed here are not validated as part of our CI pipeline and are not covered by our support SLA.
-
 ## Helm Compatibility
 ```
  >= 3.17.0 
