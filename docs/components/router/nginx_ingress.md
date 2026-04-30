@@ -1,7 +1,7 @@
 This section configures **Lightrun Router** with the **Nginx Ingress Controller**.
 
 > [!WARNING]
-> The Kubernetes project retired Ingress NGINX in March 2026, and we do not recommend using it for new deployments. Existing deployments can continue to run, but there will be no new releases, bug fixes, or security updates. For more details, see the official announcement: [Ingress NGINX Retirement: What You Need to Know](https://kubernetes.io/blog/2025/11/11/ingress-nginx-retirement/).
+> The Kubernetes project retired Ingress NGINX in March 2026, and we encourage to migrate to another long-term supported solution. Existing deployments can continue to run, but there will be no new releases, bug fixes, or security updates. For more details, see the official announcement: [Ingress NGINX Retirement: What You Need to Know](https://kubernetes.io/blog/2025/11/11/ingress-nginx-retirement/).
 
 # Prerequisites
 1. Ability to create a DNS A record that points to the Nginx external record.
