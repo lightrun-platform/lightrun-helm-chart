@@ -1,4 +1,79 @@
 
+<a name="v3.43.0"></a>
+## [v3.43.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.42.0...v3.43.0) - 2026-05-05
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.84.0-release.5fd758b19a    |
+| backend       | 1.84.0-release.5fd758b19a    |
+| crons         | 1.84.0-release.5fd758b19a    |
+| data_streamer | 4.88.0-alpine-3.23.0-r4.lr-0 |
+| frontend      | 1.84.0-release.5fd758b19a    |
+| keycloak      | 1.84.0-release.5fd758b19a    |
+| mysql         | 8.4.3                        |
+| rabbitmq      | 4.0.9-alpine.lr-3            |
+| redis         | 7.2.10-alpine-3.23.0-r4.lr-0 |
+| router        | 1.28.3-alpine-3.23.0-r4.lr-0 |
+
+
+ 
+ 
+
+
+### Fixed (2 changes)
+
+- [cve-2026-31789-SQR (#217)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/36587fd)
+
+
+  Co-authored-by: Tal Levy <tal@LTR132.local>
+ 
+
+- [public-api-bug-returns-html-page-instead-of-json-error-response (#207)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/182c47f)
+ 
+ 
+ 
+
+
+### Documentation (2 changes)
+
+- [nginx-migration (#215)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/3f3dc08)
+ 
+
+- [improved-for-alb-controller (#214)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/86e5362)
+ 
+ 
+ 
+
+
+### Added (1 change)
+
+- [provide-a-way-to-pass-several-certificates-public-keys-in-chart-to-server (#210)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/531914b)
+
+
+  Co-authored-by: eliranb <eliranb@lightrun.com>
+ 
+ 
+ 
+
+
+### Changed (1 change)
+
+- [bump-data-streamer-to-4-88 (#211)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/65db86b)
+
+
+  Co-authored-by: eliranb <eliranb@lightrun.com>
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.42.0"></a>
 ## [v3.42.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.41.0...v3.42.0) - 2026-04-26
 
