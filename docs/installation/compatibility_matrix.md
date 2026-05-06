@@ -27,5 +27,11 @@ This page provides a compatibility overview for Kubernetes and OpenShift version
 | 4.20              | Compatible    |          |
 | 4.19              | Compatible    |          |
 | 4.18              | Compatible    |          |
+| 4.17              | Compatible    |          |
+| 4.16              | Compatible    |          |
+| 4.15              | Compatible    |          |
+| 4.14              | Compatible    |          |
+
+
 
 > **Note on older OpenShift versions (< 4.18):** These versions are no longer available on major cloud providers and are therefore not included in our test matrix. The chart may still function correctly on older releases, but compatibility is not guaranteed and these versions are not officially supported. For the full Red Hat OpenShift life cycle policy, see the [OpenShift Container Platform Life Cycle](https://access.redhat.com/support/policy/updates/openshift) page.
