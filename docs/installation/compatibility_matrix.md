@@ -17,7 +17,7 @@ This page provides a compatibility overview for Kubernetes and OpenShift version
 | 1.30               | Compatible    |          |
 | 1.29               | Compatible    |          |
 
-> **Note on older Kubernetes versions (< 1.30):** These versions are no longer offered by major cloud providers ([EKS](https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html), [GKE](https://cloud.google.com/kubernetes-engine/docs/release-schedule), [AKS](https://learn.microsoft.com/en-us/azure/aks/supported-kubernetes-versions)) and are therefore not included in our test matrix. The chart may still function correctly on older releases, but compatibility is not guaranteed and these versions are not officially supported.
+> **Note on older Kubernetes versions (< 1.29):** These versions are no longer offered by major cloud providers ([EKS](https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html), [GKE](https://cloud.google.com/kubernetes-engine/docs/release-schedule), [AKS](https://learn.microsoft.com/en-us/azure/aks/supported-kubernetes-versions)) and are therefore not included in our test matrix. The chart may still function correctly on older releases, but compatibility is not guaranteed and these versions are not officially supported.
 
 ## OpenShift Compatibility
 
