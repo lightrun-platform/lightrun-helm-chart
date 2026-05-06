@@ -3,3 +3,4 @@ name: lightrun-helm-chart
 description: Unlock real-time code-level observability with Lightrun
 version: 3.43.0
 appVersion: main
+icon: https://lightrun-public.s3.us-east-1.amazonaws.com/img/lightrun-logo-helm-chart.png
