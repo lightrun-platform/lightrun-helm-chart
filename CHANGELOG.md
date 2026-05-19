@@ -1,4 +1,64 @@
 
+<a name="v3.44.0"></a>
+## [v3.44.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.43.1...v3.44.0) - 2026-05-19
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.85.0-release.d668a8b10f    |
+| backend       | 1.85.0-release.d668a8b10f    |
+| crons         | 1.85.0-release.d668a8b10f    |
+| data_streamer | 4.91.0-alpine-3.23.0-r0.lr-0 |
+| frontend      | 1.85.0-release.d668a8b10f    |
+| keycloak      | 1.85.0-release.d668a8b10f    |
+| mysql         | 8.4.7                        |
+| rabbitmq      | 4.0.9-alpine.lr-3            |
+| redis         | 7.2.10-alpine-3.23.0-r4.lr-0 |
+| router        | 1.28.3-alpine-3.23.0-r4.lr-0 |
+
+
+
+
+ 
+ 
+
+
+### Security (2 changes)
+
+- [updating-data-streamer-base-image-to-4.91.0 (#221)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/662422d)
+ 
+
+- [updating-data-streamer-base-image-to-4.90.2 (#218)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/e3f1f3c)
+ 
+ 
+ 
+
+
+### Changed (1 change)
+
+- [bump-mysql-to-8-4-7 (#222)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/2c0f19d)
+ 
+ 
+ 
+
+
+### Fixed (1 change)
+
+- [cve-2026-31789-main (#216)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/ecae00c)
+
+
+  Co-authored-by: Tal Levy <tal@LTR132.local>
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.43.1"></a>
 ## [v3.43.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.43.0...v3.43.1) - 2026-05-17
 
