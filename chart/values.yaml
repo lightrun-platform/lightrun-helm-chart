@@ -1061,7 +1061,7 @@ deployments:
       maxReplicas: 5
     image:
       repository: lightruncom/router
-      tag: "1.28.3-alpine-3.23.0-r4.lr-0"
+      tag: "1.28.3-r2-alpine-3.23.0-r4.lr-0"
       pullPolicy: IfNotPresent
     podSecurityContext: {}
     containerSecurityContext: {}
