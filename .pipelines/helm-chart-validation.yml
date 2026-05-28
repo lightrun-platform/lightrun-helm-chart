@@ -281,13 +281,13 @@ jobs:
         displayName: 'Publish Values File'
 
   - job: install_validation
-    displayName: 'Install chart on Kubernetes'
+    displayName: '$(K8S_MINOR_VERSION) Install chart on Kubernetes'
     dependsOn: static_validation
     strategy:
       maxParallel: 3
       matrix:
         ${{ each k8sVersion in parameters.k8sVersionWindows[parameters.latestK8sMinorVersion] }}:
-          ${{ format('k8s_{0}', replace(k8sVersion, '.', '_')) }}:
+          ${{ format('v{0}_k8s', replace(k8sVersion, '.', '_')) }}:
             ${{ each pair in parameters.k8sVersionConfig[k8sVersion] }}:
               ${{ pair.key }}: ${{ pair.value }}
     steps:
