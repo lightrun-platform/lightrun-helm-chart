@@ -281,7 +281,7 @@ jobs:
         displayName: 'Publish Values File'
 
   - job: install_validation
-    displayName: '$(K8S_MINOR_VERSION) Install chart on Kubernetes'
+    displayName: 'Install chart on Kubernetes'
     dependsOn: static_validation
     strategy:
       maxParallel: 3
