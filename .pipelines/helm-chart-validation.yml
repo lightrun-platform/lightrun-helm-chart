@@ -287,17 +287,6 @@ jobs:
 
       - script: |
           set -euo pipefail
-          # Cleanup any existing k3d cluster on a reused agent
-          if command -v k3d >/dev/null 2>&1; then
-            k3d cluster delete chart-testing-$(K8S_VERSION_ID) || true
-          else
-            echo "k3d is not installed yet; skipping cluster cleanup"
-          fi
-        displayName: 'Cleanup Previous Cluster'
-        continueOnError: true
-
-      - script: |
-          set -euo pipefail
           if ! command -v jq >/dev/null 2>&1; then
             sudo apt-get update
             sudo apt-get install -y jq
