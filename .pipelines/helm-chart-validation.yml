@@ -24,19 +24,15 @@ parameters:
       '1.33':
         K8S_MINOR_VERSION: '1.33'
         K8S_VERSION_ID: '133'
-        K3S_IMAGE: 'rancher/k3s:v1.33.11-k3s1'
       '1.34':
         K8S_MINOR_VERSION: '1.34'
         K8S_VERSION_ID: '134'
-        K3S_IMAGE: 'rancher/k3s:v1.34.7-k3s1'
       '1.35':
         K8S_MINOR_VERSION: '1.35'
         K8S_VERSION_ID: '135'
-        K3S_IMAGE: 'rancher/k3s:v1.35.4-k3s1'
       '1.36':
         K8S_MINOR_VERSION: '1.36'
         K8S_VERSION_ID: '136'
-        K3S_IMAGE: 'rancher/k3s:v1.36.0-k3s1'
   - name: k8sVersionWindows
     type: object
     default:
@@ -313,10 +309,22 @@ jobs:
 
       - script: |
           set -euo pipefail
-          echo "Installing chart against Kubernetes $(K8S_MINOR_VERSION) using $(K3S_IMAGE)"
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y jq
+          fi
+
+          K3S_IMAGE_TAG=$(curl -fsSL https://endoflife.date/api/v1/products/kubernetes | jq -r --arg minor "$(K8S_MINOR_VERSION)" '.result.releases[] | select(.name == $minor) | .latest.name')
+          if [ -z "$K3S_IMAGE_TAG" ] || [ "$K3S_IMAGE_TAG" = "null" ]; then
+            echo "Failed to resolve the latest patch version for Kubernetes $(K8S_MINOR_VERSION)"
+            exit 1
+          fi
+
+          K3S_IMAGE="rancher/k3s:v${K3S_IMAGE_TAG}-k3s1"
+          echo "Installing chart against Kubernetes $(K8S_MINOR_VERSION) using ${K3S_IMAGE}"
           wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
           k3d cluster create chart-testing-$(K8S_VERSION_ID) \
-            --image $(K3S_IMAGE) \
+            --image "${K3S_IMAGE}" \
             --wait \
             --timeout 120s
         displayName: 'Create k3d Cluster'
