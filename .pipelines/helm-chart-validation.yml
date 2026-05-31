@@ -10,26 +10,6 @@ pr:
       - 'chart/**'
       - '.pipelines/helm-chart-validation.yml'
 
-parameters:
-  - name: latestK8sMinorVersion
-    displayName: 'Latest Kubernetes minor version to validate'
-    type: string
-    default: '1.35'
-    values:
-      - '1.35'
-      - '1.36'
-  - name: k8sVersionWindows
-    type: object
-    default:
-      '1.35':
-        - '1.33'
-        - '1.34'
-        - '1.35'
-      '1.36':
-        - '1.34'
-        - '1.35'
-        - '1.36'
-
 variables:
   - group: lightrun-helm-chart-variables
   - name: CHART_PATH
@@ -261,16 +241,48 @@ jobs:
         artifact: helm-validation-values
         displayName: 'Publish Values File'
 
+  - job: generate_supported_k8s_matrix
+    displayName: 'Generate supported Kubernetes matrix'
+    steps:
+      - script: |
+          set -euo pipefail
+
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y jq
+          fi
+
+          SUPPORTED_K8S_MATRIX=$(curl -fsSL https://endoflife.date/api/v1/products/kubernetes | jq -c '
+            .result.releases
+            | map(select(.isEol == false))
+            | map({
+                key: ("v" + (.name | gsub("\\."; "_")) + "_k8s"),
+                value: {
+                  K8S_MINOR_VERSION: .name,
+                  K8S_VERSION_ID: (.name | gsub("\\."; ""))
+                }
+              })
+            | from_entries
+          ')
+
+          if [ "$SUPPORTED_K8S_MATRIX" = "{}" ]; then
+            echo "Failed to resolve any non-EOL Kubernetes versions"
+            exit 1
+          fi
+
+          echo "Resolved Kubernetes matrix: $SUPPORTED_K8S_MATRIX"
+          echo "##vso[task.setvariable variable=supportedK8sMatrix;isOutput=true]$SUPPORTED_K8S_MATRIX"
+        name: set_matrix
+        displayName: 'Fetch supported Kubernetes versions'
+
   - job: install_validation
     displayName: 'Install chart on Kubernetes'
-    dependsOn: static_validation
+    dependsOn:
+      - static_validation
+      - generate_supported_k8s_matrix
     strategy:
       maxParallel: 3
-      matrix:
-        ${{ each k8sVersion in parameters.k8sVersionWindows[parameters.latestK8sMinorVersion] }}:
-          ${{ format('v{0}_k8s', replace(k8sVersion, '.', '_')) }}:
-            K8S_MINOR_VERSION: ${{ k8sVersion }}
-            K8S_VERSION_ID: ${{ replace(k8sVersion, '.', '') }}
+      matrix: $[ dependencies.generate_supported_k8s_matrix.outputs['set_matrix.supportedK8sMatrix'] ]
     steps:
       - checkout: self
 
@@ -298,6 +310,7 @@ jobs:
             exit 1
           fi
 
+          # This assumes rancher/k3s tags follow the exact v<Kubernetes patch>-k3s1 format.
           K3S_IMAGE="rancher/k3s:v${K3S_IMAGE_TAG}-k3s1"
           echo "Installing chart against Kubernetes $(K8S_MINOR_VERSION) using ${K3S_IMAGE}"
           wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
