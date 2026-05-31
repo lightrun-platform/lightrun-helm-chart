@@ -303,7 +303,11 @@ jobs:
       - script: |
           set -euo pipefail
           # Cleanup any existing k3d cluster on a reused agent
-          k3d cluster delete chart-testing-$(K8S_VERSION_ID) || true
+          if command -v k3d >/dev/null 2>&1; then
+            k3d cluster delete chart-testing-$(K8S_VERSION_ID) || true
+          else
+            echo "k3d is not installed yet; skipping cluster cleanup"
+          fi
         displayName: 'Cleanup Previous Cluster'
         continueOnError: true
 
@@ -406,7 +410,11 @@ jobs:
 
       - script: |
           set -euo pipefail
-          k3d cluster delete chart-testing-$(K8S_VERSION_ID) || true
+          if command -v k3d >/dev/null 2>&1; then
+            k3d cluster delete chart-testing-$(K8S_VERSION_ID) || true
+          else
+            echo "k3d is not installed; skipping cluster cleanup"
+          fi
         displayName: 'Cleanup Cluster'
         continueOnError: true
         condition: always()
