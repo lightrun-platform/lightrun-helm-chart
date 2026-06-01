@@ -1,4 +1,4 @@
-name:  'Lightrun Helm Chart Validation'
+name: 'Lightrun Helm Chart Validation'
 trigger: none
 
 pr:
@@ -19,289 +19,389 @@ variables:
   - name: NAMESPACE
     value: 'lightrun'
 
-steps:
-- script: |
-    set -euo pipefail
-    # Cleanup any existing k3d cluster
-    k3d cluster delete chart-testing || true
-  displayName: 'Cleanup Previous Cluster'
-  continueOnError: true
+jobs:
+  - job: static_validation
+    displayName: 'Static Helm validation'
+    steps:
+      - checkout: self
 
-- task: Docker@2
-  displayName: 'Login to DockerHub'
-  condition: eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')
-  inputs:
-    command: login
-    containerRegistry: 'dockerhub lightrunint readonly'
+      - task: Docker@2
+        displayName: 'Login to DockerHub'
+        condition: eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')
+        inputs:
+          command: login
+          containerRegistry: 'dockerhub lightrunint readonly'
 
-- script: |
-    set -euo pipefail
-    # Install required tools
-    sudo apt-get update && sudo apt-get install -y gawk
-    
-    # Read the version from versions_mapping.md
-    # Skip header and separator, get first data row with actual version numbers
-    CHART_VERSION=$(awk -F'|' 'NR > 2 && $2 !~ /^[[:space:]]*-+[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$2); if ($2 != "") {print $2; exit}}' docs/installation/versions_mapping.md)
-    if [ "$SYSTEM_PULLREQUEST_TARGETBRANCH" = "refs/heads/main" ]; then
-      echo "PR targets main branch - fetching latest RC version from DockerHub"
+      - script: |
+          set -euo pipefail
+          # Install required tools
+          sudo apt-get update && sudo apt-get install -y gawk
 
-      # Install crane for listing tags (uses Docker config auth automatically)
-      curl -sL "https://github.com/google/go-containerregistry/releases/latest/download/go-containerregistry_Linux_x86_64.tar.gz" \
-        | sudo tar -xz -C /usr/local/bin crane
+          # Read the version from versions_mapping.md
+          # Skip header and separator, get first data row with actual version numbers
+          CHART_VERSION=$(awk -F'|' 'NR > 2 && $2 !~ /^[[:space:]]*-+[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$2); if ($2 != "") {print $2; exit}}' docs/installation/versions_mapping.md)
+          if [ "${SYSTEM_PULLREQUEST_TARGETBRANCH:-}" = "refs/heads/main" ]; then
+            echo "PR targets main branch - fetching latest RC version from DockerHub"
 
-      # List all tags and find latest RC
-      # Tag format: X.Y.Z-rcN.HASH (e.g. 1.81.0-rc9.450548a82)
-      ALL_TAGS=$(crane ls lightruncom/server-internal)
-      APP_VERSION=$(echo "$ALL_TAGS" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+\.[a-f0-9]+$' | \
-        awk -F'[-.]' '{printf "%05d%05d%05d%05d %s\n", $1, $2, $3, substr($4,3), $0}' | \
-        sort -k1,1 | tail -1 | awk '{print $2}')
+            # Install crane for listing tags (uses Docker config auth automatically)
+            curl -sL "https://github.com/google/go-containerregistry/releases/latest/download/go-containerregistry_Linux_x86_64.tar.gz" \
+              | sudo tar -xz -C /usr/local/bin crane
 
-      if [ -z "$APP_VERSION" ]; then
-        echo "Failed to find an RC tag in lightruncom/server-internal"
-        exit 1
-      fi
-    else
-      APP_VERSION=$(awk -F'|' 'NR > 2 && $3 !~ /^[[:space:]]*-+[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$3); if ($3 != "") {print $3; exit}}' docs/installation/versions_mapping.md)
-    fi
+            # List all tags and find latest RC
+            # Tag format: X.Y.Z-rcN.HASH (e.g. 1.81.0-rc9.450548a82)
+            ALL_TAGS=$(crane ls lightruncom/server-internal)
+            APP_VERSION=$(echo "$ALL_TAGS" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+\.[a-f0-9]+$' | \
+              awk -F'[-.]' '{printf "%05d%05d%05d%05d %s\n", $1, $2, $3, substr($4,3), $0}' | \
+              sort -k1,1 | tail -1 | awk '{print $2}')
 
-    # Verify that we got the versions
-    if [ -z "$CHART_VERSION" ] || [ -z "$APP_VERSION" ]; then
-      echo "Failed to extract versions"
-      exit 1
-    fi
+            if [ -z "$APP_VERSION" ]; then
+              echo "Failed to find an RC tag in lightruncom/server-internal"
+              exit 1
+            fi
+          else
+            APP_VERSION=$(awk -F'|' 'NR > 2 && $3 !~ /^[[:space:]]*-+[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$3); if ($3 != "") {print $3; exit}}' docs/installation/versions_mapping.md)
+          fi
 
-    echo "Chart version: $CHART_VERSION"
-    echo "App version: $APP_VERSION"
+          # Verify that we got the versions
+          if [ -z "$CHART_VERSION" ] || [ -z "$APP_VERSION" ]; then
+            echo "Failed to extract versions"
+            exit 1
+          fi
 
-    # Create values.yaml file
-    # if the chart version >= 3.30.0 then use license v2 othewise fallback to license v1
-    MAJOR=$(echo "$CHART_VERSION" | sed 's/\..*//')
-    MINOR=$(echo "$CHART_VERSION" | sed 's/[^.]*\.//; s/\..*//')
-    if [[ "$MAJOR" -gt 3 || ("$MAJOR" -eq 3 && "$MINOR" -ge 30) ]]; then
-      echo "License version: v2"
-      LICENSE_CONTENT=$(LICENSE_CONTENT_V2)
-      LICENSE_SIGNATURE=$(LICENSE_SIGNATURE_V2)
-    else
-      echo "License version: v1"
-      LICENSE_CONTENT=$(LICENSE_CONTENT)
-      LICENSE_SIGNATURE=$(LICENSE_SIGNATURE)
-    fi
-    
-    cat > values.yaml << EOF
-    general:
-      lightrun_endpoint: test.example.com
-      name: test-client
-      deployment_type: on-prem
-      statefulset:
-        enabled: false
-    
-    secrets:
-      license:
-        content: $LICENSE_CONTENT
-        signature: $LICENSE_SIGNATURE
-      keycloak:
-        password: test123
-      db:
-        user: test_user
-        password: test123
-      mq:
-        user: test_user
-        password: test123
-      redis:
-        password: test123
-      customCa:
-        customCaCertificate: $(CUSTOM_CA_CERTIFICATE)
-      defaults:
-        dockerhub_config:
-          configContent: $(DOCKERHUB_CONFIG)
-        mail_password: test123
-        keystore_password: test123
-    
-    certificate:
-      tls:
-        crt: $(CERTIFICATE_CRT)
-        key: $(CERTIFICATE_KEY)
-    
-    deployments:
-      frontend:
-        resources:
-          cpu: "0m"
-          memory: "0Mi"
-        image:
-          repository: lightruncom/webapp-internal
-          tag: ${APP_VERSION}
-      backend:
-        resources:
-          cpu: "0m"
-          memory: "0Mi"
-        extraEnvs:
-          - name: "_JAVA_OPTIONS"
-            value: ""
-        image:
-          repository: lightruncom/server-internal
-          tag: ${APP_VERSION}
-      crons:
-        resources:
-          cpu: "0m"
-          memory: "0Mi"
-        extraEnvs:
-          - name: "_JAVA_OPTIONS"
-            value: ""
-        image:
-          repository: lightruncom/server-internal
-          tag: ${APP_VERSION}
-      keycloak:
-        resources:
-          cpu: "0m"
-          memory: "0Mi"
-        extraEnvs:
-          - name: "_JAVA_OPTIONS"
-            value: ""
-        image:
-          repository: lightruncom/keycloak-internal
-          tag: ${APP_VERSION}
-      redis:
-        resources:
-          cpu: "0m"
-          memory: "0Mi"
-      mysql:
-        resources:
-          cpu: "0m"
-          memory: "0Mi"
-      rabbitmq:
-        resources:
-          cpu: "0m"
-          memory: "0Mi"
-      data_streamer:
-        resources:
-          cpu: "0m"
-          memory: "0Mi"
-      router:
-        resources:
-          cpu: "0m"
-          memory: "0Mi"
-      artifacts:
-        image:
-          repository: lightruncom/artifacts-internal
-          tag: ${APP_VERSION}
-    EOF
-  displayName: 'Create Values File'
+          echo "Chart version: $CHART_VERSION"
+          echo "App version: $APP_VERSION"
 
-- script: |
-    set -euo pipefail
-    # Verify Helm is available and show version
-    helm version
-    
-    # Verify kubectl is available
-    kubectl version --client
-  displayName: 'Verify Tools'
+          # Create values.yaml file
+          # if the chart version >= 3.30.0 then use license v2 otherwise fallback to license v1
+          MAJOR=$(echo "$CHART_VERSION" | sed 's/\..*//')
+          MINOR=$(echo "$CHART_VERSION" | sed 's/[^.]*\.//; s/\..*//')
+          if [[ "$MAJOR" -gt 3 || ("$MAJOR" -eq 3 && "$MINOR" -ge 30) ]]; then
+            echo "License version: v2"
+            LICENSE_CONTENT=$(LICENSE_CONTENT_V2)
+            LICENSE_SIGNATURE=$(LICENSE_SIGNATURE_V2)
+          else
+            echo "License version: v1"
+            LICENSE_CONTENT=$(LICENSE_CONTENT)
+            LICENSE_SIGNATURE=$(LICENSE_SIGNATURE)
+          fi
 
-- script: |
-    set -euo pipefail
-    wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
-    k3d cluster create chart-testing --wait --timeout 120s
-  displayName: 'Create k3d Cluster'
+          cat > values.yaml << EOF
+          general:
+            lightrun_endpoint: test.example.com
+            name: test-client
+            deployment_type: on-prem
+            statefulset:
+              enabled: false
 
-- script: |
-    set -euo pipefail
-    helm lint $(CHART_PATH) -f values.yaml 2>&1 | grep -v "SECRET" || exit ${PIPESTATUS[0]}
-  displayName: 'Lint Helm Chart'
+          secrets:
+            license:
+              content: $LICENSE_CONTENT
+              signature: $LICENSE_SIGNATURE
+            keycloak:
+              password: test123
+            db:
+              user: test_user
+              password: test123
+            mq:
+              user: test_user
+              password: test123
+            redis:
+              password: test123
+            customCa:
+              customCaCertificate: $(CUSTOM_CA_CERTIFICATE)
+            defaults:
+              dockerhub_config:
+                configContent: $(DOCKERHUB_CONFIG)
+              mail_password: test123
+              keystore_password: test123
 
-- script: |
-    set -euo pipefail
-    helm template $(RELEASE_NAME) $(CHART_PATH) -f values.yaml --namespace $(NAMESPACE) --debug
-  displayName: 'Helm Template'
-  
-- script: |
-    set -euo pipefail
-    # Redirect output to file
-    helm template $(RELEASE_NAME) $(CHART_PATH) -f values.yaml --namespace $(NAMESPACE) > template_output.yaml 2>&1
-    
-    # Filter sensitive data and display
-    cat template_output.yaml | grep -v "password:\|secret:\|token:\|key:" || true
-    
-    # Check if template command was successful
-    if [ -s template_output.yaml ]; then
-      echo "Template validation successful"
-      rm template_output.yaml
-      exit 0
-    else
-      echo "Template validation failed"
-      rm template_output.yaml
-      exit 1
-    fi
-  displayName: 'Validate Templates'
+          certificate:
+            tls:
+              crt: $(CERTIFICATE_CRT)
+              key: $(CERTIFICATE_KEY)
 
-- script: |
-    set -euo pipefail
+          deployments:
+            frontend:
+              resources:
+                cpu: "0m"
+                memory: "0Mi"
+              image:
+                repository: lightruncom/webapp-internal
+                tag: ${APP_VERSION}
+            backend:
+              resources:
+                cpu: "0m"
+                memory: "0Mi"
+              extraEnvs:
+                - name: "_JAVA_OPTIONS"
+                  value: ""
+              image:
+                repository: lightruncom/server-internal
+                tag: ${APP_VERSION}
+            crons:
+              resources:
+                cpu: "0m"
+                memory: "0Mi"
+              extraEnvs:
+                - name: "_JAVA_OPTIONS"
+                  value: ""
+              image:
+                repository: lightruncom/server-internal
+                tag: ${APP_VERSION}
+            keycloak:
+              resources:
+                cpu: "0m"
+                memory: "0Mi"
+              extraEnvs:
+                - name: "_JAVA_OPTIONS"
+                  value: ""
+              image:
+                repository: lightruncom/keycloak-internal
+                tag: ${APP_VERSION}
+            redis:
+              resources:
+                cpu: "0m"
+                memory: "0Mi"
+            mysql:
+              resources:
+                cpu: "0m"
+                memory: "0Mi"
+            rabbitmq:
+              resources:
+                cpu: "0m"
+                memory: "0Mi"
+            data_streamer:
+              resources:
+                cpu: "0m"
+                memory: "0Mi"
+            router:
+              resources:
+                cpu: "0m"
+                memory: "0Mi"
+            artifacts:
+              image:
+                repository: lightruncom/artifacts-internal
+                tag: ${APP_VERSION}
+          EOF
+        displayName: 'Create Values File'
 
-    echo "Verifying Keycloak custom CA volume mount in Helm template"
+      - script: |
+          set -euo pipefail
+          # Verify Helm is available and show version
+          helm version
 
-    # Redirect output to file
-    helm template $(RELEASE_NAME) $(CHART_PATH) -f values.yaml --namespace $(NAMESPACE) > template_output.yaml 2>&1
+          # Verify kubectl is available
+          kubectl version --client
+        displayName: 'Verify Tools'
 
-    KEYCLOAK_CONTAINER="${RELEASE_NAME}-keycloak"
+      - script: |
+          set -euo pipefail
+          helm lint $(CHART_PATH) -f values.yaml 2>&1 | grep -v "SECRET" || exit ${PIPESTATUS[0]}
+        displayName: 'Lint Helm Chart'
 
-    # Extract volume mounts for container $(RELEASE_NAME)-keycloak from the rendered template file
-    VOLUME_MOUNTS=$(yq e ".spec.template.spec.containers[] | select(.name==\"$KEYCLOAK_CONTAINER\") | .volumeMounts[].name" template_output.yaml)
+      - script: |
+          set -euo pipefail
+          helm template $(RELEASE_NAME) $(CHART_PATH) -f values.yaml --namespace $(NAMESPACE) --debug
+        displayName: 'Helm Template'
 
-    if echo "$VOLUME_MOUNTS" | grep -q "^custom-ca-certificate$"; then
-      echo "Found 'custom-ca-certificate' volume mount in Helm template as expected"
-    else
-      echo "Missing 'custom-ca-certificate' volume mount in Helm template"
-      exit 1
-    fi
-  displayName: 'Check Keycloak custom CA volume in Helm template'
+      - script: |
+          set -euo pipefail
+          helm template $(RELEASE_NAME) $(CHART_PATH) -f values.yaml --namespace $(NAMESPACE) > template_output.yaml 2>&1
+          grep -v "password:\|secret:\|token:\|key:" template_output.yaml || true
 
-- script: |
-    set -euo pipefail
-    kubectl create namespace $(NAMESPACE)
-  displayName: 'Create Namespace'
+          if [ -s template_output.yaml ]; then
+            echo "Template validation successful"
+            rm template_output.yaml
+            exit 0
+          else
+            echo "Template validation failed"
+            rm template_output.yaml
+            exit 1
+          fi
+        displayName: 'Validate Templates'
 
-- script: |
-    set -euo pipefail
-    helm install $(RELEASE_NAME) $(CHART_PATH) \
-      -f values.yaml \
-      --namespace $(NAMESPACE) \
-      --wait \
-      --timeout 10m \
-      --debug
-  displayName: 'Install Chart'
+      - script: |
+          set -euo pipefail
 
-- script: |
-    set -euo pipefail
-    kubectl get all -n $(NAMESPACE)
-    
-    # Wait for all pods in the namespace to be ready
-    kubectl wait --for=condition=ready pod --all -n $(NAMESPACE) --timeout=5m
-    
-    # Get deployment status
-    kubectl get deployments -n $(NAMESPACE) -o wide
-  displayName: 'Verify Deployment'
+          echo "Verifying Keycloak custom CA volume mount in Helm template"
+          helm template $(RELEASE_NAME) $(CHART_PATH) -f values.yaml --namespace $(NAMESPACE) > template_output.yaml 2>&1
 
-- script: |
-    k8s_logs_dir=$(mktemp -d)
-    echo "##vso[task.setvariable variable=k8s_logs_dir;]$k8s_logs_dir"
-    ./.pipelines/scripts/get_k8s_all_container_logs.sh $(NAMESPACE) $k8s_logs_dir
-  condition: always()
-  displayName: Collect k8s logs
+          KEYCLOAK_CONTAINER="${RELEASE_NAME}-keycloak"
+          VOLUME_MOUNTS=$(yq e ".spec.template.spec.containers[] | select(.name==\"$KEYCLOAK_CONTAINER\") | .volumeMounts[].name" template_output.yaml)
 
-- script: |
-    for file in $(ls "$(k8s_logs_dir)"); do
-      echo "##[group]$file"
-      cat "$(k8s_logs_dir)/$file"
-      echo "##[endgroup]"
-    done
-  condition: always()
-  displayName: Print k8s logs
+          if echo "$VOLUME_MOUNTS" | grep -q "^custom-ca-certificate$"; then
+            echo "Found 'custom-ca-certificate' volume mount in Helm template as expected"
+          else
+            echo "Missing 'custom-ca-certificate' volume mount in Helm template"
+            exit 1
+          fi
+        displayName: 'Check Keycloak custom CA volume in Helm template'
 
-- publish: $(k8s_logs_dir)
-  artifact: k8s_logs_$(System.JobAttempt)
-  condition: always()
-  displayName: Publish k8s logs
+      - publish: values.yaml
+        artifact: helm-validation-values
+        displayName: 'Publish Values File'
 
-- script: |
-    set -euo pipefail
-    helm uninstall $(RELEASE_NAME) -n $(NAMESPACE)
-  displayName: 'Cleanup'
-  condition: always() 
+  - job: generate_supported_k8s_matrix
+    displayName: 'Generate supported Kubernetes matrix'
+    steps:
+      - script: |
+          set -euo pipefail
+
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y jq
+          fi
+
+          SUPPORTED_K8S_MATRIX=$(curl -fsSL https://endoflife.date/api/v1/products/kubernetes | jq -c '
+            .result.releases
+            | map(select(.isEol == false))
+            | map({
+                key: ("v" + (.name | gsub("\\."; "_")) + "_k8s"),
+                value: {
+                  K8S_MINOR_VERSION: .name,
+                  K8S_VERSION_ID: (.name | gsub("\\."; ""))
+                }
+              })
+            | from_entries
+          ')
+
+          if [ "$SUPPORTED_K8S_MATRIX" = "{}" ]; then
+            echo "Failed to resolve any non-EOL Kubernetes versions"
+            exit 1
+          fi
+
+          echo "Resolved Kubernetes matrix: $SUPPORTED_K8S_MATRIX"
+          echo "##vso[task.setvariable variable=supportedK8sMatrix;isOutput=true]$SUPPORTED_K8S_MATRIX"
+        name: set_matrix
+        displayName: 'Fetch supported Kubernetes versions'
+
+  - job: install_validation
+    displayName: 'Install chart on Kubernetes'
+    dependsOn:
+      - static_validation
+      - generate_supported_k8s_matrix
+    strategy:
+      maxParallel: 3
+      matrix: $[ dependencies.generate_supported_k8s_matrix.outputs['set_matrix.supportedK8sMatrix'] ]
+    steps:
+      - checkout: self
+
+      - task: Docker@2
+        displayName: 'Login to DockerHub'
+        condition: eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')
+        inputs:
+          command: login
+          containerRegistry: 'dockerhub lightrunint readonly'
+
+      - download: current
+        artifact: helm-validation-values
+        displayName: 'Download Values File'
+
+      - script: |
+          set -euo pipefail
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y jq
+          fi
+
+          K3S_IMAGE_TAG=$(curl -fsSL https://endoflife.date/api/v1/products/kubernetes | jq -r --arg minor "$(K8S_MINOR_VERSION)" '.result.releases[] | select(.name == $minor) | .latest.name')
+          if [ -z "$K3S_IMAGE_TAG" ] || [ "$K3S_IMAGE_TAG" = "null" ]; then
+            echo "Failed to resolve the latest patch version for Kubernetes $(K8S_MINOR_VERSION)"
+            exit 1
+          fi
+
+          # This assumes rancher/k3s tags follow the exact v<Kubernetes patch>-k3s1 format.
+          K3S_IMAGE="rancher/k3s:v${K3S_IMAGE_TAG}-k3s1"
+          echo "Installing chart against Kubernetes $(K8S_MINOR_VERSION) using ${K3S_IMAGE}"
+          wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+          k3d cluster create chart-testing-$(K8S_VERSION_ID) \
+            --image "${K3S_IMAGE}" \
+            --wait \
+            --timeout 120s
+        displayName: 'Create k3d Cluster'
+
+      - script: |
+          set -euo pipefail
+          kubectl create namespace $(NAMESPACE)
+        displayName: 'Create Namespace'
+
+      - script: |
+          set -euo pipefail
+          helm install $(RELEASE_NAME) $(CHART_PATH) \
+            -f "$(Pipeline.Workspace)/helm-validation-values/values.yaml" \
+            --namespace $(NAMESPACE) \
+            --wait \
+            --timeout 10m \
+            --debug
+        displayName: 'Install Chart'
+
+      - script: |
+          set -euo pipefail
+          kubectl get all -n $(NAMESPACE)
+
+          # Wait for all pods in the namespace to be ready
+          kubectl wait --for=condition=ready pod --all -n $(NAMESPACE) --timeout=5m
+
+          # Get deployment status
+          kubectl get deployments -n $(NAMESPACE) -o wide
+        displayName: 'Verify Deployment'
+
+      - script: |
+          set -euo pipefail
+          k8s_logs_dir=$(mktemp -d)
+          echo "##vso[task.setvariable variable=k8s_logs_dir;]$k8s_logs_dir"
+
+          if kubectl get namespace $(NAMESPACE) >/dev/null 2>&1; then
+            ./.pipelines/scripts/get_k8s_all_container_logs.sh $(NAMESPACE) $k8s_logs_dir
+          else
+            echo "Namespace $(NAMESPACE) does not exist; skipping log collection"
+          fi
+        condition: always()
+        displayName: 'Collect k8s logs'
+
+      - script: |
+          set -euo pipefail
+          LOGS_DIR="$(k8s_logs_dir)"
+          if [ -z "$LOGS_DIR" ] || [ ! -d "$LOGS_DIR" ]; then
+            echo "No logs directory available"
+            exit 0
+          fi
+
+          if [ -z "$(ls -A "$LOGS_DIR")" ]; then
+            echo "No log files collected"
+            exit 0
+          fi
+
+          for file in "$LOGS_DIR"/*; do
+            echo "##[group]$(basename "$file")"
+            cat "$file"
+            echo "##[endgroup]"
+          done
+        condition: always()
+        displayName: 'Print k8s logs'
+
+      - publish: $(k8s_logs_dir)
+        artifact: k8s_logs_$(K8S_VERSION_ID)_$(System.JobAttempt)
+        condition: always()
+        displayName: 'Publish k8s logs'
+
+      - script: |
+          set -euo pipefail
+          if helm status $(RELEASE_NAME) -n $(NAMESPACE) >/dev/null 2>&1; then
+            helm uninstall $(RELEASE_NAME) -n $(NAMESPACE)
+          else
+            echo "Release $(RELEASE_NAME) was not installed"
+          fi
+        displayName: 'Cleanup Release'
+        condition: always()
+
+      - script: |
+          set -euo pipefail
+          if command -v k3d >/dev/null 2>&1; then
+            k3d cluster delete chart-testing-$(K8S_VERSION_ID) || true
+          else
+            echo "k3d is not installed; skipping cluster cleanup"
+          fi
+        displayName: 'Cleanup Cluster'
+        continueOnError: true
+        condition: always()
