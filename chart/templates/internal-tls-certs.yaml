@@ -1,5 +1,23 @@
-{{ if and .Values.general.internal_tls.enabled (eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates") -}}
-{{ range (list (include "lightrun-fe.name" $ ) (include "lightrun-keycloak.name" $ ) (include "lightrun-redis.name" $ ) (include "lightrun-mq.name" $ ) (include "data_streamer.name" $ ) (include "artifacts.name" $ ) )}}
+{{- if and .Values.general.internal_tls.enabled (eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates") -}}
+{{- $ca := genCA (printf "%s-ca" .Release.Name) 3650 -}}
+{{- $services := list (include "lightrun-fe.name" $) (include "lightrun-keycloak.name" $) (include "lightrun-redis.name" $) (include "lightrun-mq.name" $) (include "data_streamer.name" $) (include "artifacts.name" $) -}}
+---
+# CA that signs all internal TLS certificates.
+# Keycloak is configured to trust this CA (via the customCa mount) so that it
+# can connect to RabbitMQ and other internal services over TLS.
+# See DEVOPS-3488 / DEVOPS-3308.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "lightrun.fullname" . }}-internal-tls-ca
+  annotations:
+    "helm.sh/hook": "pre-install"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+type: Opaque
+data:
+  custom-ca.pem: {{ $ca.Cert | b64enc | quote }}
+{{ range $services }}
+---
 apiVersion: v1
 kind: Secret
 type: kubernetes.io/tls
@@ -9,7 +27,9 @@ metadata:
     "helm.sh/hook": "pre-install"
     "helm.sh/hook-delete-policy": "before-hook-creation"
 data:
-{{ ( include "internal-tls.gen-crt" (list $ . )) | indent 2 }}
----
+  {{- $altNames := list . ( printf "%s.%s" . $.Release.Namespace ) ( printf "%s.%s.svc" . $.Release.Namespace ) -}}
+  {{- $cert := genSignedCert . nil $altNames 3650 $ca }}
+  tls.crt: {{ $cert.Cert | b64enc | quote }}
+  tls.key: {{ $cert.Key | b64enc | quote }}
 {{- end }}
 {{- end }}

@@ -514,6 +514,9 @@ Usage:
 true
 {{- else if and .Values.secrets.customCa.existingCaSecret (not .Values.secrets.customCa.customCaCertificate) }}
 true
+{{- else if and .Values.general.internal_tls.enabled (eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates") }}
+{{- /* Auto-enable CA trust when certs are self-generated so Keycloak trusts all internal services (e.g. RabbitMQ). See DEVOPS-3488. */ -}}
+true
 {{- else -}}
 false
 {{- end -}}
@@ -523,6 +526,8 @@ false
 {{- define "secrets.custom_ca_certificate.name" -}}
 {{- if .Values.secrets.customCa.existingCaSecret -}}
 {{ .Values.secrets.customCa.existingCaSecret }}
+{{- else if and .Values.general.internal_tls.enabled (eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates") -}}
+{{ include "lightrun.fullname" . }}-internal-tls-ca
 {{- else -}}
 {{ include "lightrun.fullname" . }}-custom-ca-certificate
 {{- end -}}
