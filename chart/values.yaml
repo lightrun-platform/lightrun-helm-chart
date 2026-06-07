@@ -513,7 +513,7 @@ deployments:
     replicas: 1
     image:
       repository: lightruncom/webapp
-      tag: "1.86.0-release.2b657627ef"
+      tag: "1.86.1-release.65e47d7a04"
       pullPolicy: IfNotPresent
     resources:
       cpu: 100m
@@ -554,7 +554,7 @@ deployments:
     rollout_strategy: "Recreate"
     image:
       repository: lightruncom/server
-      tag: "1.86.0-release.2b657627ef"
+      tag: "1.86.1-release.65e47d7a04"
       pullPolicy: IfNotPresent
     resources:
       cpu: 3000m
@@ -647,7 +647,7 @@ deployments:
   crons:
     image:
       repository: "lightruncom/server"
-      tag: "1.86.0-release.2b657627ef"
+      tag: "1.86.1-release.65e47d7a04"
       pullPolicy: IfNotPresent
     resources:
       cpu: 1000m
@@ -716,7 +716,7 @@ deployments:
     replicas: 1
     image:
       repository: lightruncom/keycloak
-      tag: "1.86.0-release.2b657627ef"
+      tag: "1.86.1-release.65e47d7a04"
       pullPolicy: IfNotPresent
     resources:
       cpu: 1000m
@@ -978,7 +978,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/artifacts
-      tag: "1.86.0-release.2b657627ef"
+      tag: "1.86.1-release.65e47d7a04"
       pullPolicy: IfNotPresent
     resources:
       cpu: 500m
