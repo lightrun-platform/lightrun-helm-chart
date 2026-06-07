@@ -1,4 +1,30 @@
 
+<a name="v3.45.1"></a>
+## [v3.45.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.45.0...v3.45.1) - 2026-06-07
+
+
+
+### Versions
+
+| Image         | Tag                          |
+|---------------|------------------------------|
+| artifacts     | 1.86.1-release.65e47d7a04    |
+| backend       | 1.86.1-release.65e47d7a04    |
+| crons         | 1.86.1-release.65e47d7a04    |
+| data_streamer | 4.91.0-alpine-3.23.0-r0.lr-0 |
+| frontend      | 1.86.1-release.65e47d7a04    |
+| keycloak      | 1.86.1-release.65e47d7a04    |
+| mysql         | 8.4.7                        |
+| rabbitmq      | 4.0.9-alpine.lr-3            |
+| redis         | 7.2.10-alpine-3.23.0-r4.lr-0 |
+| router        | 1.28.3-alpine-3.23.0-r4.lr-0 |
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.45.0"></a>
 ## [v3.45.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.44.0...v3.45.0) - 2026-06-03
 
