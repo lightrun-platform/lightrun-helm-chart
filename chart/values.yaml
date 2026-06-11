@@ -617,17 +617,17 @@ deployments:
       wait_for_keycloak:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.23.4-r4.lr-0"
+          tag: "0.3.0-alpine-3.23.4-r5.lr-0"
           pullPolicy: ""
       p12_creator:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.23.4-r4.lr-0"
+          tag: "0.3.0-alpine-3.23.4-r5.lr-0"
           pullPolicy: ""
       wait_for_rabbitmq:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.23.4-r4.lr-0"
+          tag: "0.3.0-alpine-3.23.4-r5.lr-0"
           pullPolicy: ""
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
@@ -771,12 +771,12 @@ deployments:
       cluster_cert:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.23.4-r4.lr-0"
+          tag: "0.3.0-alpine-3.23.4-r5.lr-0"
           pullPolicy: ""
       wait_for_rabbitmq:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.23.4-r4.lr-0"
+          tag: "0.3.0-alpine-3.23.4-r5.lr-0"
           pullPolicy: ""          
     topologySpreadConstraints: []
     affinity: {}
@@ -841,7 +841,7 @@ deployments:
       enabled: false
     image:
       repository: lightruncom/redis
-      tag: "7.2.14-alpine-3.23.4-r4.lr-0"
+      tag: "7.2.14-alpine-3.23.4-r5.lr-0"
       pullPolicy: IfNotPresent
     resources:
       cpu: 2000m
@@ -938,7 +938,7 @@ deployments:
           memory: 128Mi
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.23.4-r4.lr-0"
+          tag: "0.3.0-alpine-3.23.4-r5.lr-0"
           pullPolicy: ""
     # EmptyDir is used for rabbitmq data when mq.storage is set to 0
     emptyDir:
@@ -976,7 +976,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/data-streamer
-      tag: "4.95.0-alpine-3.23.4-r4.lr-0"
+      tag: "4.95.0-alpine-3.23.4-r5.lr-0"
       pullPolicy: IfNotPresent
     resources:
       cpu: 100m
@@ -1061,7 +1061,7 @@ deployments:
       maxReplicas: 5
     image:
       repository: lightruncom/router
-      tag: "1.28.3-r3-alpine-3.23.4-r4.lr-0"
+      tag: "1.28.3-r3-alpine-3.23.4-r5.lr-0"
       pullPolicy: IfNotPresent
     podSecurityContext: {}
     containerSecurityContext: {}
