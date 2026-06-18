@@ -269,7 +269,7 @@ Shared init containers for backend and crons services
     readOnly: true
   - name: p12
     mountPath: /p12
-  command: ['sh', '-c', 'openssl x509 -in /tls/tls.crt -pubkey -noout | openssl pkey -pubin -outform DER | openssl dgst -sha256 -binary | base64 > /p12/pinned-cert-hash']
+  command: ['sh', '-c', 'openssl x509 -in /tls/tls.crt -pubkey -noout | openssl pkey -pubin -outform DER | openssl dgst -sha256 | awk ''{print $NF}'' > /p12/pinned-cert-hash']
 
 {{- if .Values.general.internal_tls.enabled }}
 - name: p12-creator
