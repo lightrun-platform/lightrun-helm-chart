@@ -299,19 +299,7 @@ jobs:
 
       - script: |
           set -euo pipefail
-          if ! command -v jq >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y jq
-          fi
-
-          K3S_IMAGE_TAG=$(curl -fsSL https://endoflife.date/api/v1/products/kubernetes | jq -r --arg minor "$(K8S_MINOR_VERSION)" '.result.releases[] | select(.name == $minor) | .latest.name')
-          if [ -z "$K3S_IMAGE_TAG" ] || [ "$K3S_IMAGE_TAG" = "null" ]; then
-            echo "Failed to resolve the latest patch version for Kubernetes $(K8S_MINOR_VERSION)"
-            exit 1
-          fi
-
-          # This assumes rancher/k3s tags follow the exact v<Kubernetes patch>-k3s1 format.
-          K3S_IMAGE="rancher/k3s:v${K3S_IMAGE_TAG}-k3s1"
+          K3S_IMAGE=$(sh ./.pipelines/scripts/get_latest_k3s_image.sh "$(K8S_MINOR_VERSION)")
           echo "Installing chart against Kubernetes $(K8S_MINOR_VERSION) using ${K3S_IMAGE}"
           wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
           k3d cluster create chart-testing-$(K8S_VERSION_ID) \
