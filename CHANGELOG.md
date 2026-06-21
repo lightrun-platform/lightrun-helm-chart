@@ -1,4 +1,83 @@
 
+<a name="v3.46.0"></a>
+## [v3.46.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.45.1...v3.46.0) - 2026-06-21
+
+
+
+### Versions
+
+| Image         | Tag                             |
+|---------------|---------------------------------|
+| artifacts     | 1.87.0-release.40402dbc1b       |
+| backend       | 1.87.0-release.40402dbc1b       |
+| crons         | 1.87.0-release.40402dbc1b       |
+| data_streamer | 4.95.0-alpine-3.23.4-r5.lr-0    |
+| frontend      | 1.87.0-release.40402dbc1b       |
+| keycloak      | 1.87.0-release.40402dbc1b       |
+| mysql         | 8.4.7                           |
+| rabbitmq      | 4.0.9-alpine.lr-3               |
+| redis         | 7.2.14-alpine-3.23.4-r5.lr-0    |
+| router        | 1.28.3-r3-alpine-3.23.4-r5.lr-0 |
+
+
+
+
+ 
+ 
+
+
+### Security (5 changes)
+
+- [bump-chart-tags (#235)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/a136bde)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+
+- [bump-chart-tags (#234)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/e95f0b6)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+
+- [bump-chart-tags (#233)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/32db872)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+
+- [bump-chart-tags (#232)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/8ec2dd0)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+
+- [bump-chart-tags (#231)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/6ba2fbc)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+ 
+ 
+
+
+### Changed (2 changes)
+
+- [make-keycloak-trust-self-signed-certs-in-generate-mode (#228)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/1de2a4f)
+
+
+  Co-authored-by: Eliran B <eliranb@lightrun.com>
+ 
+
+- [automate-k8s-versions-test (#227)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/5fa2cd3)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.45.1"></a>
 ## [v3.45.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.45.0...v3.45.1) - 2026-06-07
 
