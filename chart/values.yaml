@@ -877,7 +877,7 @@ deployments:
     useJsonLogFormat: false
     image:
       repository: lightruncom/rabbitmq
-      tag: 4.0.9-alpine.lr-3
+      tag: "4.3.2-alpine.lr-0"
       pullPolicy: IfNotPresent
     resources:
       cpu: 500m
@@ -1021,7 +1021,7 @@ deployments:
       maxReplicas: 5
     image:
       repository: lightruncom/router
-      tag: "1.30.2-r1-alpine-3.24.1-r0.lr-0"
+      tag: "1.30.3-r0-alpine-3.24.1-r0.lr-0"
       pullPolicy: IfNotPresent
     podSecurityContext: {}
     containerSecurityContext: {}
