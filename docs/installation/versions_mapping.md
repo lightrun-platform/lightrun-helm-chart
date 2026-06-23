@@ -5,6 +5,7 @@
 | 3.45.1        | 1.86.1-release.65e47d7a04  |
 | 3.45.0        | 1.86.0-release.2b657627ef  |
 | 3.44.0        | 1.85.0-release.d668a8b10f  |
+| 3.43.3        | 1.84.4-release.7bf8e0b379  |
 | 3.43.2        | 1.84.3-release.c70efd6ea9  |
 | 3.43.1        | 1.84.0-release.5fd758b19a  |
 | 3.43.0        | 1.84.0-release.5fd758b19a  |
