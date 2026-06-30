@@ -189,9 +189,15 @@ data:
         location = /50x.html {
           internal;
         }
+        location @json_service_unavailable {
+          internal;
+          default_type application/json;
+          return 503 '{"message":"Service unavailable","path":"$uri","status":$status}';
+        }
 
         location ^~ /api/ {
           proxy_intercept_errors off;
+          error_page 502 503 504 @json_service_unavailable;
           {{ include "router.internal_tls_use_ca_cert" . | nindent 10 }}
           proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-be.name" . }};
         }
@@ -270,6 +276,8 @@ data:
           # Big buffer size to support large snapshots
           # It is important to note that the buffer size is per request, so if you have 10 requests with 1MB each, you will need 10MB of memory.
           client_body_buffer_size 2m;
+          proxy_intercept_errors off;
+          error_page 502 503 504 @json_service_unavailable;
           proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-be.name" . }};
         }
 
@@ -283,6 +291,8 @@ data:
         {{ if .Values.general.internal_tls.enabled }}
           proxy_ssl_name $host;
         {{- end }}
+          proxy_intercept_errors off;
+          error_page 502 503 504 @json_service_unavailable;
           proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-be.name" . }};
         }
 
@@ -329,6 +339,8 @@ data:
           proxy_read_timeout    {{ .Values.general.router.mcp_endpoint.timeout_seconds }}s;
           proxy_send_timeout    {{ .Values.general.router.mcp_endpoint.timeout_seconds }}s;
           send_timeout 300s;
+          proxy_intercept_errors off;
+          error_page 502 503 504 @json_service_unavailable;
           proxy_pass {{ include "http.scheme" . }}://{{ include "lightrun-be.name" . }};
         }
 
