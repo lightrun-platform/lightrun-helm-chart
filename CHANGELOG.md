@@ -1,4 +1,57 @@
 
+<a name="v3.47.0"></a>
+## [v3.47.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.46.0...v3.47.0) - 2026-06-30
+
+
+
+### Versions
+
+| Image         | Tag                             |
+|---------------|---------------------------------|
+| artifacts     | 1.88.0-release.6ea3172969       |
+| backend       | 1.88.0-release.6ea3172969       |
+| crons         | 1.88.0-release.6ea3172969       |
+| data_streamer | 4.97.0-alpine-3.24.1-r0.lr-0    |
+| frontend      | 1.88.0-release.6ea3172969       |
+| keycloak      | 1.88.0-release.6ea3172969       |
+| mysql         | 8.4.7                           |
+| rabbitmq      | 4.3.2-alpine.lr-0               |
+| redis         | 7.4.9-alpine-3.24.1-r0.lr-0     |
+| router        | 1.30.3-r0-alpine-3.24.1-r0.lr-0 |
+
+
+ 
+ 
+
+
+### Security (2 changes)
+
+- [bump-chart-tags (#240)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/10a7c88)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+
+- [bump-chart-tags (#238)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/465eb46)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+ 
+ 
+
+
+### Fixed (1 change)
+
+- [pipeline-fix-api (#237)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/11907d5)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.46.0"></a>
 ## [v3.46.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.45.1...v3.46.0) - 2026-06-21
 
