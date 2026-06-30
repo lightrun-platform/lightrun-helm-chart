@@ -841,7 +841,7 @@ Cron-specific asyncProfiler helpers
 
 {{- define "lightrun-crons.container.persist-async-profiler-output-files" -}}
 {{- if and .Values.deployments.crons.asyncProfiler.enabled .Values.deployments.crons.asyncProfiler.persistence.enabled }}  
-{{ include "asyncProfiler.container.persist-async-profiler-output-files" . }}
+{{ include "asyncProfiler.container.persist-async-profiler-output-files" .Values.deployments.crons.asyncProfiler }}
   securityContext: {{- include "lightrun-crons.containerSecurityContext" . | indent 4 }}
 {{- end -}}
 {{- end -}}

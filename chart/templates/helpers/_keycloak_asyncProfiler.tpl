@@ -8,7 +8,7 @@
 
 {{- define "lightrun-keycloak.container.persist-async-profiler-output-files" -}}
 {{- if and .Values.deployments.keycloak.asyncProfiler.enabled .Values.deployments.keycloak.asyncProfiler.persistence.enabled }}  
-{{ include "asyncProfiler.container.persist-async-profiler-output-files" . }}
+{{ include "asyncProfiler.container.persist-async-profiler-output-files" .Values.deployments.keycloak.asyncProfiler }}
   securityContext: {{- include "lightrun-keycloak.containerSecurityContext" . | indent 4 }}
 {{- end -}}
 {{- end -}}

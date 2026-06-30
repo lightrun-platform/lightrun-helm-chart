@@ -8,7 +8,7 @@
 
 {{- define "lightrun-backend.container.persist-async-profiler-output-files" -}}
 {{- if and .Values.deployments.backend.asyncProfiler.enabled .Values.deployments.backend.asyncProfiler.persistence.enabled }}  
-{{ include "asyncProfiler.container.persist-async-profiler-output-files" . }}
+{{ include "asyncProfiler.container.persist-async-profiler-output-files" .Values.deployments.backend.asyncProfiler }}
   securityContext: {{- include "lightrun-be.containerSecurityContext" . | indent 4 }}
 {{- end -}}
 {{- end -}}
