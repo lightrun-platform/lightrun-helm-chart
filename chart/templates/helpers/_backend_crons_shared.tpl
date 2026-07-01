@@ -111,8 +111,10 @@ Shared environment variables for backend and crons services
   value: {{ .Values.general.db_database }}
 - name: LIGHTRUN_SECURITY_PINNED_CERT_HASH_FILE_PATH
   value: "/p12/pinned-cert-hash"
+{{- if .Values.general.internal_tls.enabled }}
 - name: KEYSTORE_PATH
   value: "file:/p12/lightrun.p12"
+{{- end }}
 - name: SYSTEM_DEFAULT_USER_PASSWORD
   valueFrom:
     secretKeyRef:
@@ -269,6 +271,7 @@ Shared init containers for backend and crons services
     mountPath: /p12
   command: ['sh', '-c', 'openssl x509 -in /tls/tls.crt -pubkey -noout | openssl pkey -pubin -outform DER | openssl dgst -sha256 | awk ''{print $NF}'' > /p12/pinned-cert-hash']
 
+{{- if .Values.general.internal_tls.enabled }}
 - name: p12-creator
   image: "{{ .Values.deployments.backend.initContainers.p12_creator.image.repository }}:{{ .Values.deployments.backend.initContainers.p12_creator.image.tag }}"
   imagePullPolicy: {{ .Values.deployments.backend.initContainers.p12_creator.image.pullPolicy }}
@@ -292,6 +295,7 @@ Shared init containers for backend and crons services
   - name: p12
     mountPath: /p12
   command: ['sh', '-c', 'cp /tls/tls.crt /p12/crt.pem && cp /tls/tls.key /p12/key.pem && openssl pkcs12 -export -out /p12/lightrun.p12 -inkey /p12/key.pem -in /p12/crt.pem -passin pass:$KEYSTORE_PASSWORD -passout pass:$KEYSTORE_PASSWORD']
+{{- end }}
 
 {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name }}  
 - name: root-ca-creator
