@@ -1059,11 +1059,11 @@ deployments:
       pullPolicy: IfNotPresent
     resources:
       requests:
-        cpu: 500m
-        memory: 2Gi
+        cpu: "1500m"
+        memory: "5Gi"
       limits:
         cpu: "2"
-        memory: 4Gi
+        memory: "6Gi"
     podLabels: {}
     podAnnotations: {}
     annotations: {} # deployment annotations
