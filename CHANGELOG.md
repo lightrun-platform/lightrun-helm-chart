@@ -1,4 +1,57 @@
 
+<a name="v3.47.0"></a>
+## [v3.47.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.46.0...v3.47.0) - 2026-06-30
+
+
+
+### Versions
+
+| Image         | Tag                             |
+|---------------|---------------------------------|
+| artifacts     | 1.88.0-release.6ea3172969       |
+| backend       | 1.88.0-release.6ea3172969       |
+| crons         | 1.88.0-release.6ea3172969       |
+| data_streamer | 4.97.0-alpine-3.24.1-r0.lr-0    |
+| frontend      | 1.88.0-release.6ea3172969       |
+| keycloak      | 1.88.0-release.6ea3172969       |
+| mysql         | 8.4.7                           |
+| rabbitmq      | 4.3.2-alpine.lr-0               |
+| redis         | 7.4.9-alpine-3.24.1-r0.lr-0     |
+| router        | 1.30.3-r0-alpine-3.24.1-r0.lr-0 |
+
+
+ 
+ 
+
+
+### Security (2 changes)
+
+- [bump-chart-tags (#240)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/10a7c88)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+
+- [bump-chart-tags (#238)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/465eb46)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+ 
+ 
+
+
+### Fixed (1 change)
+
+- [pipeline-fix-api (#237)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/11907d5)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.46.0"></a>
 ## [v3.46.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.45.1...v3.46.0) - 2026-06-21
 
@@ -133,7 +186,7 @@
 
 
 <a name="v3.44.0"></a>
-## [v3.44.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.43.2...v3.44.0) - 2026-05-19
+## [v3.44.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.43.3...v3.44.0) - 2026-05-19
 
 
 
@@ -184,6 +237,49 @@
 
 
   Co-authored-by: Tal Levy <tal@LTR132.local>
+ 
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.43.3"></a>
+## [v3.43.3](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.43.2...v3.43.3) - 2026-06-23
+
+
+
+### Versions
+
+| Image         | Tag                             |
+|---------------|---------------------------------|
+| artifacts     | 1.84.4-release.7bf8e0b379       |
+| backend       | 1.84.4-release.7bf8e0b379       |
+| crons         | 1.84.4-release.7bf8e0b379       |
+| data_streamer | 4.97.0-alpine-3.24.1-r0.lr-0    |
+| frontend      | 1.84.4-release.7bf8e0b379       |
+| keycloak      | 1.84.4-release.7bf8e0b379       |
+| mysql         | 8.4.3                           |
+| rabbitmq      | 4.3.2-alpine.lr-0               |
+| redis         | 7.4.9-alpine-3.24.1-r0.lr-0     |
+| router        | 1.30.3-r0-alpine-3.24.1-r0.lr-0 |
+ 
+ 
+
+
+### Security (2 changes)
+
+- [bump-chart-tags (#240)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/5b6e131)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+
+- [bump-chart-tags (#239)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/9d5ebca)
+
+
+  Co-authored-by: Cursor <cursoragent@cursor.com>
  
  
  

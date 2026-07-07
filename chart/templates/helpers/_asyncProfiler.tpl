@@ -1,7 +1,7 @@
 {{- define "asyncProfiler.initContainer.download-async-profiler" -}}
 - name: download-async-profiler
-  image: "lightruncom/chart-helper:latest"
-  imagePullPolicy: IfNotPresent
+  image: "{{ .initContainers.download_async_profiler.image.repository }}:{{ .initContainers.download_async_profiler.image.tag }}"
+  imagePullPolicy: {{ .initContainers.download_async_profiler.image.pullPolicy | default "IfNotPresent" }}
   command: 
     - sh
     - -c
@@ -28,8 +28,8 @@
 
 {{- define "asyncProfiler.container.persist-async-profiler-output-files" -}}
 - name: persist-async-profiler-output-files
-  image: "lightruncom/chart-helper:latest"
-  imagePullPolicy: IfNotPresent
+  image: "{{ .initContainers.persist_async_profiler.image.repository }}:{{ .initContainers.persist_async_profiler.image.tag }}"
+  imagePullPolicy: {{ .initContainers.persist_async_profiler.image.pullPolicy | default "IfNotPresent" }}
   command: 
     - sh
     - -c

@@ -663,6 +663,17 @@ deployments:
       # deployments.backend.asyncProfiler.enabled -- Run async-profiler on every backend pod
       ## ref: https://github.com/async-profiler/async-profiler
       enabled: false
+      initContainers:
+        download_async_profiler:
+          image:
+            repository: lightruncom/chart-helper
+            tag: "0.3.0-alpine-3.24.1-r0.lr-0"
+            pullPolicy: ""
+        persist_async_profiler:
+          image:
+            repository: lightruncom/chart-helper
+            tag: "0.3.0-alpine-3.24.1-r0.lr-0"
+            pullPolicy: ""
       # Download URL end point for async profiler binary, ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
       downloadUrl: "https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz"
       # deployments.backend.asyncProfiler.arguments -- Configure the async profiler arguments
@@ -728,6 +739,17 @@ deployments:
       # deployments.crons.asyncProfiler.enabled -- Run async-profiler on every crons pod
       ## ref: https://github.com/async-profiler/async-profiler
       enabled: false
+      initContainers:
+        download_async_profiler:
+          image:
+            repository: lightruncom/chart-helper
+            tag: "0.3.0-alpine-3.24.1-r0.lr-0"
+            pullPolicy: ""
+        persist_async_profiler:
+          image:
+            repository: lightruncom/chart-helper
+            tag: "0.3.0-alpine-3.24.1-r0.lr-0"
+            pullPolicy: ""
       # Download URL end point for async profiler binary, ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
       downloadUrl: "https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz"
       # deployments.crons.asyncProfiler.arguments -- Configure the async profiler arguments
@@ -803,6 +825,17 @@ deployments:
       # deployments.keycloak.asyncProfiler.enabled -- Run async-profiler on every keycloak pod
       ## ref: https://github.com/async-profiler/async-profiler
       enabled: false
+      initContainers:
+        download_async_profiler:
+          image:
+            repository: lightruncom/chart-helper
+            tag: "0.3.0-alpine-3.24.1-r0.lr-0"
+            pullPolicy: ""
+        persist_async_profiler:
+          image:
+            repository: lightruncom/chart-helper
+            tag: "0.3.0-alpine-3.24.1-r0.lr-0"
+            pullPolicy: ""
       # Download URL end point for async profiler binary, ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
       downloadUrl: "https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz"
       # deployments.keycloak.asyncProfiler.arguments -- Configure the async profiler arguments
@@ -914,7 +947,7 @@ deployments:
     useJsonLogFormat: false
     image:
       repository: lightruncom/rabbitmq
-      tag: 4.0.9-alpine.lr-3
+      tag: "4.3.2-alpine.lr-0"
       pullPolicy: IfNotPresent
     resources:
       cpu: 500m
@@ -1061,7 +1094,7 @@ deployments:
       maxReplicas: 5
     image:
       repository: lightruncom/router
-      tag: "1.30.2-r1-alpine-3.24.1-r0.lr-0"
+      tag: "1.30.3-r0-alpine-3.24.1-r0.lr-0"
       pullPolicy: IfNotPresent
     podSecurityContext: {}
     containerSecurityContext: {}
