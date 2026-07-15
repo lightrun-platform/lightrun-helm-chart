@@ -1,4 +1,62 @@
 
+<a name="v3.48.0"></a>
+## [v3.48.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.47.0...v3.48.0) - 2026-07-15
+
+
+
+### Versions
+
+| Image         | Tag                             |
+|---------------|---------------------------------|
+| artifacts     | 1.89.0-release.5e359bc7f9       |
+| backend       | 1.89.0-release.5e359bc7f9       |
+| crons         | 1.89.0-release.5e359bc7f9       |
+| data_streamer | 4.97.0-alpine-3.24.1-r0.lr-0    |
+| frontend      | 1.89.0-release.5e359bc7f9       |
+| keycloak      | 1.89.0-release.5e359bc7f9       |
+| mysql         | 8.4.7                           |
+| rabbitmq      | 4.3.2-alpine.lr-0               |
+| redis         | 7.4.9-alpine-3.24.1-r0.lr-0     |
+| router        | 1.30.3-r0-alpine-3.24.1-r0.lr-0 |
+
+
+ 
+ 
+
+
+### Changed (2 changes)
+
+- [Make p12-creator and KEYSTORE_PATH conditional on internal_tls.enabled (#244)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/0b0321a)
+
+
+  Co-authored-by: eliranb <eliranb@lightrun.com>
+  Co-authored-by: yonik-lr <yonik@lightrun.com>
+ 
+
+- [make-router-return-plain-error-responses-for-mcp-and-debuggees (#242)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/e4af335)
+ 
+ 
+ 
+
+
+### Added (2 changes)
+
+- [pinned-cert-hash-creator (#236)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/1940646)
+
+
+  Co-authored-by: eliranb <eliranb@lightrun.com>
+  Co-authored-by: yonik-lr <yonik@lightrun.com>
+ 
+
+- [pin-async-profiler-chart-helper-image-instead-of-using-latest (#243)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/8af1cc7)
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.47.0"></a>
 ## [v3.47.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.46.0...v3.47.0) - 2026-06-30
 
