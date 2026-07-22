@@ -126,6 +126,13 @@ general:
       - 403
 
   #####################
+  ## Privacy filter
+  #####################
+  privacy_filter:
+    enabled: false
+    ## If set to `true`, will deploy a privacy filter pod for PII redaction
+
+  #####################
   ## Crons
   #####################
   crons:
@@ -1042,6 +1049,54 @@ deployments:
       successThreshold: 1
       failureThreshold: 3
       path: /ready
+
+  privacy_filter:
+    replicas: 1
+    rollout_strategy: "RollingUpdate"
+    image:
+      repository: lightruncom/privacy-filter
+      tag: "latest"
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: "1500m"
+        memory: "5Gi"
+      limits:
+        cpu: "2"
+        memory: "6Gi"
+    podLabels: {}
+    podAnnotations: {}
+    annotations: {} # deployment annotations
+    extraEnvs: []
+    podSecurityContext: {}
+    containerSecurityContext: {}
+    service:
+      annotations: {}
+      labels: {}
+    extraVolumes: []
+    extraVolumeMounts: []
+    podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
+    topologySpreadConstraints: []
+    affinity: {}
+    # Model warm-up happens on startup; startupProbe covers up to
+    # periodSeconds * failureThreshold seconds before liveness/readiness apply.
+    startupProbe:
+      periodSeconds: 5
+      failureThreshold: 60
+    livenessProbe:
+      initialDelaySeconds: 0
+      periodSeconds: 15
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+      path: /healthz
+    readinessProbe:
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+      path: /readyz
 
   artifacts:
     loglevel: notice

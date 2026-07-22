@@ -631,6 +631,51 @@ Container SecurityContext of lightrun data_streamer
 
 {{/*
 ###################
+## Privacy filter ##
+###################
+*/}}
+
+
+{{- define "privacy_filter.name" -}}
+{{ include "lightrun.fullname" . }}-privacy-filter
+{{- end -}}
+
+
+
+{{/*
+Create the name of the lightrun privacy_filter service account to use
+*/}}
+{{- define "privacy_filter.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+    {{ default (include "privacy_filter.name" .) .Values.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Container SecurityContext of lightrun privacy_filter
+*/}}
+{{- define "privacy_filter.containerSecurityContext" -}}
+{{/*Define a local variable baseSecurityContext with the minimum required securityContext on the container level*/}}
+{{- $readOnlyRootFilesystem := dict "readOnlyRootFilesystem" (.Values.general.readOnlyRootFilesystem) -}}
+{{- $baseSecurityContext := include "baseSecurityContext" . | fromYaml -}}
+{{- $localSecurityContext := mustMerge $baseSecurityContext $readOnlyRootFilesystem -}}
+{{/*If user provided values for containerSecurityContext, merge them with the baseSecurityContext*/}}
+{{/*Values passed by user will override defaults*/}}
+{{- if .Values.deployments.privacy_filter.containerSecurityContext -}}
+{{- $mergedSecurityContext := mergeOverwrite  $localSecurityContext (.Values.deployments.privacy_filter.containerSecurityContext | default dict) -}}
+{{- $mergedSecurityContext | toYaml -}}
+{{- else if kindIs "invalid" .Values.deployments.privacy_filter.containerSecurityContext -}}
+{{ default dict | toYaml -}}
+{{- else -}}
+{{/*use default values from baseSecurityContext*/}}
+{{- $localSecurityContext | toYaml -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+###################
 ## Artifacts ##
 ###################
 */}}
