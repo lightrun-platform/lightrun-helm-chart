@@ -1,4 +1,11 @@
 {{ if .Values.general.privacy_filter.enabled }}
+{{- $privacyFilter := .Values.deployments.privacy_filter }}
+{{- $nodeSelector := deepCopy (.Values.general.nodeSelector | default dict) }}
+{{- $_ := mergeOverwrite $nodeSelector ($privacyFilter.nodeSelector | default dict) }}
+{{- if $privacyFilter.instanceFamily }}
+{{- $_ = set $nodeSelector "karpenter.k8s.aws/instance-family" $privacyFilter.instanceFamily }}
+{{- end }}
+{{- $tolerations := concat (.Values.general.tolerations | default list) ($privacyFilter.tolerations | default list) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -41,12 +48,7 @@ spec:
         - name: {{ include "privacy_filter.name" . }}
           securityContext: {{- include "privacy_filter.containerSecurityContext" . | indent 12 }}
           resources:
-            requests:
-              cpu: {{ .Values.deployments.privacy_filter.resources.requests.cpu }}
-              memory: {{ .Values.deployments.privacy_filter.resources.requests.memory }}
-            limits:
-              cpu: {{ .Values.deployments.privacy_filter.resources.limits.cpu }}
-              memory: {{ .Values.deployments.privacy_filter.resources.limits.memory }}
+            {{- toYaml .Values.deployments.privacy_filter.resources | nindent 12 }}
           image: {{ .Values.deployments.privacy_filter.image.repository }}:{{ .Values.deployments.privacy_filter.image.tag }}
           imagePullPolicy: {{ .Values.deployments.privacy_filter.image.pullPolicy }}
           {{- with .Values.deployments.privacy_filter.extraEnvs }}
@@ -87,13 +89,13 @@ spec:
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- if .Values.general.tolerations }}
+      {{- if $tolerations }}
       tolerations:
-        {{ toYaml .Values.general.tolerations | nindent 8 }}
+        {{ toYaml $tolerations | nindent 8 }}
       {{- end }}
-      {{- if .Values.general.nodeSelector }}
+      {{- if $nodeSelector }}
       nodeSelector:
-        {{ toYaml .Values.general.nodeSelector | nindent 8 }}
+        {{ toYaml $nodeSelector | nindent 8 }}
       {{- end }}
       {{- if .Values.deployments.privacy_filter.affinity }}
       affinity:

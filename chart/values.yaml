@@ -1064,6 +1064,12 @@ deployments:
       limits:
         cpu: "2"
         memory: "6Gi"
+        # Set nvidia.com/gpu to request GPU nodes.
+        # nvidia.com/gpu: "1"
+    instanceFamily: ""
+    # AWS example: c9g, c8i, or g5g.
+    nodeSelector: {}
+    tolerations: []
     podLabels: {}
     podAnnotations: {}
     annotations: {} # deployment annotations
