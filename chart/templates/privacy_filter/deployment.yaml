@@ -1,9 +1,11 @@
 {{ if .Values.general.privacy_filter.enabled }}
 {{- $privacyFilter := .Values.deployments.privacy_filter }}
 {{- $nodeSelector := deepCopy (.Values.general.nodeSelector | default dict) }}
-{{- $_ := mergeOverwrite $nodeSelector ($privacyFilter.nodeSelector | default dict) }}
+{{- if $privacyFilter.nodeSelector }}
+{{- $nodeSelector = deepCopy $privacyFilter.nodeSelector }}
+{{- end }}
 {{- if $privacyFilter.instanceFamily }}
-{{- $_ = set $nodeSelector "karpenter.k8s.aws/instance-family" $privacyFilter.instanceFamily }}
+{{- $_ := set $nodeSelector "karpenter.k8s.aws/instance-family" $privacyFilter.instanceFamily }}
 {{- end }}
 {{- $tolerations := concat (.Values.general.tolerations | default list) ($privacyFilter.tolerations | default list) }}
 apiVersion: apps/v1
