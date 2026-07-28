@@ -41,8 +41,13 @@ spec:
         {{- include "lightrun-backend-crons.volumes" . | nindent 8 }}
         {{- include "lightrun-backend.volumes.asyncProfiler" . | nindent 8 }}
         - name: dumps
+          {{- if .Values.deployments.backend.dumpsPersistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.deployments.backend.dumpsPersistence.existingClaim }}
+          {{- else }}
           emptyDir:
             sizeLimit: {{ .Values.deployments.backend.dumpsEmptyDirSizeLimit }}
+          {{- end }}
       {{- with .Values.deployments.backend.extraVolumes }}
         {{ toYaml . | nindent 8 }}
       {{- end }}
