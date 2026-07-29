@@ -57,3 +57,15 @@ spec:
       app: {{ include "router.name" . }}
   {{- toYaml .Values.deployments.router.podDisruptionBudget | nindent 2 }}
 {{- end }}
+---
+{{- if .Values.deployments.artifacts.podDisruptionBudget }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "artifacts.name" . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "artifacts.name" . }}
+  {{- toYaml .Values.deployments.artifacts.podDisruptionBudget | nindent 2 }}
+{{- end }}
