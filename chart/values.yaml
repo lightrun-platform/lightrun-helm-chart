@@ -921,7 +921,7 @@ deployments:
     containerSecurityContext: {}
     image:
       repository: mysql
-      tag: 8.4.7
+      tag: 8.4.10
       pullPolicy: IfNotPresent
     resources:
       cpu: 2000m
