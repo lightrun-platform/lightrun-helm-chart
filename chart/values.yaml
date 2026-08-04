@@ -1162,8 +1162,8 @@ runtime_collector:
       labels: {}
     resources:
       requests:
-        cpu: 100m
-        memory: 256Mi
+        cpu: 500m
+        memory: 512Mi
       limits:
         cpu: 500m
         memory: 512Mi
@@ -1176,7 +1176,7 @@ runtime_collector:
           pullPolicy: IfNotPresent
         resources:
           requests:
-            cpu: 50m
+            cpu: 100m
             memory: 64Mi
           limits:
             cpu: 100m
@@ -1190,8 +1190,8 @@ runtime_collector:
           ## runtime_collector.server.image.tag, so that value is used for both.
         resources:
           requests:
-            cpu: 100m
-            memory: 128Mi
+            cpu: 500m
+            memory: 512Mi
           limits:
             cpu: 500m
             memory: 512Mi
@@ -1259,8 +1259,8 @@ runtime_collector:
         copy_config:
           resources:
             requests:
-              cpu: 50m
-              memory: 64Mi
+              cpu: 100m
+              memory: 128Mi
             limits:
               cpu: 100m
               memory: 128Mi
