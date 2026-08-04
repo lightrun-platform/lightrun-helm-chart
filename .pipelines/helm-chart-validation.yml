@@ -107,6 +107,9 @@ jobs:
               password: test123
             redis:
               password: test123
+            clickhouse:
+              user: runtime_collector
+              password: test123
             customCa:
               customCaCertificate: $(CUSTOM_CA_CERTIFICATE)
             defaults:
@@ -182,6 +185,28 @@ jobs:
               image:
                 repository: lightruncom/artifacts-internal
                 tag: ${APP_VERSION}
+
+          runtime_collector:
+            enabled: true
+            server:
+              image:
+                repository: lightruncom/runtime-collector-internal
+                tag: ${APP_VERSION}
+              initContainers:
+                migrations:
+                  image:
+                    repository: lightruncom/runtime-collector-migrations-internal
+              resources:
+                requests:
+                  cpu: "0m"
+                  memory: "0Mi"
+            clickhouse:
+              local:
+                enabled: true
+                resources:
+                  requests:
+                    cpu: "0m"
+                    memory: "0Mi"
           EOF
         displayName: 'Create Values File'
 

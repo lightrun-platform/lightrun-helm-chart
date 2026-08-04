@@ -4,9 +4,10 @@ Lightrun requires various secrets for authentication, database access, message q
 ### **Secrets Deployment Options**
 
 - If `deploy_secrets: true`, the Helm chart will create and manage secrets.
-- If `deploy_secrets: false`, secrets **must be pre-created** in Kubernetes. The chart will look for two existing secrets:
+- If `deploy_secrets: false`, secrets **must be pre-created** in Kubernetes. The chart will look for existing secrets:
   - **Backend secret:** `{{ .Release.name }}-backend`
   - **Keycloak secret:** `{{ .Release.name }}-keycloak`
+  - **ClickHouse secret:** `{{ .Release.name }}-runtime-collector-clickhouse` (when Runtime Collector is enabled and not using `clickhouse.external.existingSecret`). This secret is also expected to exist when `deploy_secrets: true` but the ClickHouse credentials are empty in values.
 
 To use **custom secret names**, set:
 ```yaml
@@ -15,6 +16,7 @@ general:
     existing_secrets:
       backend: ""
       keycloak: ""
+      clickhouse: ""
 ```
 Note that this is only relevant when `deploy_secrets: false`.
 
@@ -53,6 +55,17 @@ When managing secrets externally, ensure the following fields are present in eac
 | `KEYCLOAK_PASSWORD` | Keycloak admin password | `secrets.keycloak.password` |
 | `KEYCLOAK_USER` | Keycloak admin username | Fixed as `admin` in chart template; set same value when using external secret |
 
+#### **ClickHouse secret** (`{{ .Release.name }}-runtime-collector-clickhouse`)
+
+Required when [Runtime Collector](../components/runtime-collector.md) is enabled and credentials are not supplied via `runtime_collector.clickhouse.external.existingSecret`.
+
+Note that this secret is also expected to be pre-created when `deploy_secrets: true` but the relevant credentials are left empty in values, which is the recommended way to keep ClickHouse credentials out of your values file.
+
+| Secret Key | Description | Value Source |
+|------------|-------------|--------------|
+| `CLICKHOUSE_PASSWORD` | ClickHouse password | `secrets.clickhouse.password` (local) or `runtime_collector.clickhouse.external.password` (external) |
+| `CLICKHOUSE_USERNAME` | ClickHouse username | `secrets.clickhouse.user` (local) or `runtime_collector.clickhouse.external.username` (external) |
+
 > [!WARNING]
 > For encryption keys, it's strongly recommended to provide them as external secrets rather than letting the chart manage them. See [Encryption Keys Documentation](../advanced/encryption_keys.md) for details.
 
@@ -73,11 +86,16 @@ secrets:
     user: ""      # Message queue username
     password: ""  # Message queue password
 
+  clickhouse:
+    user: ""      # ClickHouse username (used when Runtime Collector is enabled)
+    password: ""  # ClickHouse password (used when Runtime Collector is enabled)
+
   redis:
     password: ""  # Redis authentication password
 
 ```
 > **Note**: Redis authentication requires `deployments.redis.auth.enabled: true`.
+> **Note**: ClickHouse credentials apply when [Runtime Collector](../components/runtime-collector.md) is enabled with local ClickHouse.
 
 ### **License**
 

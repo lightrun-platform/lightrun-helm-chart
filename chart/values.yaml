@@ -28,6 +28,7 @@ general:
       ## Only relevant if deploy_secrets: false
       backend: ""
       keycloak: ""
+      clickhouse: ""
 
   ################
   ## Openshift (tested with version 4.12.5)
@@ -186,6 +187,8 @@ general:
         rabbitmq: ""
         data_streamer: ""
         artifacts: ""
+        runtime_collector: ""
+        runtime_collector_clickhouse: ""
 
   ############
   ## Router ##
@@ -466,6 +469,12 @@ secrets:
     user: ""
     password: ""
   mq:
+    user: ""
+    password: ""
+  ## Used when runtime_collector is enabled with local ClickHouse.
+  ## If either field is left empty the chart does not create the ClickHouse secret at all,
+  ## even when deploy_secrets is enabled, and expects it to already exist in the namespace.
+  clickhouse:
     user: ""
     password: ""
   redis:
@@ -1135,3 +1144,174 @@ deployments:
       worker_processes: 3
       worker_connections: 10240
       worker_rlimit_nofile: 20480 # hast to be less than ulimits of the system
+
+######################
+## Runtime collector
+######################
+runtime_collector:
+  enabled: false   # If set to `true`, will deploy the runtime-collector service
+  server:
+    replicas: 1
+    rollout_strategy: RollingUpdate
+    image:
+      repository: lightruncom/runtime-collector
+      tag: ""
+      pullPolicy: IfNotPresent
+    service:
+      type: ClusterIP
+      port: 9090
+      annotations: {}
+      labels: {}
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    initContainers:
+      ## Blocks until ClickHouse answers /ping before the migrations run.
+      wait_for_clickhouse:
+        image:
+          repository: lightruncom/chart-helper
+          tag: "0.3.0-alpine-3.24.1-r4.lr-0"
+          pullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
+      ## Creates the database if needed and applies the ClickHouse schema migrations.
+      migrations:
+        image:
+          repository: lightruncom/runtime-collector-migrations
+          pullPolicy: IfNotPresent
+          ## No tag: the migrations image is always released with the same tag as
+          ## runtime_collector.server.image.tag, so that value is used for both.
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+    podAnnotations: {}
+    podLabels: {}
+    annotations: {}
+    labels: {}
+    extraEnvs: []
+    envSecret: ""
+    extraVolumes: []
+    extraVolumeMounts: []
+    podSecurityContext: {}
+    containerSecurityContext: {}
+    nodeSelector: {}
+    affinity: {}
+    podDisruptionBudget: {}
+    topologySpreadConstraints: []
+    livenessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 20
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+
+  clickhouse:
+    database: runtime_collector
+    local:
+      enabled: false
+      ## If `true`, deploy an in-cluster ClickHouse pod and connect runtime-collector to it
+      ## If `false`, use `clickhouse.external` below
+      httpPort: 8123
+      nativePort: 9000
+      image:
+        repository: clickhouse/clickhouse-server
+        tag: "25.3-alpine"
+        pullPolicy: IfNotPresent
+      resources:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: 500m
+          memory: 1Gi
+      persistence:
+        enabled: false
+        size: 10Gi
+        accessMode: ReadWriteOnce
+        storageClassName: gp3
+      emptyDir:
+        sizeLimit: 10Gi
+        logSizeLimit: 512Mi
+        ## Holds a writable copy of /etc/clickhouse-server, only used when
+        ## general.readOnlyRootFilesystem is true.
+        configSizeLimit: 16Mi
+      initContainers:
+        ## Copies /etc/clickhouse-server into a writable volume so the ClickHouse entrypoint
+        ## can render its user configuration. Only used when general.readOnlyRootFilesystem is true.
+        copy_config:
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+      terminationGracePeriodSeconds: 60
+      service:
+        annotations: {}
+        labels: {}
+      podAnnotations: {}
+      podLabels: {}
+      annotations: {}
+      extraEnvs: []
+      envSecret: ""
+      extraVolumes: []
+      extraVolumeMounts: []
+      podSecurityContext: {}
+      containerSecurityContext:
+        runAsUser: 101
+        runAsGroup: 101
+      nodeSelector: {}
+      affinity: {}
+      startupProbe:
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        timeoutSeconds: 5
+        successThreshold: 1
+        failureThreshold: 30
+      livenessProbe:
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        timeoutSeconds: 5
+        successThreshold: 1
+        failureThreshold: 3
+      readinessProbe:
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        timeoutSeconds: 1
+        successThreshold: 1
+        failureThreshold: 3
+
+    external:
+      host: ""
+      username: ""
+      password: ""
+      existingSecret: ""
+      httpPort: 8123
+      nativePort: 9000
+      tls: false
+      existing_ca_secret_name: ""
+      ## Name of the ClickHouse cluster, for external deployments that are clustered
+      ## (ClickHouse Cloud, or an operator-managed cluster).
+      ## When set, the database and the migrations table are created ON CLUSTER.
+      ## Leave empty for a single-node external instance.
+      cluster: ""
