@@ -1166,20 +1166,50 @@ also be supplied, otherwise there is no certificate to mount.
 {{- end -}}
 {{- end -}}
 
+{{/*
+The CA is mounted whenever ClickHouse is reached over TLS, independently of
+certificates.verification.
+
+The runtime-collector talks to ClickHouse through client-v2 0.9.8, which offers no way to
+disable certificate verification: the setSSLMode escape hatch first appears in 0.10.0, which
+is still pre-release (see clickhouse-java issues #2309 and #2389). Verification therefore
+always happens on this path, and the only way to make it succeed is to hand the client a
+trust anchor. Setting certificates.verification to false does not change that, so it has no
+effect on the ClickHouse connection.
+
+TODO: once client-v2 0.10.0 is GA and the application adopts it, map
+certificates.verification: false to setSSLMode(TRUST) and gate this mount on verification
+again.
+
+Which CA is the right anchor follows from the certificate source rather than from operator
+preference: self-signed certificates are signed by the CA the release generates, so that is
+the only CA that can verify them, and it is already published as a secret for Keycloak to
+trust internal services. Existing certificates are verified with the supplied CA instead.
+*/}}
 {{- define "runtime_collector.internalCa.mount" -}}
-{{- if and (include "runtime_collector.clickhouse.internalTls.certEnabled" .) .Values.general.internal_tls.certificates.verification .Values.general.internal_tls.certificates.existing_ca_secret_name -}}true{{- end -}}
+{{- if include "runtime_collector.clickhouse.internalTls.certEnabled" . -}}
+{{- if or (eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates") .Values.general.internal_tls.certificates.existing_ca_secret_name -}}true{{- end -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "runtime_collector.internalCa.secretName" -}}
+{{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" -}}
+{{ include "lightrun.fullname" . }}-internal-tls-ca
+{{- else -}}
 {{ .Values.general.internal_tls.certificates.existing_ca_secret_name }}
+{{- end -}}
 {{- end -}}
 
 {{- define "runtime_collector.internalCa.secretKey" -}}
+{{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" -}}
+custom-ca.pem
+{{- else -}}
 ca.crt
+{{- end -}}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.externalCa.mount" -}}
-{{- if and (not .Values.runtime_collector.clickhouse.local.enabled) .Values.runtime_collector.clickhouse.external.tls .Values.general.internal_tls.certificates.verification .Values.runtime_collector.clickhouse.external.existing_ca_secret_name -}}true{{- end -}}
+{{- if and (not .Values.runtime_collector.clickhouse.local.enabled) .Values.runtime_collector.clickhouse.external.tls .Values.runtime_collector.clickhouse.external.existing_ca_secret_name -}}true{{- end -}}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.ca.mount" -}}
@@ -1187,28 +1217,26 @@ ca.crt
 {{- end -}}
 
 {{/*
-Certificate verification is skipped only when it is switched off explicitly. With
-verification enabled but no CA secret supplied, the server certificate is validated against
-the image's system trust store instead of being silently accepted.
+Verification is skipped only when there is no CA to verify against and it has been switched
+off explicitly, which in practice means an external ClickHouse whose CA was not supplied.
+Once a CA is mounted the certificate is always verified, so that the clients that cannot be
+told to skip verification behave the same as the ones that can.
 */}}
 {{- define "runtime_collector.clickhouse.skipVerify" -}}
-{{- if and (include "runtime_collector.clickhouse.nativeSecure" .) (not .Values.general.internal_tls.certificates.verification) -}}true{{- end -}}
+{{- if and (include "runtime_collector.clickhouse.nativeSecure" .) (not (include "runtime_collector.clickhouse.ca.mount" .)) (not .Values.general.internal_tls.certificates.verification) -}}true{{- end -}}
 {{- end -}}
 
 {{/*
 A locally deployed ClickHouse is reachable only under its in-cluster service name, so its
-certificate can never come from a publicly trusted CA. Verifying it without a usable CA is
-guaranteed to fail at connect time, so the unsupported combinations are rejected at render time.
-The CA behind the self-signed certificates is generated inside the release and is not published
-in a secret, which is why that source cannot be verified at all.
+certificate can never come from a publicly trusted CA, and the collector cannot be told to
+skip verification. A CA is therefore mandatory on this path and its absence is rejected at
+render time rather than surfacing as a handshake failure at connect time. Self-signed
+certificates supply it automatically, so this only bites when existing certificates are used
+without naming the CA that signed them.
 */}}
 {{- define "runtime_collector.clickhouse.validateTls" -}}
-{{- if and (include "runtime_collector.clickhouse.internalTls.certEnabled" .) .Values.general.internal_tls.certificates.verification -}}
-{{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" -}}
-{{- fail "runtime_collector with local ClickHouse requires general.internal_tls.certificates.verification: false when certificates.source is generate_self_signed_certificates, because the generated CA is not exposed for clients to trust." -}}
-{{- else if not .Values.general.internal_tls.certificates.existing_ca_secret_name -}}
-{{- fail "runtime_collector with local ClickHouse and internal TLS requires general.internal_tls.certificates.existing_ca_secret_name to be set when certificates.verification is true, because the ClickHouse certificate cannot be verified without its CA. Provide the CA secret, or set certificates.verification to false." -}}
-{{- end -}}
+{{- if and (include "runtime_collector.clickhouse.internalTls.certEnabled" .) (not (include "runtime_collector.clickhouse.ca.mount" .)) -}}
+{{- fail "runtime_collector with local ClickHouse and internal TLS requires general.internal_tls.certificates.existing_ca_secret_name to be set, because the ClickHouse certificate cannot be verified without its CA and the collector cannot skip verification. Provide the CA secret, or set certificates.source to generate_self_signed_certificates." -}}
 {{- end -}}
 {{- end -}}
 
