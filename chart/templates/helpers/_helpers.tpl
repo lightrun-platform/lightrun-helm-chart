@@ -1197,12 +1197,18 @@ the image's system trust store instead of being silently accepted.
 
 {{/*
 A locally deployed ClickHouse is reachable only under its in-cluster service name, so its
-certificate can never come from a publicly trusted CA. Verifying it without a CA secret is
-therefore guaranteed to fail at runtime, and is rejected up front rather than at connect time.
+certificate can never come from a publicly trusted CA. Verifying it without a usable CA is
+guaranteed to fail at connect time, so the unsupported combinations are rejected at render time.
+The CA behind the self-signed certificates is generated inside the release and is not published
+in a secret, which is why that source cannot be verified at all.
 */}}
 {{- define "runtime_collector.clickhouse.validateTls" -}}
-{{- if and (include "runtime_collector.clickhouse.internalTls.certEnabled" .) .Values.general.internal_tls.certificates.verification (not .Values.general.internal_tls.certificates.existing_ca_secret_name) -}}
+{{- if and (include "runtime_collector.clickhouse.internalTls.certEnabled" .) .Values.general.internal_tls.certificates.verification -}}
+{{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" -}}
+{{- fail "runtime_collector with local ClickHouse requires general.internal_tls.certificates.verification: false when certificates.source is generate_self_signed_certificates, because the generated CA is not exposed for clients to trust." -}}
+{{- else if not .Values.general.internal_tls.certificates.existing_ca_secret_name -}}
 {{- fail "runtime_collector with local ClickHouse and internal TLS requires general.internal_tls.certificates.existing_ca_secret_name to be set when certificates.verification is true, because the ClickHouse certificate cannot be verified without its CA. Provide the CA secret, or set certificates.verification to false." -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}
 

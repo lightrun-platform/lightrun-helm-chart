@@ -84,7 +84,7 @@ runtime_collector:
 | **`external.httpPort`** | HTTP interface port (default: `8123`). |
 | **`external.nativePort`** | Native protocol port (default: `9000`). |
 | **`external.tls`** | Set to `true` when the external ClickHouse endpoint uses TLS. Without a CA mount, connections skip certificate verification (`skip_verify`). |
-| **`external.existing_ca_secret_name`** | Kubernetes secret with the CA certificate (`ca.crt` key). When set with `tls: true`, mounted automatically and `SSL_CA_CERT_FILE` is set on runtime-collector and migrate init containers. |
+| **`external.existing_ca_secret_name`** | Kubernetes secret with the CA certificate (`ca.crt` key). When set with `tls: true`, mounted automatically and `SSL_CERT_FILE` is set on runtime-collector and migrate init containers. |
 | **`external.cluster`** | ClickHouse cluster name, for clustered external deployments (ClickHouse Cloud, or an operator-managed cluster). When set, the database and the migrations table are created `ON CLUSTER`. Leave empty for a single-node instance. |
 
 > [!NOTE]
@@ -116,16 +116,15 @@ runtime_collector:
           memory: 1Gi
       persistence:
         enabled: false
-        size: 10Gi
-        accessMode: ReadWriteOnce
-        storageClassName: gp3
+        existingClaim: ""
       emptyDir:
         sizeLimit: 10Gi
 ```
 
 > [!NOTE]
 > - Local ClickHouse runs with a **fixed replica count of 1** (no PDB or topology spread) and always uses the `Recreate` rollout strategy.
-> - When `persistence.enabled: false`, data is stored in an **EmptyDir** volume.
+> - When `persistence.enabled: false`, data is stored in an **EmptyDir** volume and is lost when the pod is replaced.
+> - When `persistence.enabled: true`, the chart mounts the claim named in `existingClaim`. As with the other persistent volumes in this chart, you create and manage the PVC yourself, so its lifecycle is independent of the release. A `ReadWriteOnce` claim is enough for the single replica.
 > - Clustered ClickHouse is only supported for external instances, via `clickhouse.external.cluster`.
 > - When `general.readOnlyRootFilesystem: true`, an init container copies `/etc/clickhouse-server` into a writable volume, because the ClickHouse entrypoint renders its user configuration there on every start.
 
@@ -166,7 +165,7 @@ Same rules as backend and other chart clients:
 | `verification` | `existing_ca_secret_name` | Behaviour |
 | -------------- | ------------------------- | --------- |
 | `false` | any | No CA mount; connections skip certificate verification |
-| `true` | set | Mounts `existing_ca_secret_name` (`ca.crt` key) on migrate + runtime-collector containers |
+| `true` | set | Mounts `existing_ca_secret_name` (`ca.crt` key) on migrate + runtime-collector containers and points `SSL_CERT_FILE` at it, so both the application and the Go `migrate` binary trust that CA |
 | `true` | empty | No CA mount, and verification is **not** skipped: the certificate is validated against the system trust store. Rejected at install time for local ClickHouse, whose certificate can never be publicly trusted. |
 
 With `source: generate_self_signed_certificates`, **`verification` must be `false`**. The chart fails the install if runtime-collector uses local ClickHouse with internal TLS and `verification: true` in this mode.
