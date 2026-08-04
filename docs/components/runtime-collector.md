@@ -124,7 +124,7 @@ runtime_collector:
 > - When `persistence.enabled: false`, data is stored in an **EmptyDir** volume and is lost when the pod is replaced.
 > - When `persistence.enabled: true`, the chart mounts the claim named in `existingClaim`. As with the other persistent volumes in this chart, you create and manage the PVC yourself, so its lifecycle is independent of the release. A `ReadWriteOnce` claim is enough for the single replica.
 > - Clustered ClickHouse is only supported for external instances, via `clickhouse.external.cluster`.
-> - When `general.readOnlyRootFilesystem: true`, an init container copies `/etc/clickhouse-server` into a writable volume, because the ClickHouse entrypoint renders its user configuration there on every start.
+> - When `general.readOnlyRootFilesystem: true`, an EmptyDir is mounted at `/etc/clickhouse-server/users.d`, because the ClickHouse entrypoint regenerates `users.d/default-user.xml` there on every start. It is the only path under `/etc/clickhouse-server` the entrypoint writes to, and the image ships the directory empty, so the rest of the configuration tree stays read-only and unshadowed.
 
 ## Runtime Collector Server (`runtime_collector.server`)
 

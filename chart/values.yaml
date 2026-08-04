@@ -1250,20 +1250,9 @@ runtime_collector:
       emptyDir:
         sizeLimit: 10Gi
         logSizeLimit: 512Mi
-        ## Holds a writable copy of /etc/clickhouse-server, only used when
-        ## general.readOnlyRootFilesystem is true.
-        configSizeLimit: 16Mi
-      initContainers:
-        ## Copies /etc/clickhouse-server into a writable volume so the ClickHouse entrypoint
-        ## can render its user configuration. Only used when general.readOnlyRootFilesystem is true.
-        copy_config:
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 100m
-              memory: 128Mi
+        ## Backs /etc/clickhouse-server/users.d, which the ClickHouse entrypoint rewrites on every
+        ## start. Only used when general.readOnlyRootFilesystem is true.
+        usersConfigSizeLimit: 16Mi
       terminationGracePeriodSeconds: 60
       service:
         annotations: {}

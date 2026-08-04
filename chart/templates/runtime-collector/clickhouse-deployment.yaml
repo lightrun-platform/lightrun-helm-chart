@@ -39,36 +39,6 @@ spec:
       {{- end }}
       securityContext:
         {{- include "runtime_collector.clickhouse.podSecurityContext" . | nindent 8 }}
-      {{- if .Values.general.readOnlyRootFilesystem }}
-      ## The ClickHouse entrypoint rewrites /etc/clickhouse-server/users.d/default-user.xml on every
-      ## start, which a read-only root filesystem forbids. Stage the whole config tree into a
-      ## writable volume instead, including the SSL drop-in so the server needs a single mount.
-      initContainers:
-        - name: copy-clickhouse-config
-          image: "{{ .Values.runtime_collector.clickhouse.local.image.repository }}:{{ .Values.runtime_collector.clickhouse.local.image.tag }}"
-          imagePullPolicy: {{ .Values.runtime_collector.clickhouse.local.image.pullPolicy }}
-          securityContext:
-            {{- include "runtime_collector.clickhouse.containerSecurityContext" . | nindent 12 }}
-          resources:
-            {{- toYaml .Values.runtime_collector.clickhouse.local.initContainers.copy_config.resources | nindent 12 }}
-          command:
-            - sh
-            - -c
-            - |
-              set -e
-              cp -a /etc/clickhouse-server/. /etc/clickhouse-server-rw/
-              {{- if include "runtime_collector.clickhouse.internalTls.certEnabled" . }}
-              cp /tmp/ssl-config/ssl-config.xml /etc/clickhouse-server-rw/config.d/ssl-config.xml
-              {{- end }}
-          volumeMounts:
-            - name: config
-              mountPath: /etc/clickhouse-server-rw
-            {{- if include "runtime_collector.clickhouse.internalTls.certEnabled" . }}
-            - name: ssl-config
-              mountPath: /tmp/ssl-config
-              readOnly: true
-            {{- end }}
-      {{- end }}
       containers:
         - name: clickhouse
           securityContext:
@@ -145,21 +115,21 @@ spec:
             - name: data
               mountPath: /var/lib/clickhouse
             {{- if .Values.general.readOnlyRootFilesystem }}
-            ## The SSL drop-in is already staged into this volume by the init container.
-            - name: config
-              mountPath: /etc/clickhouse-server
+            ## users.d is the only path under /etc/clickhouse-server the entrypoint writes to: it
+            ## regenerates users.d/default-user.xml on every start. The image ships the directory
+            ## empty, so an emptyDir here shadows nothing and the rest of the tree stays read-only.
+            - name: users-config
+              mountPath: /etc/clickhouse-server/users.d
             - name: log
               mountPath: /var/log/clickhouse-server
             - name: tmpfs
               mountPath: /tmp
             {{- end }}
             {{- if include "runtime_collector.clickhouse.internalTls.certEnabled" . }}
-            {{- if not .Values.general.readOnlyRootFilesystem }}
             - name: ssl-config
               mountPath: /etc/clickhouse-server/config.d/ssl-config.xml
               subPath: ssl-config.xml
               readOnly: true
-            {{- end }}
             - name: internal-cert
               mountPath: /tmp/certs/
               readOnly: true
@@ -185,9 +155,9 @@ spec:
             secretName: {{ include "runtime_collector.clickhouse.internalCertSecretName" . }}
         {{- end }}
         {{- if .Values.general.readOnlyRootFilesystem }}
-        - name: config
+        - name: users-config
           emptyDir:
-            sizeLimit: {{ .Values.runtime_collector.clickhouse.local.emptyDir.configSizeLimit }}
+            sizeLimit: {{ .Values.runtime_collector.clickhouse.local.emptyDir.usersConfigSizeLimit }}
         - name: log
           emptyDir:
             sizeLimit: {{ .Values.runtime_collector.clickhouse.local.emptyDir.logSizeLimit }}
