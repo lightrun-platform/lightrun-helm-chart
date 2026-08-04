@@ -496,21 +496,19 @@ Usage:
 {{- end -}}
 {{- end -}}
 
-{{/*
-Name of the ClickHouse credentials secret managed by the chart.
-Unlike the backend/keycloak secrets, "existing_secrets.clickhouse" is honoured in both
-deploy_secrets modes, because the chart also skips creating this secret when the
-credentials in values are empty (see "runtime_collector.clickhouse.deploySecret").
-*/}}
 {{- define "secrets.clickhouse.name" -}}
-{{- $existing := "" -}}
-{{- if not (kindIs "bool" .Values.general.deploy_secrets) -}}
-{{- $existing = .Values.general.deploy_secrets.existing_secrets.clickhouse | default "" -}}
-{{- end -}}
-{{- if $existing -}}
-{{ $existing }}
-{{- else -}}
+{{- if (kindIs "bool" .Values.general.deploy_secrets)  -}}
 {{ include "runtime_collector.clickhouse.name" . }}
+{{- else -}}
+    {{- if .Values.general.deploy_secrets.enabled -}}
+{{ include "runtime_collector.clickhouse.name" . }}
+    {{- else -}}
+        {{- if .Values.general.deploy_secrets.existing_secrets.clickhouse -}}
+{{ .Values.general.deploy_secrets.existing_secrets.clickhouse }}
+        {{- else -}}
+{{ include "runtime_collector.clickhouse.name" . }}
+        {{- end -}}
+    {{- end -}}
 {{- end -}}
 {{- end -}}
 
@@ -1049,15 +1047,6 @@ provisioned from the chart-managed secret.
 {{- if not .Values.runtime_collector.clickhouse.local.enabled -}}
 {{ .Values.runtime_collector.clickhouse.external.existingSecret }}
 {{- end -}}
-{{- end -}}
-
-{{/*
-The chart creates the ClickHouse secret only when it has both a username and a password
-to put in it. Leaving either empty means the secret is expected to already exist in the
-namespace, even when deploy_secrets is enabled.
-*/}}
-{{- define "runtime_collector.clickhouse.deploySecret" -}}
-{{- if and .Values.runtime_collector.enabled (not (include "runtime_collector.clickhouse.existingSecret" .)) (include "runtime_collector.clickhouse.username" .) (include "runtime_collector.clickhouse.password" .) -}}true{{- end -}}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.hostname" -}}

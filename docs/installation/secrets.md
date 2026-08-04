@@ -7,7 +7,7 @@ Lightrun requires various secrets for authentication, database access, message q
 - If `deploy_secrets: false`, secrets **must be pre-created** in Kubernetes. The chart will look for existing secrets:
   - **Backend secret:** `{{ .Release.name }}-backend`
   - **Keycloak secret:** `{{ .Release.name }}-keycloak`
-  - **ClickHouse secret:** `{{ .Release.name }}-runtime-collector-clickhouse` (when Runtime Collector is enabled and not using `clickhouse.external.existingSecret`). This secret is also expected to exist when `deploy_secrets: true` but the ClickHouse credentials are empty in values.
+  - **ClickHouse secret:** `{{ .Release.name }}-runtime-collector-clickhouse` (when Runtime Collector is enabled and not using `clickhouse.external.existingSecret`)
 
 To use **custom secret names**, set:
 ```yaml
@@ -58,8 +58,6 @@ When managing secrets externally, ensure the following fields are present in eac
 #### **ClickHouse secret** (`{{ .Release.name }}-runtime-collector-clickhouse`)
 
 Required when [Runtime Collector](../components/runtime-collector.md) is enabled and credentials are not supplied via `runtime_collector.clickhouse.external.existingSecret`.
-
-Note that this secret is also expected to be pre-created when `deploy_secrets: true` but the relevant credentials are left empty in values, which is the recommended way to keep ClickHouse credentials out of your values file.
 
 | Secret Key | Description | Value Source |
 |------------|-------------|--------------|

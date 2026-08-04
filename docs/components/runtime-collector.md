@@ -28,10 +28,8 @@ RUNTIME_COLLECTOR_ENDPOINT: "<release>-runtime-collector:9090"
 
 For **local ClickHouse**, credentials are stored in a dedicated ClickHouse secret:
 
-- If `deploy_secrets: true` **and both `secrets.clickhouse.user` and `secrets.clickhouse.password` are set**, the chart creates `{{ .Release.name }}-runtime-collector-clickhouse`.
-- If either field is left empty, the chart does **not** create the secret and expects it to already exist, even when `deploy_secrets: true`. This is the recommended way to keep ClickHouse credentials out of your values file.
-- If `deploy_secrets: false`, the secret must always be pre-created.
-- In every mode, `general.deploy_secrets.existing_secrets.clickhouse` overrides the expected secret name.
+- If `deploy_secrets: true`, the chart creates `{{ .Release.name }}-runtime-collector-clickhouse`.
+- If `deploy_secrets: false`, the secret must be pre-created. The chart looks for `{{ .Release.name }}-runtime-collector-clickhouse`, or the name in `general.deploy_secrets.existing_secrets.clickhouse`.
 
 A pre-created secret must contain `CLICKHOUSE_USERNAME` and `CLICKHOUSE_PASSWORD`.
 

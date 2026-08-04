@@ -472,8 +472,6 @@ secrets:
     user: ""
     password: ""
   ## Used when runtime_collector is enabled with local ClickHouse.
-  ## If either field is left empty the chart does not create the ClickHouse secret at all,
-  ## even when deploy_secrets is enabled, and expects it to already exist in the namespace.
   clickhouse:
     user: ""
     password: ""
