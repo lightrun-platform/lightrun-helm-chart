@@ -46,10 +46,7 @@ spec:
           image: "{{ .Values.runtime_collector.clickhouse.local.image.repository }}:{{ .Values.runtime_collector.clickhouse.local.image.tag }}"
           imagePullPolicy: {{ .Values.runtime_collector.clickhouse.local.image.pullPolicy }}
           env:
-            ## CLICKHOUSE_DB is deliberately not set: it makes the image entrypoint start a
-            ## temporary server and connect to it with a plaintext client, which fails once TLS
-            ## moves the native port to tcp_port_secure. The database is created by the
-            ## migrate-clickhouse init container instead.
+            ## CLICKHOUSE_DB breaks TLS startup; migrations create the database instead.
             - name: CLICKHOUSE_USER
               valueFrom:
                 secretKeyRef:
@@ -115,9 +112,7 @@ spec:
             - name: data
               mountPath: /var/lib/clickhouse
             {{- if .Values.general.readOnlyRootFilesystem }}
-            ## users.d is the only path under /etc/clickhouse-server the entrypoint writes to: it
-            ## regenerates users.d/default-user.xml on every start. The image ships the directory
-            ## empty, so an emptyDir here shadows nothing and the rest of the tree stays read-only.
+            ## Writable mount for users.d/default-user.xml rewritten by the entrypoint.
             - name: users-config
               mountPath: /etc/clickhouse-server/users.d
             - name: log

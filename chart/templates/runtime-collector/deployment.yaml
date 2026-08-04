@@ -102,8 +102,6 @@ spec:
                   name: {{ include "runtime_collector.clickhouse.secretName" . }}
                   key: CLICKHOUSE_PASSWORD
             {{- if include "runtime_collector.clickhouse.ca.mount" . }}
-            ## Named SSL_CERT_FILE because `migrate` is a Go binary and builds its trust store
-            ## from that variable specifically; the entrypoint reads the same one.
             - name: SSL_CERT_FILE
               value: /tmp/ca-certificates/ca.crt
             {{- end }}
@@ -181,7 +179,7 @@ spec:
           {{- if or .Values.general.readOnlyRootFilesystem (include "runtime_collector.internalTls.certEnabled" .) (include "runtime_collector.clickhouse.ca.mount" .) .Values.runtime_collector.server.extraVolumeMounts }}
           volumeMounts:
             {{- if .Values.general.readOnlyRootFilesystem }}
-            ## Declared before the /tmp/* secret mounts so that the parent tmpfs is mounted first.
+            ## Mount /tmp before nested /tmp/* secret mounts.
             - name: tmpfs
               mountPath: /tmp
             {{- end }}

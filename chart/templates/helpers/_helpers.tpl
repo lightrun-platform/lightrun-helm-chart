@@ -975,20 +975,12 @@ Usage: {{ include "lightrun.datadogAnnotations" (dict "serviceName" "lightrun-be
 {{- end -}}
 {{- end -}}
 
-{{/*
-Security context for the runtime-collector init containers. Deliberately not user-overridable:
-the server-level containerSecurityContext applies to the application container only.
-*/}}
 {{- define "runtime_collector.initContainerSecurityContext" -}}
 {{- $readOnlyRootFilesystem := dict "readOnlyRootFilesystem" (.Values.general.readOnlyRootFilesystem) -}}
 {{- $baseSecurityContext := include "baseSecurityContext" . | fromYaml -}}
 {{- mustMerge $baseSecurityContext $readOnlyRootFilesystem | toYaml -}}
 {{- end -}}
 
-{{/*
-ClickHouse runs as uid/gid 101 in the upstream image. On OpenShift the SCC assigns an
-arbitrary uid, so the pinned ids are dropped there, matching "baseSecurityContext".
-*/}}
 {{- define "runtime_collector.clickhouse.containerSecurityContext" -}}
 {{- $readOnlyRootFilesystem := dict "readOnlyRootFilesystem" (.Values.general.readOnlyRootFilesystem) -}}
 {{- $baseSecurityContext := include "baseSecurityContext" . | fromYaml -}}
@@ -1005,10 +997,6 @@ arbitrary uid, so the pinned ids are dropped there, matching "baseSecurityContex
 {{- $localSecurityContext | toYaml -}}
 {{- end -}}
 
-{{/*
-Pod-level security context for local ClickHouse. fsGroup is needed so the data volume is
-writable by the clickhouse user, but must be omitted on OpenShift where the SCC decides.
-*/}}
 {{- define "runtime_collector.clickhouse.podSecurityContext" -}}
 {{- if .Values.runtime_collector.clickhouse.local.podSecurityContext -}}
 {{- toYaml .Values.runtime_collector.clickhouse.local.podSecurityContext -}}
@@ -1019,10 +1007,6 @@ writable by the clickhouse user, but must be omitted on OpenShift where the SCC 
 {{- end -}}
 {{- end -}}
 
-{{/*
-Effective ClickHouse credentials: local ClickHouse is provisioned from the shared
-"secrets" section, external ClickHouse carries its own credentials.
-*/}}
 {{- define "runtime_collector.clickhouse.username" -}}
 {{- if .Values.runtime_collector.clickhouse.local.enabled -}}
 {{ .Values.secrets.clickhouse.user }}
@@ -1039,10 +1023,6 @@ Effective ClickHouse credentials: local ClickHouse is provisioned from the share
 {{- end -}}
 {{- end -}}
 
-{{/*
-"existingSecret" only applies to external ClickHouse; local ClickHouse is always
-provisioned from the chart-managed secret.
-*/}}
 {{- define "runtime_collector.clickhouse.existingSecret" -}}
 {{- if not .Values.runtime_collector.clickhouse.local.enabled -}}
 {{ .Values.runtime_collector.clickhouse.external.existingSecret }}
@@ -1118,11 +1098,6 @@ http
 {{- end -}}
 {{- end -}}
 
-{{/*
-Internal TLS follows the same rule as every other component: it is driven by
-general.internal_tls.enabled. In "existing_certificates" mode a per-service secret must
-also be supplied, otherwise there is no certificate to mount.
-*/}}
 {{- define "runtime_collector.internalTls.certEnabled" -}}
 {{- if and .Values.general.internal_tls.enabled .Values.runtime_collector.enabled -}}
 {{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" -}}true
@@ -1156,24 +1131,9 @@ also be supplied, otherwise there is no certificate to mount.
 {{- end -}}
 
 {{/*
-The CA is mounted whenever ClickHouse is reached over TLS, independently of
-certificates.verification.
-
-The runtime-collector talks to ClickHouse through client-v2 0.9.8, which offers no way to
-disable certificate verification: the setSSLMode escape hatch first appears in 0.10.0, which
-is still pre-release (see clickhouse-java issues #2309 and #2389). Verification therefore
-always happens on this path, and the only way to make it succeed is to hand the client a
-trust anchor. Setting certificates.verification to false does not change that, so it has no
-effect on the ClickHouse connection.
-
-TODO: once client-v2 0.10.0 is GA and the application adopts it, map
-certificates.verification: false to setSSLMode(TRUST) and gate this mount on verification
-again.
-
-Which CA is the right anchor follows from the certificate source rather than from operator
-preference: self-signed certificates are signed by the CA the release generates, so that is
-the only CA that can verify them, and it is already published as a secret for Keycloak to
-trust internal services. Existing certificates are verified with the supplied CA instead.
+Always mount a CA when ClickHouse TLS is enabled: client-v2 0.9.8 cannot skip verification.
+TODO: once client-v2 0.10.0 is GA, map certificates.verification: false to setSSLMode(TRUST)
+and gate this mount on verification again.
 */}}
 {{- define "runtime_collector.internalCa.mount" -}}
 {{- if include "runtime_collector.clickhouse.internalTls.certEnabled" . -}}
@@ -1205,24 +1165,10 @@ ca.crt
 {{- if or (include "runtime_collector.internalCa.mount" .) (include "runtime_collector.clickhouse.externalCa.mount" .) -}}true{{- end -}}
 {{- end -}}
 
-{{/*
-Verification is skipped only when there is no CA to verify against and it has been switched
-off explicitly, which in practice means an external ClickHouse whose CA was not supplied.
-Once a CA is mounted the certificate is always verified, so that the clients that cannot be
-told to skip verification behave the same as the ones that can.
-*/}}
 {{- define "runtime_collector.clickhouse.skipVerify" -}}
 {{- if and (include "runtime_collector.clickhouse.nativeSecure" .) (not (include "runtime_collector.clickhouse.ca.mount" .)) (not .Values.general.internal_tls.certificates.verification) -}}true{{- end -}}
 {{- end -}}
 
-{{/*
-A locally deployed ClickHouse is reachable only under its in-cluster service name, so its
-certificate can never come from a publicly trusted CA, and the collector cannot be told to
-skip verification. A CA is therefore mandatory on this path and its absence is rejected at
-render time rather than surfacing as a handshake failure at connect time. Self-signed
-certificates supply it automatically, so this only bites when existing certificates are used
-without naming the CA that signed them.
-*/}}
 {{- define "runtime_collector.clickhouse.validateTls" -}}
 {{- if and (include "runtime_collector.clickhouse.internalTls.certEnabled" .) (not (include "runtime_collector.clickhouse.ca.mount" .)) -}}
 {{- fail "runtime_collector with local ClickHouse and internal TLS requires general.internal_tls.certificates.existing_ca_secret_name to be set, because the ClickHouse certificate cannot be verified without its CA and the collector cannot skip verification. Provide the CA secret, or set certificates.source to generate_self_signed_certificates." -}}
@@ -1273,11 +1219,6 @@ ca.crt
 {{- printf "until wget %s-q -O- %s/ping | grep -q Ok; do echo waiting for clickhouse; sleep 2; done" $tlsOptions $endpoint -}}
 {{- end -}}
 
-{{/*
-DSN handed to `migrate` by the runtime-collector-migrations entrypoint.
-Credentials are referenced as $(VAR) so that Kubernetes expands them from the secret-backed
-env vars instead of baking them into the Deployment spec.
-*/}}
 {{- define "runtime_collector.clickhouse.migrateDatabaseUrl" -}}
 {{- $host := include "runtime_collector.clickhouse.hostname" . -}}
 {{- $port := include "runtime_collector.clickhouse.nativePort" . -}}

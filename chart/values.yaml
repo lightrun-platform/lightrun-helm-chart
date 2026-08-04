@@ -1168,7 +1168,6 @@ runtime_collector:
         cpu: 500m
         memory: 512Mi
     initContainers:
-      ## Blocks until ClickHouse answers /ping before the migrations run.
       wait_for_clickhouse:
         image:
           repository: lightruncom/chart-helper
@@ -1181,13 +1180,11 @@ runtime_collector:
           limits:
             cpu: 100m
             memory: 64Mi
-      ## Creates the database if needed and applies the ClickHouse schema migrations.
       migrations:
         image:
           repository: lightruncom/runtime-collector-migrations
           pullPolicy: IfNotPresent
-          ## No tag: the migrations image is always released with the same tag as
-          ## runtime_collector.server.image.tag, so that value is used for both.
+          ## Tag always follows runtime_collector.server.image.tag
         resources:
           requests:
             cpu: 500m
@@ -1225,9 +1222,8 @@ runtime_collector:
   clickhouse:
     database: runtime_collector
     local:
+      ## If true, deploy in-cluster ClickHouse; if false, use clickhouse.external
       enabled: false
-      ## If `true`, deploy an in-cluster ClickHouse pod and connect runtime-collector to it
-      ## If `false`, use `clickhouse.external` below
       httpPort: 8123
       nativePort: 9000
       image:
@@ -1242,16 +1238,14 @@ runtime_collector:
           cpu: 500m
           memory: 1Gi
       persistence:
-        # If **true**, use an existing PersistentVolumeClaim instead of an EmptyDir.
+        # If true, use an existing PersistentVolumeClaim instead of an EmptyDir.
         enabled: false
-        # Name of an existing PersistentVolumeClaim to use. ClickHouse runs as a single
-        # replica, so a ReadWriteOnce claim is enough.
+        # Name of an existing PersistentVolumeClaim (ReadWriteOnce is enough for 1 replica).
         existingClaim: ""
       emptyDir:
         sizeLimit: 10Gi
         logSizeLimit: 512Mi
-        ## Backs /etc/clickhouse-server/users.d, which the ClickHouse entrypoint rewrites on every
-        ## start. Only used when general.readOnlyRootFilesystem is true.
+        ## Used when general.readOnlyRootFilesystem is true.
         usersConfigSizeLimit: 16Mi
       terminationGracePeriodSeconds: 60
       service:
@@ -1298,8 +1292,5 @@ runtime_collector:
       nativePort: 9000
       tls: false
       existing_ca_secret_name: ""
-      ## Name of the ClickHouse cluster, for external deployments that are clustered
-      ## (ClickHouse Cloud, or an operator-managed cluster).
-      ## When set, the database and the migrations table are created ON CLUSTER.
-      ## Leave empty for a single-node external instance.
+      ## Cluster name for ON CLUSTER (ClickHouse Cloud / operator). Leave empty for single-node.
       cluster: ""
