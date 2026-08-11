@@ -1,4 +1,71 @@
 
+<a name="v3.50.0"></a>
+## [v3.50.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.49.0...v3.50.0) - 2026-08-11
+
+
+
+### Versions
+
+| Image         | Tag                             |
+|---------------|---------------------------------|
+| artifacts     | 1.91.0-release.943266f167       |
+| backend       | 1.91.0-release.943266f167       |
+| crons         | 1.91.0-release.943266f167       |
+| data_streamer | 4.103.1-alpine-3.24.1-r5.lr-0   |
+| frontend      | 1.91.0-release.943266f167       |
+| keycloak      | 1.91.0-release.943266f167       |
+| mysql         | 8.4.10                          |
+| rabbitmq      | 4.3.4-alpine.lr-1               |
+| redis         | 7.4.10-alpine-3.24.1-r5.lr-0    |
+| router        | 1.30.4-r1-alpine-3.24.1-r5.lr-0 |
+
+
+ 
+ 
+
+
+### Security (2 changes)
+
+- [bump chart-helper->0.3.0-alpine-3.24.1-r5.lr-0, data-streamer->4.103.1, rabbitmq->4.3.4-alpine.lr-1, redis->7.4.10-alpine-3.24.1-r5.lr-0, router->1.30.4-r1-alpine-3.24.1-r5.lr-0 (#258)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/5289ed3)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+
+- [bump chart-helper->0.3.0-alpine-3.24.1-r4.lr-0, data-streamer->4.102.0, rabbitmq->4.3.4-alpine, redis->7.4.10, router->1.30.4-r1 (#256)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/ef90aed)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+ 
+ 
+
+
+### Changed (1 change)
+
+- [mysql-8.4.10-default-values (#253)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/3729ae7)
+ 
+ 
+ 
+
+
+### Added (2 changes)
+
+- [support-topologySpreadConstraints-and-pdb (#254)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/db88307)
+ 
+
+- [dumps-persistence-pvc (#252)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/eb9202b)
+
+
+  Co-authored-by: Tal Levy <tal@LTR132.local>
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.49.0"></a>
 ## [v3.49.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.48.1...v3.49.0) - 2026-07-28
 
