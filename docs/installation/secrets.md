@@ -8,6 +8,7 @@ Lightrun requires various secrets for authentication, database access, message q
   - **Backend secret:** `{{ .Release.name }}-backend`
   - **Keycloak secret:** `{{ .Release.name }}-keycloak`
   - **ClickHouse secret:** `{{ .Release.name }}-runtime-collector-clickhouse` (when Runtime Collector is enabled and not using `clickhouse.external.existingSecret`)
+  - **Runtime Collector gRPC secret:** `{{ .Release.name }}-runtime-collector-grpc` (when Runtime Collector is enabled)
 
 To use **custom secret names**, set:
 ```yaml
@@ -17,6 +18,7 @@ general:
       backend: ""
       keycloak: ""
       clickhouse: ""
+      runtime_collector: ""
 ```
 Note that this is only relevant when `deploy_secrets: false`.
 
@@ -64,6 +66,14 @@ Required when [Runtime Collector](../components/runtime-collector.md) is enabled
 | `CLICKHOUSE_PASSWORD` | ClickHouse password | `secrets.clickhouse.password` (local) or `runtime_collector.clickhouse.external.password` (external) |
 | `CLICKHOUSE_USERNAME` | ClickHouse username | `secrets.clickhouse.user` (local) or `runtime_collector.clickhouse.external.username` (external) |
 
+#### **Runtime Collector gRPC secret** (`{{ .Release.name }}-runtime-collector-grpc`)
+
+Required when [Runtime Collector](../components/runtime-collector.md) is enabled. Shared between backend/crons (as the client) and the runtime-collector server (as the verifier).
+
+| Secret Key | Description | Value Source |
+|------------|-------------|--------------|
+| `RUNTIME_COLLECTOR_GRPC_SECRET` | Shared secret authenticating gRPC calls to the Runtime Collector | `secrets.runtime_collector.grpc_secret` |
+
 > [!WARNING]
 > For encryption keys, it's strongly recommended to provide them as external secrets rather than letting the chart manage them. See [Encryption Keys Documentation](../advanced/encryption_keys.md) for details.
 
@@ -87,6 +97,9 @@ secrets:
   clickhouse:
     user: ""      # ClickHouse username (used when Runtime Collector is enabled)
     password: ""  # ClickHouse password (used when Runtime Collector is enabled)
+
+  runtime_collector:
+    grpc_secret: ""  # Shared secret between backend/crons and runtime-collector (used when Runtime Collector is enabled)
 
   redis:
     password: ""  # Redis authentication password

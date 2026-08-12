@@ -18,10 +18,24 @@ runtime_collector:
   enabled: true
 ```
 
-When enabled, the backend receives:
+When enabled, the backend and crons receive:
 
 ```yaml
-RUNTIME_COLLECTOR_ENDPOINT: "<release>-runtime-collector:9090"
+RUNTIME_COLLECTOR_GRPC_TARGET: "<release>-runtime-collector:9090"
+RUNTIME_COLLECTOR_GRPC_SECRET: <from the runtime-collector gRPC secret, see below>
+```
+
+## gRPC Shared Secret
+
+Backend/crons authenticate to the runtime-collector gRPC service with a shared secret, stored in a dedicated secret:
+
+- If `deploy_secrets: true`, the chart creates `{{ .Release.name }}-runtime-collector-grpc` and injects it into both the backend/crons pods and the runtime-collector server pod.
+- If `deploy_secrets: false`, the secret must be pre-created. The chart looks for `{{ .Release.name }}-runtime-collector-grpc`, or the name in `general.deploy_secrets.existing_secrets.runtime_collector`. It must contain a `RUNTIME_COLLECTOR_GRPC_SECRET` key.
+
+```yaml
+secrets:
+  runtime_collector:
+    grpc_secret: ""
 ```
 
 ## ClickHouse Credentials

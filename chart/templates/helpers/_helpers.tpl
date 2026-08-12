@@ -512,6 +512,22 @@ Usage:
 {{- end -}}
 {{- end -}}
 
+{{- define "secrets.runtime_collector_grpc.name" -}}
+{{- if (kindIs "bool" .Values.general.deploy_secrets)  -}}
+{{ include "runtime_collector.name" . }}-grpc
+{{- else -}}
+    {{- if .Values.general.deploy_secrets.enabled -}}
+{{ include "runtime_collector.name" . }}-grpc
+    {{- else -}}
+        {{- if .Values.general.deploy_secrets.existing_secrets.runtime_collector -}}
+{{ .Values.general.deploy_secrets.existing_secrets.runtime_collector }}
+        {{- else -}}
+{{ include "runtime_collector.name" . }}-grpc
+        {{- end -}}
+    {{- end -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "secrets.dockerhub.name" -}}
 {{- if contains "lightrun" (include "lightrun.fullname" .)  -}}
 {{ include "lightrun.fullname" . }}-dockerhub

@@ -169,6 +169,11 @@ spec:
                   key: CLICKHOUSE_PASSWORD
             - name: RUNTIME_COLLECTOR_CLICKHOUSE_DATABASE
               value: {{ .Values.runtime_collector.clickhouse.database | quote }}
+            - name: RUNTIME_COLLECTOR_GRPC_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.runtime_collector_grpc.name" . }}
+                  key: RUNTIME_COLLECTOR_GRPC_SECRET
             {{- if include "runtime_collector.clickhouse.ca.mount" . }}
             - name: SSL_CERT_FILE
               value: /tmp/ca-certificates/ca.crt
