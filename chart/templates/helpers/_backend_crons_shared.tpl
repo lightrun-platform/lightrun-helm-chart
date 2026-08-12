@@ -153,8 +153,13 @@ Shared environment variables for backend and crons services
   value: "{{ include "http.scheme" . }}://{{ include "data_streamer.name" . }}:8080/events/post"
 {{- end }}
 {{- if .Values.runtime_collector.enabled }}
-- name: RUNTIME_COLLECTOR_ENDPOINT
+- name: RUNTIME_COLLECTOR_GRPC_TARGET
   value: "{{ include "runtime_collector.name" . }}:{{ .Values.runtime_collector.server.service.port }}"
+- name: RUNTIME_COLLECTOR_GRPC_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "secrets.runtime_collector_grpc.name" . }}
+      key: RUNTIME_COLLECTOR_GRPC_SECRET
 {{- end }}
 {{- end -}}
 

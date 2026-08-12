@@ -110,6 +110,8 @@ jobs:
             clickhouse:
               user: runtime_collector
               password: test123
+            runtime_collector:
+              grpc_secret: test123
             customCa:
               customCaCertificate: $(CUSTOM_CA_CERTIFICATE)
             defaults:
