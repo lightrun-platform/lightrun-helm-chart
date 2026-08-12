@@ -44,10 +44,30 @@ data:
           "priority": 0
         }    
       ],
+      "exchanges": [
+        {
+          "name": {{ .Values.general.mq.snapshot_events.exchange_name | quote }},
+          "vhost": "/",
+          "type": "fanout",
+          "durable": true,
+          "auto_delete": false,
+          "internal": false,
+          "arguments": {
+            "x-created-by": "lightrun-onprem-server-chart"
+          }
+        }
+      ],
       "queues": [
         {{- $queue_names := .Values.general.mq.queue_names | default (list .Values.general.mq.queue_name) }}
-        {{- $last_index := sub (len $queue_names) 1 }}
-        {{- range $index, $queue_name := $queue_names }}
+        {{- $snapshot_exchange_name := .Values.general.mq.snapshot_events.exchange_name }}
+        {{- $snapshot_queue_name := .Values.general.mq.snapshot_events.queue_name }}
+        {{- $regular_queue_names := list }}
+        {{- range $queue_names }}
+        {{- if ne . $snapshot_queue_name }}
+        {{- $regular_queue_names = append $regular_queue_names . }}
+        {{- end }}
+        {{- end }}
+        {{- range $index, $queue_name := $regular_queue_names }}
         {
           "name": "{{ $queue_name }}.dlq",
           "vhost": "/",
@@ -69,8 +89,48 @@ data:
             "x-queue-type": "quorum",
             "x-created-by": "lightrun-onprem-server-chart"
           }
-        }{{ if not (eq $index $last_index) }},{{ end }}
+        },
         {{- end }}
+        {
+          "name": "{{ $snapshot_queue_name }}.dlq",
+          "vhost": "/",
+          "durable": true,
+          "auto_delete": false,
+          "arguments": {
+            "x-queue-type": "quorum",
+            "x-message-ttl": {{ .Values.general.mq.snapshot_events.dlq.message_ttl | int }},
+            "x-max-length": {{ .Values.general.mq.snapshot_events.dlq.max_length | int }},
+            "x-overflow": {{ .Values.general.mq.snapshot_events.dlq.overflow | quote }},
+            "x-max-length-bytes": {{ .Values.general.mq.snapshot_events.dlq.max_length_bytes | int }},
+            "x-created-by": "lightrun-onprem-server-chart"
+          }
+        },
+        {
+          "name": {{ $snapshot_queue_name | quote }},
+          "vhost": "/",
+          "durable": true,
+          "auto_delete": false,
+          "arguments": {
+            "x-dead-letter-exchange": "",
+            "x-dead-letter-routing-key": "{{ $snapshot_queue_name }}.dlq",
+            "x-queue-type": "quorum",
+            "x-message-ttl": {{ .Values.general.mq.snapshot_events.main_queue.message_ttl | int }},
+            "x-max-length": {{ .Values.general.mq.snapshot_events.main_queue.max_length | int }},
+            "x-overflow": {{ .Values.general.mq.snapshot_events.main_queue.overflow | quote }},
+            "x-max-length-bytes": {{ .Values.general.mq.snapshot_events.main_queue.max_length_bytes | int }},
+            "x-created-by": "lightrun-onprem-server-chart"
+          }
+        }
+      ],
+      "bindings": [
+        {
+          "source": {{ $snapshot_exchange_name | quote }},
+          "vhost": "/",
+          "destination": {{ $snapshot_queue_name | quote }},
+          "destination_type": "queue",
+          "routing_key": "",
+          "arguments": {}
+        }
       ]
     }
 

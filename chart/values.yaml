@@ -88,6 +88,19 @@ general:
     queue_names:
       - "mixpanel-events"
       - "keycloak-events"
+    snapshot_events:
+      exchange_name: "runtime-collector-snapshot-events"
+      queue_name: "runtime-collector-snapshot-events"
+      main_queue:
+        message_ttl: 86400000
+        max_length: 10000
+        overflow: "reject-publish"
+        max_length_bytes: 268435456
+      dlq:
+        message_ttl: 604800000
+        max_length: 1000
+        overflow: "reject-publish"
+        max_length_bytes: 268435456
     ## RabbitMQ Policy configuration
     ## Applies on all queues that match queue_regex_pattern
     policy:
