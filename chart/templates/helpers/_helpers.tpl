@@ -519,8 +519,8 @@ Usage:
     {{- if .Values.general.deploy_secrets.enabled -}}
 {{ include "runtime_collector.name" . }}-grpc
     {{- else -}}
-        {{- if .Values.general.deploy_secrets.existing_secrets.runtime_collector_grpc -}}
-{{ .Values.general.deploy_secrets.existing_secrets.runtime_collector_grpc }}
+        {{- if .Values.general.deploy_secrets.existing_secrets.runtime_collector -}}
+{{ .Values.general.deploy_secrets.existing_secrets.runtime_collector }}
         {{- else -}}
 {{ include "runtime_collector.name" . }}-grpc
         {{- end -}}

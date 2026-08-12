@@ -18,7 +18,7 @@ general:
       backend: ""
       keycloak: ""
       clickhouse: ""
-      runtime_collector_grpc: ""
+      runtime_collector: ""
 ```
 Note that this is only relevant when `deploy_secrets: false`.
 

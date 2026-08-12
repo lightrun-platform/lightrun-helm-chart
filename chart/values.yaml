@@ -29,7 +29,7 @@ general:
       backend: ""
       keycloak: ""
       clickhouse: ""
-      runtime_collector_grpc: ""
+      runtime_collector: ""
 
   ################
   ## Openshift (tested with version 4.12.5)

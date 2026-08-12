@@ -30,7 +30,7 @@ RUNTIME_COLLECTOR_GRPC_SECRET: <from the runtime-collector gRPC secret, see belo
 Backend/crons authenticate to the runtime-collector gRPC service with a shared secret, stored in a dedicated secret:
 
 - If `deploy_secrets: true`, the chart creates `{{ .Release.name }}-runtime-collector-grpc` and injects it into both the backend/crons pods and the runtime-collector server pod.
-- If `deploy_secrets: false`, the secret must be pre-created. The chart looks for `{{ .Release.name }}-runtime-collector-grpc`, or the name in `general.deploy_secrets.existing_secrets.runtime_collector_grpc`. It must contain a `RUNTIME_COLLECTOR_GRPC_SECRET` key.
+- If `deploy_secrets: false`, the secret must be pre-created. The chart looks for `{{ .Release.name }}-runtime-collector-grpc`, or the name in `general.deploy_secrets.existing_secrets.runtime_collector`. It must contain a `RUNTIME_COLLECTOR_GRPC_SECRET` key.
 
 ```yaml
 secrets:
