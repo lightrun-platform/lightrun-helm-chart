@@ -89,7 +89,7 @@ general:
       - "mixpanel-events"
       - "keycloak-events"
     snapshot_events:
-      exchange_name: "runtime-collector-snapshot-events"
+      exchange_name: "snapshot-events"
       queue_name: "runtime-collector-snapshot-events"
       main_queue:
         message_ttl: 86400000
