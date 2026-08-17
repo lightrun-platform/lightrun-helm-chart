@@ -174,6 +174,24 @@ spec:
                 secretKeyRef:
                   name: {{ include "secrets.runtime_collector_grpc.name" . }}
                   key: RUNTIME_COLLECTOR_GRPC_SECRET
+            - name: RUNTIME_COLLECTOR_RABBITMQ_HOST
+              value: {{ include "lightrun-mq.endpoint" . | quote }}
+            - name: RUNTIME_COLLECTOR_RABBITMQ_PORT
+              value: {{ .Values.general.mq.port | quote }}
+            - name: RUNTIME_COLLECTOR_RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.backend.name" . }}
+                  key: SPRING_RABBITMQ_USERNAME
+            - name: RUNTIME_COLLECTOR_RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.backend.name" . }}
+                  key: SPRING_RABBITMQ_PASSWORD
+            - name: RUNTIME_COLLECTOR_RABBITMQ_VHOST
+              value: "/"
+            - name: RUNTIME_COLLECTOR_SNAPSHOT_PARSER_QUEUE_NAME
+              value: {{ .Values.general.mq.snapshot_events.queue_name | quote }}
             {{- if include "runtime_collector.clickhouse.ca.mount" . }}
             - name: SSL_CERT_FILE
               value: /tmp/ca-certificates/ca.crt
