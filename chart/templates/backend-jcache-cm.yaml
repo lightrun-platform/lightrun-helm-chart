@@ -9,7 +9,6 @@ data:
       connectTimeout: 10000
       timeout: 10000
       retryAttempts: 3
-      retryInterval: 1500
       password: ${SPRING_REDIS_PASSWORD:-null}
       subscriptionsPerConnection: 5
       clientName: null
@@ -31,7 +30,6 @@ data:
       connectTimeout: 10000
       timeout: 10000
       retryAttempts: 3
-      retryInterval: 1500
       failedSlaveReconnectionInterval: 3000
       failedSlaveNodeDetector: !<org.redisson.client.FailedConnectionDetector> { checkInterval: 60000 }
       password: ${SPRING_REDIS_PASSWORD:-null}
