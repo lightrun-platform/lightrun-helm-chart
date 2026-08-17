@@ -61,15 +61,17 @@ data:
       {{- end }}
       "queues": [
         {{- $queue_names := .Values.general.mq.queue_names | default (list .Values.general.mq.queue_name) }}
+        {{- $snapshot_queue_name := "" }}
         {{- if .Values.runtime_collector.enabled }}
-        {{- $snapshot_exchange_name := .Values.general.mq.snapshot_events.exchange_name }}
-        {{- $snapshot_queue_name := .Values.general.mq.snapshot_events.queue_name }}
+        {{- $snapshot_queue_name = .Values.general.mq.snapshot_events.queue_name }}
+        {{- end }}
         {{- $regular_queue_names := list }}
         {{- range $queue_names }}
         {{- if ne . $snapshot_queue_name }}
         {{- $regular_queue_names = append $regular_queue_names . }}
         {{- end }}
         {{- end }}
+        {{- $last_index := sub (len $regular_queue_names) 1 }}
         {{- range $index, $queue_name := $regular_queue_names }}
         {
           "name": "{{ $queue_name }}.dlq",
@@ -92,8 +94,9 @@ data:
             "x-queue-type": "quorum",
             "x-created-by": "lightrun-onprem-server-chart"
           }
-        },
+        }{{ if or (not (eq $index $last_index)) $.Values.runtime_collector.enabled }},{{ end }}
         {{- end }}
+        {{- if .Values.runtime_collector.enabled }}
         {
           "name": "{{ $snapshot_queue_name }}.dlq",
           "vhost": "/",
@@ -124,32 +127,6 @@ data:
             "x-created-by": "lightrun-onprem-server-chart"
           }
         }
-        {{- else }}
-        {{- $last_index := sub (len $queue_names) 1 }}
-        {{- range $index, $queue_name := $queue_names }}
-        {
-          "name": "{{ $queue_name }}.dlq",
-          "vhost": "/",
-          "durable": true,
-          "auto_delete": false,
-          "arguments": {
-            "x-queue-type": "quorum",
-            "x-created-by": "lightrun-onprem-server-chart"
-          }
-        },
-        {
-          "name": {{ $queue_name | quote }},
-          "vhost": "/",
-          "durable": true,
-          "auto_delete": false,
-          "arguments": {
-            "x-dead-letter-exchange": "",
-            "x-dead-letter-routing-key": "{{ $queue_name }}.dlq",
-            "x-queue-type": "quorum",
-            "x-created-by": "lightrun-onprem-server-chart"
-          }
-        }{{ if not (eq $index $last_index) }},{{ end }}
-        {{- end }}
         {{- end }}
       ]
       {{- if .Values.runtime_collector.enabled }},
