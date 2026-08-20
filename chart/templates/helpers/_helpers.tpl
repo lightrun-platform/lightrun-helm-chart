@@ -1115,18 +1115,12 @@ http
 {{- end -}}
 
 {{- define "runtime_collector.internalTls.certEnabled" -}}
-{{- if and .Values.general.internal_tls.enabled .Values.runtime_collector.enabled -}}
-{{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" -}}true
-{{- else if .Values.general.internal_tls.certificates.existing_certificates.runtime_collector -}}true
-{{- end -}}
+{{- if and .Values.general.internal_tls.enabled .Values.runtime_collector.enabled -}}true
 {{- end -}}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.internalTls.certEnabled" -}}
-{{- if and .Values.general.internal_tls.enabled .Values.runtime_collector.enabled .Values.runtime_collector.clickhouse.local.enabled -}}
-{{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" -}}true
-{{- else if .Values.general.internal_tls.certificates.existing_certificates.runtime_collector_clickhouse -}}true
-{{- end -}}
+{{- if and .Values.general.internal_tls.enabled .Values.runtime_collector.enabled .Values.runtime_collector.clickhouse.local.enabled -}}true
 {{- end -}}
 {{- end -}}
 
