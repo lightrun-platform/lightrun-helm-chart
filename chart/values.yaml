@@ -1177,6 +1177,7 @@ runtime_collector:
     service:
       type: ClusterIP
       port: 9090
+      managementPort: 9091
       annotations: {}
       labels: {}
     resources:

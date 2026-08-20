@@ -155,7 +155,7 @@ The pod runs two init containers before the application starts:
 
 When `general.internal_tls.enabled` is `true`, runtime-collector and local ClickHouse use TLS for internal communication, exactly like the other chart components — no extra opt-in is required.
 
-With `source: generate_self_signed_certificates` the chart generates the certificates for both services automatically. With `source: existing_certificates` you must provide a secret per service, otherwise those two services fall back to plaintext:
+With `source: generate_self_signed_certificates` the chart generates the certificates for both services automatically. With `source: existing_certificates` you must provide a secret per service — TLS is enabled either way once `general.internal_tls.enabled` is `true`, so leaving a service's entry empty here doesn't fall back to plaintext, it fails at deploy time with an invalid (empty) secret reference, exactly like the other chart components:
 
 ```yaml
 general:
