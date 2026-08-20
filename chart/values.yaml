@@ -1177,7 +1177,6 @@ runtime_collector:
     service:
       type: ClusterIP
       port: 9090
-      ## Plain HTTP port serving /actuator/health/* for probes (gRPC probes don't work once the gRPC port is TLS-only).
       managementPort: 9091
       annotations: {}
       labels: {}
