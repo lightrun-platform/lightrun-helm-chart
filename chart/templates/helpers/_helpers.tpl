@@ -496,6 +496,38 @@ Usage:
 {{- end -}}
 {{- end -}}
 
+{{- define "secrets.clickhouse.name" -}}
+{{- if (kindIs "bool" .Values.general.deploy_secrets)  -}}
+{{ include "runtime_collector.clickhouse.name" . }}
+{{- else -}}
+    {{- if .Values.general.deploy_secrets.enabled -}}
+{{ include "runtime_collector.clickhouse.name" . }}
+    {{- else -}}
+        {{- if .Values.general.deploy_secrets.existing_secrets.clickhouse -}}
+{{ .Values.general.deploy_secrets.existing_secrets.clickhouse }}
+        {{- else -}}
+{{ include "runtime_collector.clickhouse.name" . }}
+        {{- end -}}
+    {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "secrets.runtime_collector_grpc.name" -}}
+{{- if (kindIs "bool" .Values.general.deploy_secrets)  -}}
+{{ include "runtime_collector.name" . }}-grpc
+{{- else -}}
+    {{- if .Values.general.deploy_secrets.enabled -}}
+{{ include "runtime_collector.name" . }}-grpc
+    {{- else -}}
+        {{- if .Values.general.deploy_secrets.existing_secrets.runtime_collector -}}
+{{ .Values.general.deploy_secrets.existing_secrets.runtime_collector }}
+        {{- else -}}
+{{ include "runtime_collector.name" . }}-grpc
+        {{- end -}}
+    {{- end -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "secrets.dockerhub.name" -}}
 {{- if contains "lightrun" (include "lightrun.fullname" .)  -}}
 {{ include "lightrun.fullname" . }}-dockerhub
@@ -922,3 +954,295 @@ Usage: {{ include "lightrun.datadogAnnotations" (dict "serviceName" "lightrun-be
           }
 {{- end }}
 {{- end }}
+
+{{/*
+######################
+## Runtime collector
+######################
+*/}}
+
+{{- define "runtime_collector.name" -}}
+{{ include "lightrun.fullname" . }}-runtime-collector
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.name" -}}
+{{ include "lightrun.fullname" . }}-runtime-collector-clickhouse
+{{- end -}}
+
+{{- define "runtime_collector.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+    {{ default (include "runtime_collector.name" .) .Values.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.containerSecurityContext" -}}
+{{- $readOnlyRootFilesystem := dict "readOnlyRootFilesystem" (.Values.general.readOnlyRootFilesystem) -}}
+{{- $baseSecurityContext := include "baseSecurityContext" . | fromYaml -}}
+{{- $localSecurityContext := mustMerge $baseSecurityContext $readOnlyRootFilesystem -}}
+{{- if .Values.runtime_collector.server.containerSecurityContext -}}
+{{- $mergedSecurityContext := mergeOverwrite $localSecurityContext (.Values.runtime_collector.server.containerSecurityContext | default dict) -}}
+{{- $mergedSecurityContext | toYaml -}}
+{{- else if kindIs "invalid" .Values.runtime_collector.server.containerSecurityContext -}}
+{{ default dict | toYaml -}}
+{{- else -}}
+{{- $localSecurityContext | toYaml -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.initContainerSecurityContext" -}}
+{{- $readOnlyRootFilesystem := dict "readOnlyRootFilesystem" (.Values.general.readOnlyRootFilesystem) -}}
+{{- $baseSecurityContext := include "baseSecurityContext" . | fromYaml -}}
+{{- mustMerge $baseSecurityContext $readOnlyRootFilesystem | toYaml -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.containerSecurityContext" -}}
+{{- $readOnlyRootFilesystem := dict "readOnlyRootFilesystem" (.Values.general.readOnlyRootFilesystem) -}}
+{{- $baseSecurityContext := include "baseSecurityContext" . | fromYaml -}}
+{{- $localSecurityContext := mustMerge $baseSecurityContext $readOnlyRootFilesystem -}}
+{{- if .Values.runtime_collector.clickhouse.local.containerSecurityContext -}}
+{{- $localSecurityContext = mergeOverwrite $localSecurityContext (deepCopy .Values.runtime_collector.clickhouse.local.containerSecurityContext) -}}
+{{- else if kindIs "invalid" .Values.runtime_collector.clickhouse.local.containerSecurityContext -}}
+{{- $localSecurityContext = dict -}}
+{{- end -}}
+{{- if .Values.general.openshift -}}
+{{- $_ := unset $localSecurityContext "runAsUser" -}}
+{{- $_ := unset $localSecurityContext "runAsGroup" -}}
+{{- end -}}
+{{- $localSecurityContext | toYaml -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.podSecurityContext" -}}
+{{- if .Values.runtime_collector.clickhouse.local.podSecurityContext -}}
+{{- toYaml .Values.runtime_collector.clickhouse.local.podSecurityContext -}}
+{{- else if .Values.general.openshift -}}
+{{- dict | toYaml -}}
+{{- else -}}
+{{- dict "fsGroup" 101 | toYaml -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.username" -}}
+{{- if .Values.runtime_collector.clickhouse.local.enabled -}}
+{{ .Values.secrets.clickhouse.user }}
+{{- else -}}
+{{ .Values.runtime_collector.clickhouse.external.username }}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.password" -}}
+{{- if .Values.runtime_collector.clickhouse.local.enabled -}}
+{{ .Values.secrets.clickhouse.password }}
+{{- else -}}
+{{ .Values.runtime_collector.clickhouse.external.password }}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.existingSecret" -}}
+{{- if not .Values.runtime_collector.clickhouse.local.enabled -}}
+{{ .Values.runtime_collector.clickhouse.external.existingSecret }}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.hostname" -}}
+{{- if .Values.runtime_collector.clickhouse.local.enabled -}}
+{{ include "runtime_collector.clickhouse.name" . }}
+{{- else -}}
+{{ required "runtime_collector.clickhouse.external.host is required when clickhouse.local.enabled is false" .Values.runtime_collector.clickhouse.external.host }}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.httpPort" -}}
+{{- if .Values.runtime_collector.clickhouse.local.enabled -}}
+{{ .Values.runtime_collector.clickhouse.local.httpPort }}
+{{- else -}}
+{{ .Values.runtime_collector.clickhouse.external.httpPort }}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.nativePort" -}}
+{{- if .Values.runtime_collector.clickhouse.local.enabled -}}
+{{ .Values.runtime_collector.clickhouse.local.nativePort }}
+{{- else -}}
+{{ .Values.runtime_collector.clickhouse.external.nativePort }}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.httpScheme" -}}
+{{- if .Values.runtime_collector.clickhouse.local.enabled -}}
+{{- if include "runtime_collector.clickhouse.internalTls.certEnabled" . -}}https{{- else -}}http{{- end -}}
+{{- else if .Values.runtime_collector.clickhouse.external.tls -}}
+https
+{{- else -}}
+http
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.cluster" -}}
+{{- if not .Values.runtime_collector.clickhouse.local.enabled -}}
+{{ .Values.runtime_collector.clickhouse.external.cluster }}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.endpoint" -}}
+{{- $scheme := include "runtime_collector.clickhouse.httpScheme" . -}}
+{{- $host := include "runtime_collector.clickhouse.hostname" . -}}
+{{- $port := include "runtime_collector.clickhouse.httpPort" . -}}
+{{- if $port -}}
+{{ printf "%s://%s:%v" $scheme $host $port }}
+{{- else -}}
+{{ printf "%s://%s" $scheme $host }}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.serviceHttpPort" -}}
+{{ .Values.runtime_collector.clickhouse.local.httpPort | default 8123 }}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.nativeSecure" -}}
+{{- if .Values.runtime_collector.clickhouse.local.enabled -}}
+{{- if include "runtime_collector.clickhouse.internalTls.certEnabled" . -}}true{{- end -}}
+{{- else if .Values.runtime_collector.clickhouse.external.tls -}}true{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.secretName" -}}
+{{- if include "runtime_collector.clickhouse.existingSecret" . -}}
+{{ include "runtime_collector.clickhouse.existingSecret" . }}
+{{- else -}}
+{{ include "secrets.clickhouse.name" . }}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.internalTls.certEnabled" -}}
+{{- if and .Values.general.internal_tls.enabled .Values.runtime_collector.enabled -}}true
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.internalTls.certEnabled" -}}
+{{- if and .Values.general.internal_tls.enabled .Values.runtime_collector.enabled .Values.runtime_collector.clickhouse.local.enabled -}}true
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.internalCertSecretName" -}}
+{{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" -}}
+{{ include "runtime_collector.clickhouse.name" . }}-cert
+{{- else if eq .Values.general.internal_tls.certificates.source "existing_certificates" -}}
+{{ .Values.general.internal_tls.certificates.existing_certificates.runtime_collector_clickhouse }}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.internalCertSecretName" -}}
+{{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" -}}
+{{ include "runtime_collector.name" . }}-cert
+{{- else if eq .Values.general.internal_tls.certificates.source "existing_certificates" -}}
+{{ .Values.general.internal_tls.certificates.existing_certificates.runtime_collector }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Always mount a CA when ClickHouse TLS is enabled: client-v2 0.9.8 cannot skip verification.
+TODO: once client-v2 0.10.0 is GA, map certificates.verification: false to setSSLMode(TRUST)
+and gate this mount on verification again.
+*/}}
+{{- define "runtime_collector.internalCa.mount" -}}
+{{- if include "runtime_collector.clickhouse.internalTls.certEnabled" . -}}
+{{- if or (eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates") .Values.general.internal_tls.certificates.existing_ca_secret_name -}}true{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.internalCa.secretName" -}}
+{{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" -}}
+{{ include "lightrun.fullname" . }}-internal-tls-ca
+{{- else -}}
+{{ .Values.general.internal_tls.certificates.existing_ca_secret_name }}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.internalCa.secretKey" -}}
+{{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" -}}
+custom-ca.pem
+{{- else -}}
+ca.crt
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.externalCa.mount" -}}
+{{- if and (not .Values.runtime_collector.clickhouse.local.enabled) .Values.runtime_collector.clickhouse.external.tls .Values.runtime_collector.clickhouse.external.existing_ca_secret_name -}}true{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.ca.mount" -}}
+{{- if or (include "runtime_collector.internalCa.mount" .) (include "runtime_collector.clickhouse.externalCa.mount" .) -}}true{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.skipVerify" -}}
+{{- if and (include "runtime_collector.clickhouse.nativeSecure" .) (not (include "runtime_collector.clickhouse.ca.mount" .)) (not .Values.general.internal_tls.certificates.verification) -}}true{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.validateTls" -}}
+{{- if and (include "runtime_collector.clickhouse.internalTls.certEnabled" .) (not (include "runtime_collector.clickhouse.ca.mount" .)) -}}
+{{- fail "runtime_collector with local ClickHouse and internal TLS requires general.internal_tls.certificates.existing_ca_secret_name to be set, because the ClickHouse certificate cannot be verified without its CA and the collector cannot skip verification. Provide the CA secret, or set certificates.source to generate_self_signed_certificates." -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.ca.secretName" -}}
+{{- if include "runtime_collector.clickhouse.externalCa.mount" . -}}
+{{ .Values.runtime_collector.clickhouse.external.existing_ca_secret_name }}
+{{- else -}}
+{{ include "runtime_collector.internalCa.secretName" . }}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.ca.secretKey" -}}
+{{- if include "runtime_collector.clickhouse.externalCa.mount" . -}}
+ca.crt
+{{- else -}}
+{{ include "runtime_collector.internalCa.secretKey" . }}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.ca.volume" -}}
+- name: clickhouse-ca
+  secret:
+    secretName: {{ include "runtime_collector.clickhouse.ca.secretName" . }}
+    items:
+      - key: {{ include "runtime_collector.clickhouse.ca.secretKey" . }}
+        path: ca.crt
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.ca.volumeMount" -}}
+- name: clickhouse-ca
+  mountPath: /tmp/ca-certificates
+  readOnly: true
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.waitForCommand" -}}
+{{- $endpoint := include "runtime_collector.clickhouse.endpoint" . -}}
+{{- $tlsOptions := "" -}}
+{{- if eq (include "runtime_collector.clickhouse.httpScheme" .) "https" -}}
+{{- if include "runtime_collector.clickhouse.ca.mount" . -}}
+{{- $tlsOptions = "--ca-certificate=/tmp/ca-certificates/ca.crt " -}}
+{{- else if include "runtime_collector.clickhouse.skipVerify" . -}}
+{{- $tlsOptions = "--no-check-certificate " -}}
+{{- end -}}
+{{- end -}}
+{{- printf "until wget %s-q -O- %s/ping | grep -q Ok; do echo waiting for clickhouse; sleep 2; done" $tlsOptions $endpoint -}}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.migrateDatabaseUrl" -}}
+{{- $host := include "runtime_collector.clickhouse.hostname" . -}}
+{{- $port := include "runtime_collector.clickhouse.nativePort" . -}}
+{{- $database := .Values.runtime_collector.clickhouse.database -}}
+{{- $url := printf "clickhouse://%s:%s?database=%s&username=$(CLICKHOUSE_USERNAME)&password=$(CLICKHOUSE_PASSWORD)" $host $port $database -}}
+{{- if include "runtime_collector.clickhouse.nativeSecure" . -}}
+{{- $url = printf "%s&secure=true" $url -}}
+{{- if include "runtime_collector.clickhouse.skipVerify" . -}}
+{{- $url = printf "%s&skip_verify=true" $url -}}
+{{- end -}}
+{{- end -}}
+{{- with include "runtime_collector.clickhouse.cluster" . -}}
+{{- $url = printf "%s&x-cluster-name=%s" $url . -}}
+{{- end -}}
+{{ $url }}
+{{- end -}}
+

@@ -145,12 +145,33 @@ Shared environment variables for backend and crons services
   value: {{ include "lightrun-mq.getQueueNameByPrefix" (dict "prefix" "mixpanel-events" "Values" .Values) | quote }}
 - name: KEYCLOAK_QUEUE_NAME
   value: {{ include "lightrun-mq.getQueueNameByPrefix" (dict "prefix" "keycloak-events" "Values" .Values) | quote }}
+{{- if .Values.runtime_collector.enabled }}
+- name: RUNTIME_COLLECTOR_SNAPSHOT_EVENTS_EXCHANGE_NAME
+  value: {{ .Values.general.mq.snapshot_events.exchange_name | quote }}
+- name: RUNTIME_COLLECTOR_SNAPSHOT_EVENTS_QUEUE_NAME
+  value: {{ .Values.general.mq.snapshot_events.queue_name | quote }}
+{{- end }}
 {{- end }}
 - name: LOGGING_USE-JSON-FORMAT
   value: "{{ .Values.deployments.backend.useJsonLogFormat }}"
 {{- if .Values.general.data_streamer.enabled }}
 - name: INTEGRATIONS_SIEM_STREAMING-SERVICE_URL
   value: "{{ include "http.scheme" . }}://{{ include "data_streamer.name" . }}:8080/events/post"
+{{- end }}
+- name: RUNTIME_COLLECTOR_ENABLED
+  value: {{ .Values.runtime_collector.enabled | quote }}
+{{- if .Values.runtime_collector.enabled }}
+- name: RUNTIME_COLLECTOR_GRPC_TARGET
+  value: "{{ include "runtime_collector.name" . }}:{{ .Values.runtime_collector.server.service.port }}"
+- name: RUNTIME_COLLECTOR_GRPC_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "secrets.runtime_collector_grpc.name" . }}
+      key: RUNTIME_COLLECTOR_GRPC_SECRET
+- name: RUNTIME_COLLECTOR_GRPC_USE_TLS
+  value: {{ include "runtime_collector.internalTls.certEnabled" . | default "false" | quote }}
+- name: RUNTIME_COLLECTOR_GRPC_CERTIFICATE_VERIFICATION
+  value: {{ .Values.general.internal_tls.certificates.verification | quote }}
 {{- end }}
 {{- end -}}
 
