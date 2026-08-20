@@ -275,8 +275,8 @@ general:
 
   nodeSelector: {}
   #   purpose: stage
-  ## If you want to set node selector for Lightrun deployments, delete the `{}` in the line above
-  ## and uncomment this example block
+  ## Applied to all Lightrun deployments/statefulsets. Override per workload with
+  ## deployments.<name>.nodeSelector. Delete the `{}` above and uncomment this example block
   #  label-key1: "label-value1"
   #  label-key2: "label-value2"
 
@@ -560,6 +560,8 @@ deployments:
     extraVolumeMounts: []
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     livenessProbe:
       initialDelaySeconds: 10
@@ -631,6 +633,8 @@ deployments:
           pullPolicy: ""
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     lifecycle:
       preStop:
@@ -712,6 +716,8 @@ deployments:
     extraVolumes: []
     extraVolumeMounts: []
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     lifecycle:
       preStop:
@@ -809,6 +815,8 @@ deployments:
           tag: "0.3.0-alpine-3.24.1-r8.lr-0"
           pullPolicy: ""          
     topologySpreadConstraints: []
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     startupProbe:
       initialDelaySeconds: 10
@@ -898,6 +906,8 @@ deployments:
     # EmptyDir is used for redis data persistence
     emptyDir:
       sizeLimit: 5Gi
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     livenessProbe:
       initialDelaySeconds: 50
@@ -913,6 +923,7 @@ deployments:
       failureThreshold: 3
 
   mysql:
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
     nodeSelector: {}
     podSecurityContext:
       # when using PVC , it is necessarily to set fsGroup so pod will have write permission to the mounted volume
@@ -966,6 +977,7 @@ deployments:
       annotations: {}
       labels: {}
       ## prometheus autodiscovery annotations could be added to the service
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
     nodeSelector: {}
     podSecurityContext:
       # when using PVC , it is necessarily to set fsGroup so pod will have write permission to the mounted volume
@@ -1035,6 +1047,8 @@ deployments:
     extraVolumeMounts: []
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     livenessProbe:
       initialDelaySeconds: 10
@@ -1076,6 +1090,8 @@ deployments:
     extraVolumeMounts: []
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     livenessProbe: 
       initialDelaySeconds: 10
@@ -1118,6 +1134,8 @@ deployments:
       https: 8443
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     livenessProbe:
       initialDelaySeconds: 10

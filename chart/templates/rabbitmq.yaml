@@ -159,9 +159,9 @@ spec:
       tolerations:
         {{ toYaml .Values.general.tolerations | nindent 8 }}
       {{- end }}
-      {{- if .Values.deployments.rabbitmq.nodeSelector }}
+      {{- with coalesce .Values.deployments.rabbitmq.nodeSelector .Values.general.nodeSelector }}
       nodeSelector:
-        {{ toYaml .Values.deployments.rabbitmq.nodeSelector | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- if .Values.deployments.rabbitmq.affinity }}
       affinity:
