@@ -158,6 +158,8 @@ Shared environment variables for backend and crons services
 - name: INTEGRATIONS_SIEM_STREAMING-SERVICE_URL
   value: "{{ include "http.scheme" . }}://{{ include "data_streamer.name" . }}:8080/events/post"
 {{- end }}
+- name: RUNTIME_COLLECTOR_ENABLED
+  value: {{ .Values.runtime_collector.enabled | quote }}
 {{- if .Values.runtime_collector.enabled }}
 - name: RUNTIME_COLLECTOR_GRPC_TARGET
   value: "{{ include "runtime_collector.name" . }}:{{ .Values.runtime_collector.server.service.port }}"
@@ -166,6 +168,10 @@ Shared environment variables for backend and crons services
     secretKeyRef:
       name: {{ include "secrets.runtime_collector_grpc.name" . }}
       key: RUNTIME_COLLECTOR_GRPC_SECRET
+- name: RUNTIME_COLLECTOR_GRPC_USE_TLS
+  value: {{ include "runtime_collector.internalTls.certEnabled" . | default "false" | quote }}
+- name: RUNTIME_COLLECTOR_GRPC_CERTIFICATE_VERIFICATION
+  value: {{ .Values.general.internal_tls.certificates.verification | quote }}
 {{- end }}
 {{- end -}}
 

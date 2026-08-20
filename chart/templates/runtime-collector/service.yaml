@@ -19,6 +19,10 @@ spec:
       port: {{ .Values.runtime_collector.server.service.port }}
       targetPort: grpc
       protocol: TCP
+    - name: management
+      port: {{ .Values.runtime_collector.server.service.managementPort }}
+      targetPort: management
+      protocol: TCP
   selector:
     app: {{ include "runtime_collector.name" . }}
 {{- end }}

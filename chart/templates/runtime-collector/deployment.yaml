@@ -129,17 +129,22 @@ spec:
             - name: grpc
               containerPort: {{ .Values.runtime_collector.server.service.port }}
               protocol: TCP
+            - name: management
+              containerPort: {{ .Values.runtime_collector.server.service.managementPort }}
+              protocol: TCP
           livenessProbe:
-            grpc:
-              port: {{ .Values.runtime_collector.server.service.port }}
+            httpGet:
+              path: /actuator/health/liveness
+              port: management
             initialDelaySeconds: {{ .Values.runtime_collector.server.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.runtime_collector.server.livenessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.runtime_collector.server.livenessProbe.timeoutSeconds }}
             successThreshold: {{ .Values.runtime_collector.server.livenessProbe.successThreshold }}
             failureThreshold: {{ .Values.runtime_collector.server.livenessProbe.failureThreshold }}
           readinessProbe:
-            grpc:
-              port: {{ .Values.runtime_collector.server.service.port }}
+            httpGet:
+              path: /actuator/health/readiness
+              port: management
             initialDelaySeconds: {{ .Values.runtime_collector.server.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.runtime_collector.server.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.runtime_collector.server.readinessProbe.timeoutSeconds }}
@@ -192,6 +197,16 @@ spec:
               value: "/"
             - name: RUNTIME_COLLECTOR_SNAPSHOT_PARSER_QUEUE_NAME
               value: {{ .Values.general.mq.snapshot_events.queue_name | quote }}
+            {{- if include "runtime_collector.internalTls.certEnabled" . }}
+            - name: SPRING_GRPC_SERVER_SSL_ENABLED
+              value: "true"
+            - name: SPRING_GRPC_SERVER_SSL_BUNDLE
+              value: "runtime-collector-grpc"
+            - name: SPRING_SSL_BUNDLE_PEM_RUNTIME_COLLECTOR_GRPC_KEYSTORE_CERTIFICATE
+              value: /tls/tls.crt
+            - name: SPRING_SSL_BUNDLE_PEM_RUNTIME_COLLECTOR_GRPC_KEYSTORE_PRIVATE_KEY
+              value: /tls/tls.key
+            {{- end }}
             {{- if include "runtime_collector.clickhouse.ca.mount" . }}
             - name: SSL_CERT_FILE
               value: /tmp/ca-certificates/ca.crt
@@ -208,7 +223,7 @@ spec:
             {{- end }}
             {{- if include "runtime_collector.internalTls.certEnabled" . }}
             - name: internal-cert
-              mountPath: /tmp/certs/
+              mountPath: /tls
               readOnly: true
             {{- end }}
             {{- if include "runtime_collector.clickhouse.ca.mount" . }}
