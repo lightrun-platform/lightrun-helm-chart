@@ -201,10 +201,10 @@ spec:
             - name: SPRING_GRPC_SERVER_SSL_ENABLED
               value: "true"
             - name: SPRING_GRPC_SERVER_SSL_BUNDLE
-              value: "runtime-collector-grpc"
-            - name: SPRING_SSL_BUNDLE_PEM_RUNTIME_COLLECTOR_GRPC_KEYSTORE_CERTIFICATE
+              value: "runtimecollectorgrpc"
+            - name: SPRING_SSL_BUNDLE_PEM_RUNTIMECOLLECTORGRPC_KEYSTORE_CERTIFICATE
               value: /tls/tls.crt
-            - name: SPRING_SSL_BUNDLE_PEM_RUNTIME_COLLECTOR_GRPC_KEYSTORE_PRIVATE_KEY
+            - name: SPRING_SSL_BUNDLE_PEM_RUNTIMECOLLECTORGRPC_KEYSTORE_PRIVATE_KEY
               value: /tls/tls.key
             {{- end }}
             {{- if include "runtime_collector.clickhouse.ca.mount" . }}
