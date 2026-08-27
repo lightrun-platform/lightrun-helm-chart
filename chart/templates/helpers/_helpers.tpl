@@ -1226,7 +1226,7 @@ ca.crt
 {{- $tlsOptions = "--no-check-certificate " -}}
 {{- end -}}
 {{- end -}}
-{{- printf "until wget %s-q -O- %s/ping | grep -q Ok; do echo waiting for clickhouse; sleep 2; done" $tlsOptions $endpoint -}}
+{{- printf "until wget %s-T 5 -q -O- %s/ping | grep -q Ok; do echo waiting for clickhouse; sleep 2; done" $tlsOptions $endpoint -}}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.migrateDatabaseUrl" -}}
