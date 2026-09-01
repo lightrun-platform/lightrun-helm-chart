@@ -92,14 +92,7 @@ spec:
               cpu: {{ .Values.deployments.frontend.resources.cpu }}
               memory: {{ .Values.deployments.frontend.resources.memory }}
           env:
-            - name: BACKEND_URI
-              value: {{ include "lightrun-be.name" . }}
-            - name: KEYCLOAK_URI
-              value: {{ include "lightrun-keycloak.name" . }}
-            {{- if .Values.deployments.frontend.extraEnvs }}
-          
-              {{- toYaml .Values.deployments.frontend.extraEnvs | nindent 12 }}
-            {{- end }}
+          {{- include "lightrun.env.dedupe" (include "lightrun-frontend.environmentVariablesRaw" .) | nindent 12 }}
           volumeMounts:
           - name: frontend-config
             mountPath: /etc/nginx/conf.d/default.conf
@@ -125,9 +118,9 @@ spec:
       tolerations:
         {{ toYaml .Values.general.tolerations | nindent 8 }}
       {{- end }}
-      {{- if .Values.general.nodeSelector }}
+      {{- with coalesce .Values.deployments.frontend.nodeSelector .Values.general.nodeSelector }}
       nodeSelector:
-        {{ toYaml .Values.general.nodeSelector | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- if .Values.deployments.frontend.affinity }}
       affinity:

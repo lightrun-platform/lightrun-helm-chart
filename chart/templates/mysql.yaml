@@ -157,9 +157,9 @@ spec:
       tolerations:
         {{ toYaml .Values.general.tolerations | nindent 8 }}
       {{- end }}
-      {{- if .Values.deployments.mysql.nodeSelector }}
+      {{- with coalesce .Values.deployments.mysql.nodeSelector .Values.general.nodeSelector }}
       nodeSelector:
-        {{ toYaml .Values.deployments.mysql.nodeSelector | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- if .Values.deployments.mysql.affinity }}
       affinity:

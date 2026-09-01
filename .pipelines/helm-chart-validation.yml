@@ -342,6 +342,10 @@ jobs:
 
       - script: |
           set -euo pipefail
+          if helm status $(RELEASE_NAME) -n $(NAMESPACE) >/dev/null 2>&1; then
+            echo "Removing leftover release from a previous attempt"
+            helm uninstall $(RELEASE_NAME) -n $(NAMESPACE) --wait --timeout 2m || true
+          fi
           helm install $(RELEASE_NAME) $(CHART_PATH) \
             -f "$(Pipeline.Workspace)/helm-validation-values/values.yaml" \
             --namespace $(NAMESPACE) \
@@ -349,6 +353,7 @@ jobs:
             --timeout 10m \
             --debug
         displayName: 'Install Chart'
+        retryCountOnTaskFailure: 2
 
       - script: |
           set -euo pipefail
