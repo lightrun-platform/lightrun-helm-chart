@@ -1100,6 +1100,12 @@ http
 {{- end -}}
 {{- end -}}
 
+{{- define "runtime_collector.clickhouse.r2dbcUrl" -}}
+{{- $endpoint := include "runtime_collector.clickhouse.endpoint" . -}}
+{{- $database := .Values.runtime_collector.clickhouse.database -}}
+{{ printf "r2dbc:clickhouse:%s/%s" $endpoint $database }}
+{{- end -}}
+
 {{- define "runtime_collector.clickhouse.serviceHttpPort" -}}
 {{ .Values.runtime_collector.clickhouse.local.httpPort | default 8123 }}
 {{- end -}}

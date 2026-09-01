@@ -197,20 +197,18 @@ spec:
             {{- end }}
             - name: SPRING_GRPC_SERVER_PORT
               value: {{ .Values.runtime_collector.server.service.port | quote }}
-            - name: RUNTIME_COLLECTOR_CLICKHOUSE_ENDPOINT
-              value: {{ include "runtime_collector.clickhouse.endpoint" . | quote }}
-            - name: RUNTIME_COLLECTOR_CLICKHOUSE_USERNAME
+            - name: SPRING_R2DBC_URL
+              value: {{ include "runtime_collector.clickhouse.r2dbcUrl" . | quote }}
+            - name: SPRING_R2DBC_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: {{ include "runtime_collector.clickhouse.secretName" . }}
                   key: CLICKHOUSE_USERNAME
-            - name: RUNTIME_COLLECTOR_CLICKHOUSE_PASSWORD
+            - name: SPRING_R2DBC_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ include "runtime_collector.clickhouse.secretName" . }}
                   key: CLICKHOUSE_PASSWORD
-            - name: RUNTIME_COLLECTOR_CLICKHOUSE_DATABASE
-              value: {{ .Values.runtime_collector.clickhouse.database | quote }}
             - name: RUNTIME_COLLECTOR_GRPC_SECRET
               valueFrom:
                 secretKeyRef:
