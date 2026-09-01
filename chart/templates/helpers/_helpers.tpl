@@ -1407,3 +1407,82 @@ ca.crt
 {{- end }}
 {{- end -}}
 
+
+{{- define "runtime_collector.server.environmentVariablesRaw" -}}
+- name: SPRING_GRPC_SERVER_PORT
+  value: {{ .Values.runtime_collector.server.service.port | quote }}
+- name: RUNTIME_COLLECTOR_CLICKHOUSE_ENDPOINT
+  value: {{ include "runtime_collector.clickhouse.endpoint" . | quote }}
+- name: RUNTIME_COLLECTOR_CLICKHOUSE_USERNAME
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "runtime_collector.clickhouse.secretName" . }}
+      key: CLICKHOUSE_USERNAME
+- name: RUNTIME_COLLECTOR_CLICKHOUSE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "runtime_collector.clickhouse.secretName" . }}
+      key: CLICKHOUSE_PASSWORD
+- name: RUNTIME_COLLECTOR_CLICKHOUSE_DATABASE
+  value: {{ .Values.runtime_collector.clickhouse.database | quote }}
+- name: RUNTIME_COLLECTOR_GRPC_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "secrets.runtime_collector_grpc.name" . }}
+      key: RUNTIME_COLLECTOR_GRPC_SECRET
+- name: RUNTIME_COLLECTOR_RABBITMQ_HOST
+  value: {{ include "lightrun-mq.endpoint" . | quote }}
+- name: RUNTIME_COLLECTOR_RABBITMQ_PORT
+  value: {{ .Values.general.mq.port | quote }}
+- name: RUNTIME_COLLECTOR_RABBITMQ_USERNAME
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "secrets.backend.name" . }}
+      key: SPRING_RABBITMQ_USERNAME
+- name: RUNTIME_COLLECTOR_RABBITMQ_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "secrets.backend.name" . }}
+      key: SPRING_RABBITMQ_PASSWORD
+- name: RUNTIME_COLLECTOR_RABBITMQ_VHOST
+  value: "/"
+- name: RUNTIME_COLLECTOR_SNAPSHOT_PARSER_QUEUE_NAME
+  value: {{ .Values.general.mq.snapshot_events.queue_name | quote }}
+{{- if include "runtime_collector.internalTls.certEnabled" . }}
+- name: SPRING_GRPC_SERVER_SSL_ENABLED
+  value: "true"
+- name: SPRING_GRPC_SERVER_SSL_BUNDLE
+  value: "runtimecollectorgrpc"
+- name: SPRING_SSL_BUNDLE_PEM_RUNTIMECOLLECTORGRPC_KEYSTORE_CERTIFICATE
+  value: /tls/tls.crt
+- name: SPRING_SSL_BUNDLE_PEM_RUNTIMECOLLECTORGRPC_KEYSTORE_PRIVATE_KEY
+  value: /tls/tls.key
+{{- end }}
+{{- if include "runtime_collector.clickhouse.ca.mount" . }}
+- name: SSL_CERT_FILE
+  value: /tmp/ca-certificates/ca.crt
+{{- end }}
+{{- with .Values.runtime_collector.server.extraEnvs }}
+{{- toYaml . | nindent 0 }}
+{{- end }}
+{{- end -}}
+
+{{- define "runtime_collector.clickhouse.environmentVariablesRaw" -}}
+## CLICKHOUSE_DB breaks TLS startup; migrations create the database instead.
+- name: CLICKHOUSE_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "runtime_collector.clickhouse.secretName" . }}
+      key: CLICKHOUSE_USERNAME
+- name: CLICKHOUSE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "runtime_collector.clickhouse.secretName" . }}
+      key: CLICKHOUSE_PASSWORD
+- name: CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT
+  value: "1"
+{{- with .Values.runtime_collector.clickhouse.local.extraEnvs }}
+{{- toYaml . | nindent 0 }}
+{{- end }}
+{{- end -}}
+

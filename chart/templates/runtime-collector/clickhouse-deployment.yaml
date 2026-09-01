@@ -46,22 +46,7 @@ spec:
           image: "{{ .Values.runtime_collector.clickhouse.local.image.repository }}:{{ .Values.runtime_collector.clickhouse.local.image.tag }}"
           imagePullPolicy: {{ .Values.runtime_collector.clickhouse.local.image.pullPolicy }}
           env:
-            ## CLICKHOUSE_DB breaks TLS startup; migrations create the database instead.
-            - name: CLICKHOUSE_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "runtime_collector.clickhouse.secretName" . }}
-                  key: CLICKHOUSE_USERNAME
-            - name: CLICKHOUSE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "runtime_collector.clickhouse.secretName" . }}
-                  key: CLICKHOUSE_PASSWORD
-            - name: CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT
-              value: "1"
-            {{- with .Values.runtime_collector.clickhouse.local.extraEnvs }}
-            {{- toYaml . | nindent 12 }}
-            {{- end }}
+          {{- include "lightrun.env.dedupe" (include "runtime_collector.clickhouse.environmentVariablesRaw" .) | nindent 12 }}
           ports:
             - name: http
               containerPort: {{ .Values.runtime_collector.clickhouse.local.httpPort }}
