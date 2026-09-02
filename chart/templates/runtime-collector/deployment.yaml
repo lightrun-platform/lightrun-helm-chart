@@ -179,22 +179,30 @@ spec:
                 secretKeyRef:
                   name: {{ include "secrets.runtime_collector_grpc.name" . }}
                   key: RUNTIME_COLLECTOR_GRPC_SECRET
-            - name: RUNTIME_COLLECTOR_RABBITMQ_HOST
+            - name: SPRING_RABBITMQ_HOST
               value: {{ include "lightrun-mq.endpoint" . | quote }}
-            - name: RUNTIME_COLLECTOR_RABBITMQ_PORT
+            - name: SPRING_RABBITMQ_PORT
               value: {{ .Values.general.mq.port | quote }}
-            - name: RUNTIME_COLLECTOR_RABBITMQ_USERNAME
+            - name: SPRING_RABBITMQ_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: {{ include "secrets.backend.name" . }}
                   key: SPRING_RABBITMQ_USERNAME
-            - name: RUNTIME_COLLECTOR_RABBITMQ_PASSWORD
+            - name: SPRING_RABBITMQ_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ include "secrets.backend.name" . }}
                   key: SPRING_RABBITMQ_PASSWORD
-            - name: RUNTIME_COLLECTOR_RABBITMQ_VHOST
+            - name: SPRING_RABBITMQ_VIRTUAL_HOST
               value: "/"
+            {{- if and .Values.general.internal_tls.enabled .Values.general.mq.enabled }}
+            - name: SPRING_RABBITMQ_SSL_ENABLED
+              value: "true"
+            {{- if not .Values.general.internal_tls.certificates.verification }}
+            - name: SPRING_RABBITMQ_SSL_VALIDATE_SERVER_CERTIFICATE
+              value: "false"
+            {{- end }}
+            {{- end }}
             - name: RUNTIME_COLLECTOR_SNAPSHOT_PARSER_QUEUE_NAME
               value: {{ .Values.general.mq.snapshot_events.queue_name | quote }}
             {{- if include "runtime_collector.internalTls.certEnabled" . }}
