@@ -279,9 +279,16 @@ jobs:
             sudo apt-get install -y jq
           fi
 
-          SUPPORTED_K8S_MATRIX=$(curl -fsSL https://endoflife.date/api/v1/products/kubernetes | jq -c '
-            .result.releases
-            | map(select(.isEol == false))
+          # Kubernetes can release a minor before EKS offers it (e.g. 1.37 vs EKS 1.36).
+          # Keep only non-EOL Kubernetes versions that EKS currently supports.
+          curl -fsSL https://endoflife.date/api/v1/products/kubernetes -o k8s.json
+          curl -fsSL https://endoflife.date/api/v1/products/amazon-eks -o eks.json
+
+          SUPPORTED_K8S_MATRIX=$(jq -c -s '
+            .[0] as $k8s | .[1] as $eks
+            | ($eks.result.releases | map(select(.isMaintained == true) | .name)) as $eks_versions
+            | $k8s.result.releases
+            | map(select(.isEol == false and (.name | IN($eks_versions[]))))
             | map({
                 key: ("v" + (.name | gsub("\\."; "_")) + "_k8s"),
                 value: {
@@ -290,10 +297,10 @@ jobs:
                 }
               })
             | from_entries
-          ')
+          ' k8s.json eks.json)
 
           if [ "$SUPPORTED_K8S_MATRIX" = "{}" ]; then
-            echo "Failed to resolve any non-EOL Kubernetes versions"
+            echo "Failed to resolve any non-EOL Kubernetes versions supported by EKS"
             exit 1
           fi
 
