@@ -28,6 +28,10 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{ include "lightrun.fullname" . }}-backend
 {{- end -}}
 
+{{- define "lightrun-be.grpcTarget" -}}
+{{ printf "%s:%v" (include "lightrun-be.name" .) .Values.deployments.backend.grpc.port }}
+{{- end -}}
+
 {{/*
 Create the name of the lightrun backend service account to use
 */}}
@@ -1138,6 +1142,28 @@ http
 {{- else if eq .Values.general.internal_tls.certificates.source "existing_certificates" -}}
 {{ .Values.general.internal_tls.certificates.existing_certificates.runtime_collector }}
 {{- end -}}
+{{- end -}}
+
+{{- define "lightrun-be.internalCertSecretName" -}}
+{{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" -}}
+{{ include "lightrun-be.name" . }}-cert
+{{- else if eq .Values.general.internal_tls.certificates.source "existing_certificates" -}}
+{{ .Values.general.internal_tls.certificates.existing_certificates.backend }}
+{{- end -}}
+{{- end -}}
+
+{{- define "lightrun-be.internalCa.mount" -}}
+{{- if and .isBackend .Values.general.internal_tls.enabled .Values.runtime_collector.enabled (eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates") -}}true{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.internalCa.needed" -}}
+{{- if and .Values.general.internal_tls.enabled .Values.runtime_collector.enabled -}}
+{{- if or (eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates") .Values.general.internal_tls.certificates.existing_ca_secret_name -}}true{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "runtime_collector.rabbitmq.ca.mount" -}}
+{{- if and .Values.general.mq.enabled (include "runtime_collector.internalCa.needed" .) -}}true{{- end -}}
 {{- end -}}
 
 {{/*

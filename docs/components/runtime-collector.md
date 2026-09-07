@@ -18,7 +18,7 @@ runtime_collector:
   enabled: true
 ```
 
-When enabled, the backend and crons receive:
+When enabled, the backend receives:
 
 ```yaml
 RUNTIME_COLLECTOR_GRPC_TARGET: "<release>-runtime-collector:9090"
@@ -27,9 +27,9 @@ RUNTIME_COLLECTOR_GRPC_SECRET: <from the runtime-collector gRPC secret, see belo
 
 ## gRPC Shared Secret
 
-Backend/crons authenticate to the runtime-collector gRPC service with a shared secret, stored in a dedicated secret:
+The backend authenticates to the runtime-collector gRPC service with a shared secret, stored in a dedicated secret:
 
-- If `deploy_secrets: true`, the chart creates `{{ .Release.name }}-runtime-collector-grpc` and injects it into both the backend/crons pods and the runtime-collector server pod.
+- If `deploy_secrets: true`, the chart creates `{{ .Release.name }}-runtime-collector-grpc` and injects it into both the backend pod and the runtime-collector server pod.
 - If `deploy_secrets: false`, the secret must be pre-created. The chart looks for `{{ .Release.name }}-runtime-collector-grpc`, or the name in `general.deploy_secrets.existing_secrets.runtime_collector`. It must contain a `RUNTIME_COLLECTOR_GRPC_SECRET` key.
 
 ```yaml
@@ -166,6 +166,7 @@ general:
       existing_certificates:
         runtime_collector: ""
         runtime_collector_clickhouse: ""
+        backend: ""
 ```
 
 ### CA Trust Behavior (Runtime Collector)
@@ -187,6 +188,11 @@ ClickHouse does not mount a CA — it only serves TLS and does not call other se
 
 > [!NOTE]
 > `SSL_CERT_FILE` **replaces** the system trust store rather than adding to it. Only set `existing_ca_secret_name` for an endpoint whose certificate that CA actually signed — pointing it at an unrelated CA makes an otherwise publicly trusted endpoint fail verification. To trust both, the secret must hold the private CA concatenated with the public bundle.
+
+> [!IMPORTANT]
+> Runtime-collector's ClickHouse connection does not support TLS today, regardless of
+> `certificates.verification` or certificate source — local ClickHouse with
+> `general.internal_tls.enabled: true` will fail at runtime.
 
 ---
 

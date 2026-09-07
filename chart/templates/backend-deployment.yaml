@@ -38,7 +38,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ template "lightrun-be.serviceAccountName" . }}
       volumes:
-        {{- include "lightrun-backend-crons.volumes" . | nindent 8 }}
+        {{- include "lightrun-backend-crons.volumes" (merge (dict "isBackend" true) .) | nindent 8 }}
         {{- include "lightrun-backend.volumes.asyncProfiler" . | nindent 8 }}
         - name: dumps
           {{- if .Values.deployments.backend.dumpsPersistence.enabled }}
@@ -48,6 +48,11 @@ spec:
           emptyDir:
             sizeLimit: {{ .Values.deployments.backend.dumpsEmptyDirSizeLimit }}
           {{- end }}
+        {{- if include "runtime_collector.internalTls.certEnabled" . }}
+        - name: grpc-tls-cert
+          secret:
+            secretName: {{ include "lightrun-be.internalCertSecretName" . }}
+        {{- end }}
       {{- with .Values.deployments.backend.extraVolumes }}
         {{ toYaml . | nindent 8 }}
       {{- end }}
@@ -76,12 +81,17 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
+            {{- if .Values.runtime_collector.enabled }}
+            - name: grpc
+              containerPort: {{ .Values.deployments.backend.grpc.port }}
+              protocol: TCP
+            {{- end }}
           command: ["sh", "-c"]
           args:
            - |
              CMD="/usr/lib/jvm/default-jvm/bin/java"
              # Add TLS opts if enabled
-             {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name }}
+             {{- if or (include "lightrun-backend-crons.internalCa.mount" .) (include "lightrun-be.internalCa.mount" (merge (dict "isBackend" true) .)) }}
              CMD="$CMD -Djavax.net.ssl.trustStore=/p12/internalca"
              CMD="$CMD -Djavax.net.ssl.trustStorePassword=$(KEYSTORE_PASSWORD)"
              {{- end }}
@@ -99,6 +109,11 @@ spec:
           volumeMounts:
           {{- include "lightrun-backend-crons.volumeMounts" . | nindent 12 }}
           {{- include "lightrun-backend.volumeMounts.asyncProfiler" . | nindent 12 }}
+          {{- if include "runtime_collector.internalTls.certEnabled" . }}
+            - name: grpc-tls-cert
+              mountPath: /grpc-tls
+              readOnly: true
+          {{- end }}
           {{- with .Values.deployments.backend.extraVolumeMounts }}
             {{ toYaml . | nindent 12 }}
           {{- end }}
@@ -147,6 +162,37 @@ spec:
                 name: {{ include "secrets.backend.name" . }}
           env:
           {{- include "lightrun-backend-crons.environmentVariables" . | nindent 12 }}
+            - name: RUNTIME_COLLECTOR_ENABLED
+              value: {{ .Values.runtime_collector.enabled | quote }}
+            {{- if .Values.runtime_collector.enabled }}
+            - name: RUNTIME_COLLECTOR_GRPC_TARGET
+              value: "{{ include "runtime_collector.name" . }}:{{ .Values.runtime_collector.server.service.port }}"
+            - name: RUNTIME_COLLECTOR_GRPC_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.runtime_collector_grpc.name" . }}
+                  key: RUNTIME_COLLECTOR_GRPC_SECRET
+            - name: RUNTIME_COLLECTOR_GRPC_USE_TLS
+              value: {{ include "runtime_collector.internalTls.certEnabled" . | default "false" | quote }}
+            - name: RUNTIME_COLLECTOR_GRPC_CERTIFICATE_VERIFICATION
+              value: {{ .Values.general.internal_tls.certificates.verification | quote }}
+            {{- end }}
+            - name: SERVER_GRPC_ENABLED
+              value: {{ .Values.runtime_collector.enabled | quote }}
+            {{- if .Values.runtime_collector.enabled }}
+            - name: SERVER_GRPC_PORT
+              value: {{ .Values.deployments.backend.grpc.port | quote }}
+            - name: SERVER_GRPC_MAX_OUTBOUND_MESSAGE_SIZE_BYTES
+              value: {{ .Values.deployments.backend.grpc.maxOutboundMessageSizeBytes | int | quote }}
+            {{- if include "runtime_collector.internalTls.certEnabled" . }}
+            - name: SERVER_GRPC_USE_TLS
+              value: "true"
+            - name: SERVER_GRPC_CERTIFICATE_CHAIN
+              value: "file:/grpc-tls/tls.crt"
+            - name: SERVER_GRPC_PRIVATE_KEY
+              value: "file:/grpc-tls/tls.key"
+            {{- end }}
+            {{- end }}
             - name: SPRING_PROFILES_ACTIVE
               value: "prod,swagger,cluster"
             {{- if .Values.deployments.backend.extraEnvs }}
@@ -162,7 +208,7 @@ spec:
 
       # waiting for mysql, rabbitmq and keycloak initialization
       initContainers:
-      {{- include "lightrun-backend-crons.initContainers" . | nindent 6 }}
+      {{- include "lightrun-backend-crons.initContainers" (merge (dict "isBackend" true) .) | nindent 6 }}
       {{- include "lightrun-backend.initContainer.download-async-profiler" . | nindent 6 }}
 
       {{- if .Values.general.tolerations }}

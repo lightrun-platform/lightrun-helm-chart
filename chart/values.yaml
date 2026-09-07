@@ -205,6 +205,7 @@ general:
         artifacts: ""
         runtime_collector: ""
         runtime_collector_clickhouse: ""
+        backend: ""
 
   ############
   ## Router ##
@@ -624,6 +625,9 @@ deployments:
       #example:
       ## includeMetrics: ["connected_agents_per_runtime","connected_agents_total","actions_count_active_total","companies_count_total"]
     jar_name: LightrunServer.jar
+    grpc:
+      port: 9092
+      maxOutboundMessageSizeBytes: 104857600
     artifacts:
       enable: true
       s3_url: https://artifacts.lightrun.com/ #TODO: deprecated since 2.1.7
@@ -1180,6 +1184,8 @@ runtime_collector:
       managementPort: 9091
       annotations: {}
       labels: {}
+    grpc:
+      maxInboundMessageSizeBytes: 104857600
     resources:
       requests:
         cpu: 500m
@@ -1212,6 +1218,14 @@ runtime_collector:
           limits:
             cpu: 500m
             memory: 512Mi
+      internal_ca_truststore:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
     podAnnotations: {}
     podLabels: {}
     annotations: {}
