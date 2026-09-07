@@ -180,6 +180,11 @@ spec:
             - name: SERVER_GRPC_ENABLED
               value: {{ .Values.runtime_collector.enabled | quote }}
             {{- if .Values.runtime_collector.enabled }}
+            - name: SERVER_GRPC_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.runtime_collector_grpc.name" . }}
+                  key: RUNTIME_COLLECTOR_GRPC_SECRET
             - name: SERVER_GRPC_PORT
               value: {{ .Values.deployments.backend.grpc.port | quote }}
             - name: SERVER_GRPC_MAX_OUTBOUND_MESSAGE_SIZE_BYTES

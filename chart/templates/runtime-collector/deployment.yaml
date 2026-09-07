@@ -258,8 +258,8 @@ spec:
             - name: RUNTIME_COLLECTOR_SERVER_GRPC_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "secrets.backend.name" . }}
-                  key: SERVER_GRPC_SECRET
+                  name: {{ include "secrets.runtime_collector_grpc.name" . }}
+                  key: RUNTIME_COLLECTOR_GRPC_SECRET
             - name: RUNTIME_COLLECTOR_SERVER_GRPC_MAX_INBOUND_MESSAGE_SIZE_BYTES
               value: {{ .Values.runtime_collector.server.grpc.maxInboundMessageSizeBytes | int | quote }}
             {{- if include "runtime_collector.internalTls.certEnabled" . }}
