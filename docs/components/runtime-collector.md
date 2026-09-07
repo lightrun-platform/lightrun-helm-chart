@@ -189,11 +189,6 @@ ClickHouse does not mount a CA — it only serves TLS and does not call other se
 > [!NOTE]
 > `SSL_CERT_FILE` **replaces** the system trust store rather than adding to it. Only set `existing_ca_secret_name` for an endpoint whose certificate that CA actually signed — pointing it at an unrelated CA makes an otherwise publicly trusted endpoint fail verification. To trust both, the secret must hold the private CA concatenated with the public bundle.
 
-> [!IMPORTANT]
-> Runtime-collector's ClickHouse connection does not support TLS today, regardless of
-> `certificates.verification` or certificate source — local ClickHouse with
-> `general.internal_tls.enabled: true` will fail at runtime.
-
 ---
 
 ## Database Name
