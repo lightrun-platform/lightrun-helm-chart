@@ -119,6 +119,36 @@ spec:
             - -path=/migrations
             - {{ printf "-database=%s" (include "runtime_collector.clickhouse.migrateDatabaseUrl" .) | quote }}
             - up
+        {{- if include "runtime_collector.internalCa.needed" . }}
+        - name: root-ca-creator
+          image: "{{ .Values.runtime_collector.server.image.repository }}:{{ .Values.runtime_collector.server.image.tag }}"
+          imagePullPolicy: {{ .Values.runtime_collector.server.image.pullPolicy }}
+          securityContext:
+            {{- include "runtime_collector.initContainerSecurityContext" . | nindent 12 }}
+          resources:
+            {{- toYaml .Values.runtime_collector.server.initContainers.internal_ca_truststore.resources | nindent 12 }}
+          env:
+            - name: KEYSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.backend.name" . }}
+                  key: KEYSTORE_PASSWORD
+          volumeMounts:
+            {{- if .Values.general.readOnlyRootFilesystem }}
+            - name: tmpfs
+              mountPath: /tmp
+            {{- end }}
+            - name: ca-cert
+              mountPath: /tmp/ca-certificates
+              readOnly: true
+            - name: p12
+              mountPath: /p12
+          command:
+            - sh
+            - -c
+            - |
+              keytool -import -trustcacerts -alias internalCa -keystore /p12/internalca -file  /tmp/ca-certificates/ca.crt -noprompt -storepass $KEYSTORE_PASSWORD && keytool -importkeystore -srckeystore /usr/lib/jvm/default-jvm/jre/lib/security/cacerts -destkeystore /p12/internalca -srcstorepass changeit -deststorepass $KEYSTORE_PASSWORD
+        {{- end }}
       containers:
         - name: {{ include "runtime_collector.name" . }}
           securityContext:
@@ -158,6 +188,13 @@ spec:
                 name: {{ .Values.runtime_collector.server.envSecret }}
           {{- end }}
           env:
+            {{- if include "runtime_collector.internalCa.needed" . }}
+            - name: KEYSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.backend.name" . }}
+                  key: KEYSTORE_PASSWORD
+            {{- end }}
             - name: SPRING_GRPC_SERVER_PORT
               value: {{ .Values.runtime_collector.server.service.port | quote }}
             - name: RUNTIME_COLLECTOR_CLICKHOUSE_ENDPOINT
@@ -201,10 +238,30 @@ spec:
             {{- if not .Values.general.internal_tls.certificates.verification }}
             - name: SPRING_RABBITMQ_SSL_VALIDATE_SERVER_CERTIFICATE
               value: "false"
+            {{- else if include "runtime_collector.rabbitmq.ca.mount" . }}
+            - name: SPRING_RABBITMQ_SSL_TRUST_STORE
+              value: "file:/p12/internalca"
+            - name: SPRING_RABBITMQ_SSL_TRUST_STORE_TYPE
+              value: "JKS"
+            - name: SPRING_RABBITMQ_SSL_TRUST_STORE_PASSWORD
+              value: "$(KEYSTORE_PASSWORD)"
             {{- end }}
             {{- end }}
             - name: RUNTIME_COLLECTOR_SNAPSHOT_PARSER_QUEUE_NAME
               value: {{ .Values.general.mq.snapshot_events.queue_name | quote }}
+            - name: RUNTIME_COLLECTOR_SERVER_GRPC_TARGET
+              value: {{ include "lightrun-be.grpcTarget" . | quote }}
+            - name: RUNTIME_COLLECTOR_SERVER_GRPC_USE_TLS
+              value: {{ .Values.general.internal_tls.enabled | quote }}
+            - name: RUNTIME_COLLECTOR_SERVER_GRPC_CERTIFICATE_VERIFICATION
+              value: {{ .Values.general.internal_tls.certificates.verification | quote }}
+            - name: RUNTIME_COLLECTOR_SERVER_GRPC_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.runtime_collector_grpc.name" . }}
+                  key: RUNTIME_COLLECTOR_GRPC_SECRET
+            - name: RUNTIME_COLLECTOR_SERVER_GRPC_MAX_INBOUND_MESSAGE_SIZE_BYTES
+              value: {{ .Values.runtime_collector.server.grpc.maxInboundMessageSizeBytes | int | quote }}
             {{- if include "runtime_collector.internalTls.certEnabled" . }}
             - name: SPRING_GRPC_SERVER_SSL_ENABLED
               value: "true"
@@ -219,10 +276,14 @@ spec:
             - name: SSL_CERT_FILE
               value: /tmp/ca-certificates/ca.crt
             {{- end }}
+            {{- if include "runtime_collector.internalCa.needed" . }}
+            - name: JDK_JAVA_OPTIONS
+              value: "-Djavax.net.ssl.trustStore=/p12/internalca -Djavax.net.ssl.trustStorePassword=$(KEYSTORE_PASSWORD)"
+            {{- end }}
             {{- with .Values.runtime_collector.server.extraEnvs }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
-          {{- if or .Values.general.readOnlyRootFilesystem (include "runtime_collector.internalTls.certEnabled" .) (include "runtime_collector.clickhouse.ca.mount" .) .Values.runtime_collector.server.extraVolumeMounts }}
+          {{- if or .Values.general.readOnlyRootFilesystem (include "runtime_collector.internalTls.certEnabled" .) (include "runtime_collector.clickhouse.ca.mount" .) (include "runtime_collector.internalCa.needed" .) .Values.runtime_collector.server.extraVolumeMounts }}
           volumeMounts:
             {{- if .Values.general.readOnlyRootFilesystem }}
             ## Mount /tmp before nested /tmp/* secret mounts.
@@ -237,11 +298,16 @@ spec:
             {{- if include "runtime_collector.clickhouse.ca.mount" . }}
             {{- include "runtime_collector.clickhouse.ca.volumeMount" . | nindent 12 }}
             {{- end }}
+            {{- if include "runtime_collector.internalCa.needed" . }}
+            - name: p12
+              mountPath: /p12
+              readOnly: true
+            {{- end }}
             {{- with .Values.runtime_collector.server.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
-      {{- if or .Values.general.readOnlyRootFilesystem (include "runtime_collector.internalTls.certEnabled" .) (include "runtime_collector.clickhouse.ca.mount" .) .Values.runtime_collector.server.extraVolumes }}
+      {{- if or .Values.general.readOnlyRootFilesystem (include "runtime_collector.internalTls.certEnabled" .) (include "runtime_collector.clickhouse.ca.mount" .) (include "runtime_collector.internalCa.needed" .) .Values.runtime_collector.server.extraVolumes }}
       volumes:
         {{- if include "runtime_collector.internalTls.certEnabled" . }}
         - name: internal-cert
@@ -250,6 +316,17 @@ spec:
         {{- end }}
         {{- if include "runtime_collector.clickhouse.ca.mount" . }}
         {{- include "runtime_collector.clickhouse.ca.volume" . | nindent 8 }}
+        {{- end }}
+        {{- if include "runtime_collector.internalCa.needed" . }}
+        - name: ca-cert
+          secret:
+            secretName: {{ include "runtime_collector.internalCa.secretName" . }}
+            items:
+              - key: {{ include "runtime_collector.internalCa.secretKey" . }}
+                path: ca.crt
+        - name: p12
+          emptyDir:
+            sizeLimit: 16Mi
         {{- end }}
         {{- if .Values.general.readOnlyRootFilesystem }}
         - name: tmpfs

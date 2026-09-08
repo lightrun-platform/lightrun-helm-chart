@@ -68,11 +68,11 @@ Required when [Runtime Collector](../components/runtime-collector.md) is enabled
 
 #### **Runtime Collector gRPC secret** (`{{ .Release.name }}-runtime-collector-grpc`)
 
-Required when [Runtime Collector](../components/runtime-collector.md) is enabled. Shared between backend/crons (as the client) and the runtime-collector server (as the verifier).
+Required when [Runtime Collector](../components/runtime-collector.md) is enabled. Shared by both gRPC directions: the backend authenticates to the runtime-collector server with it, and the runtime-collector authenticates to the backend's gRPC server with the same value.
 
 | Secret Key | Description | Value Source |
 |------------|-------------|--------------|
-| `RUNTIME_COLLECTOR_GRPC_SECRET` | Shared secret authenticating gRPC calls to the Runtime Collector | `secrets.runtime_collector.grpc_secret` |
+| `RUNTIME_COLLECTOR_GRPC_SECRET` | Shared secret authenticating gRPC calls between the backend and the Runtime Collector, in both directions | `secrets.runtime_collector.grpc_secret` |
 
 > [!WARNING]
 > For encryption keys, it's strongly recommended to provide them as external secrets rather than letting the chart manage them. See [Encryption Keys Documentation](../advanced/encryption_keys.md) for details.
@@ -99,7 +99,7 @@ secrets:
     password: ""  # ClickHouse password (used when Runtime Collector is enabled)
 
   runtime_collector:
-    grpc_secret: ""  # Shared secret between backend/crons and runtime-collector (used when Runtime Collector is enabled)
+    grpc_secret: ""  # Shared secret for backend <-> runtime-collector gRPC calls, both directions (used when Runtime Collector is enabled)
 
   redis:
     password: ""  # Redis authentication password
