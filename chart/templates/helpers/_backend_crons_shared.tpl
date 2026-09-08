@@ -5,7 +5,9 @@
 */}}
 
 {{- define "lightrun-backend-crons.internalCa.mount" -}}
-{{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name -}}true{{- end -}}
+{{- if .Values.general.internal_tls.enabled -}}
+{{- if or .Values.general.internal_tls.certificates.existing_ca_secret_name (and .Values.runtime_collector.enabled (eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates")) -}}true{{- end -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -181,7 +183,7 @@ Shared volumes for backend and crons services
       # Only select items that start with encryption-key-
       {{- include "encryption.key.items" . | nindent 6 }}
 
-{{- if or (include "lightrun-backend-crons.internalCa.mount" .) (include "lightrun-be.internalCa.mount" .) }}
+{{- if include "lightrun-backend-crons.internalCa.mount" . }}
 - name: ca-cert
   secret:
     secretName: {{ include "runtime_collector.internalCa.secretName" . }}
@@ -310,7 +312,7 @@ Shared init containers for backend and crons services
   command: ['sh', '-c', 'cp /tls/tls.crt /p12/crt.pem && cp /tls/tls.key /p12/key.pem && openssl pkcs12 -export -out /p12/lightrun.p12 -inkey /p12/key.pem -in /p12/crt.pem -passin pass:$KEYSTORE_PASSWORD -passout pass:$KEYSTORE_PASSWORD']
 {{- end }}
 
-{{- if or (include "lightrun-backend-crons.internalCa.mount" .) (include "lightrun-be.internalCa.mount" .) }}
+{{- if include "lightrun-backend-crons.internalCa.mount" . }}
 - name: root-ca-creator
   image: "{{ .Values.deployments.backend.image.repository }}:{{ .Values.deployments.backend.image.tag }}"
   securityContext: {{ include "lightrun-be.containerSecurityContext" . | indent 4 }}

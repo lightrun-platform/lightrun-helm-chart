@@ -38,7 +38,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ template "lightrun-be.serviceAccountName" . }}
       volumes:
-        {{- include "lightrun-backend-crons.volumes" (merge (dict "isBackend" true) .) | nindent 8 }}
+        {{- include "lightrun-backend-crons.volumes" . | nindent 8 }}
         {{- include "lightrun-backend.volumes.asyncProfiler" . | nindent 8 }}
         - name: dumps
           {{- if .Values.deployments.backend.dumpsPersistence.enabled }}
@@ -91,7 +91,7 @@ spec:
            - |
              CMD="/usr/lib/jvm/default-jvm/bin/java"
              # Add TLS opts if enabled
-             {{- if or (include "lightrun-backend-crons.internalCa.mount" .) (include "lightrun-be.internalCa.mount" (merge (dict "isBackend" true) .)) }}
+             {{- if include "lightrun-backend-crons.internalCa.mount" . }}
              CMD="$CMD -Djavax.net.ssl.trustStore=/p12/internalca"
              CMD="$CMD -Djavax.net.ssl.trustStorePassword=$(KEYSTORE_PASSWORD)"
              {{- end }}
@@ -213,7 +213,7 @@ spec:
 
       # waiting for mysql, rabbitmq and keycloak initialization
       initContainers:
-      {{- include "lightrun-backend-crons.initContainers" (merge (dict "isBackend" true) .) | nindent 6 }}
+      {{- include "lightrun-backend-crons.initContainers" . | nindent 6 }}
       {{- include "lightrun-backend.initContainer.download-async-profiler" . | nindent 6 }}
 
       {{- if .Values.general.tolerations }}

@@ -1152,10 +1152,6 @@ http
 {{- end -}}
 {{- end -}}
 
-{{- define "lightrun-be.internalCa.mount" -}}
-{{- if and .isBackend .Values.general.internal_tls.enabled .Values.runtime_collector.enabled (eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates") -}}true{{- end -}}
-{{- end -}}
-
 {{- define "runtime_collector.internalCa.needed" -}}
 {{- if and .Values.general.internal_tls.enabled .Values.runtime_collector.enabled -}}
 {{- if or (eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates") .Values.general.internal_tls.certificates.existing_ca_secret_name -}}true{{- end -}}
