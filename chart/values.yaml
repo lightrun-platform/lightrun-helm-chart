@@ -295,8 +295,8 @@ general:
 
   nodeSelector: {}
   #   purpose: stage
-  ## If you want to set node selector for Lightrun deployments, delete the `{}` in the line above
-  ## and uncomment this example block
+  ## Applied to all Lightrun deployments/statefulsets. Override per workload with
+  ## deployments.<name>.nodeSelector. Delete the `{}` above and uncomment this example block
   #  label-key1: "label-value1"
   #  label-key2: "label-value2"
 
@@ -587,6 +587,8 @@ deployments:
     extraVolumeMounts: []
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     livenessProbe:
       initialDelaySeconds: 10
@@ -647,20 +649,22 @@ deployments:
       wait_for_keycloak:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.1-r4.lr-0"
+          tag: "0.3.0-alpine-3.24.1-r15.lr-0"
           pullPolicy: ""
       p12_creator:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.1-r4.lr-0"
+          tag: "0.3.0-alpine-3.24.1-r15.lr-0"
           pullPolicy: ""
       wait_for_rabbitmq:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.1-r4.lr-0"
+          tag: "0.3.0-alpine-3.24.1-r15.lr-0"
           pullPolicy: ""
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     lifecycle:
       preStop:
@@ -701,12 +705,12 @@ deployments:
         download_async_profiler:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.1-r4.lr-0"
+            tag: "0.3.0-alpine-3.24.1-r15.lr-0"
             pullPolicy: ""
         persist_async_profiler:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.1-r4.lr-0"
+            tag: "0.3.0-alpine-3.24.1-r15.lr-0"
             pullPolicy: ""
       # Download URL end point for async profiler binary, ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
       downloadUrl: "https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz"
@@ -742,6 +746,8 @@ deployments:
     extraVolumes: []
     extraVolumeMounts: []
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     lifecycle:
       preStop:
@@ -781,12 +787,12 @@ deployments:
         download_async_profiler:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.1-r4.lr-0"
+            tag: "0.3.0-alpine-3.24.1-r15.lr-0"
             pullPolicy: ""
         persist_async_profiler:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.1-r4.lr-0"
+            tag: "0.3.0-alpine-3.24.1-r15.lr-0"
             pullPolicy: ""
       # Download URL end point for async profiler binary, ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
       downloadUrl: "https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz"
@@ -831,14 +837,16 @@ deployments:
       cluster_cert:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.1-r4.lr-0"
+          tag: "0.3.0-alpine-3.24.1-r15.lr-0"
           pullPolicy: ""
       wait_for_rabbitmq:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.1-r4.lr-0"
+          tag: "0.3.0-alpine-3.24.1-r15.lr-0"
           pullPolicy: ""          
     topologySpreadConstraints: []
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     startupProbe:
       initialDelaySeconds: 10
@@ -867,12 +875,12 @@ deployments:
         download_async_profiler:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.1-r4.lr-0"
+            tag: "0.3.0-alpine-3.24.1-r15.lr-0"
             pullPolicy: ""
         persist_async_profiler:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.1-r4.lr-0"
+            tag: "0.3.0-alpine-3.24.1-r15.lr-0"
             pullPolicy: ""
       # Download URL end point for async profiler binary, ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
       downloadUrl: "https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz"
@@ -912,7 +920,7 @@ deployments:
       enabled: false
     image:
       repository: lightruncom/redis
-      tag: "7.4.10-alpine-3.24.1-r4.lr-0"
+      tag: "7.4.11-alpine-3.24.1-r15.lr-0"
       pullPolicy: IfNotPresent
     resources:
       cpu: 2000m
@@ -928,6 +936,8 @@ deployments:
     # EmptyDir is used for redis data persistence
     emptyDir:
       sizeLimit: 5Gi
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     livenessProbe:
       initialDelaySeconds: 50
@@ -943,6 +953,7 @@ deployments:
       failureThreshold: 3
 
   mysql:
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
     nodeSelector: {}
     podSecurityContext:
       # when using PVC , it is necessarily to set fsGroup so pod will have write permission to the mounted volume
@@ -985,7 +996,7 @@ deployments:
     useJsonLogFormat: false
     image:
       repository: lightruncom/rabbitmq
-      tag: "4.3.4-alpine.lr-0"
+      tag: "4.3.5-alpine.lr-6"
       pullPolicy: IfNotPresent
     resources:
       cpu: 500m
@@ -996,6 +1007,7 @@ deployments:
       annotations: {}
       labels: {}
       ## prometheus autodiscovery annotations could be added to the service
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
     nodeSelector: {}
     podSecurityContext:
       # when using PVC , it is necessarily to set fsGroup so pod will have write permission to the mounted volume
@@ -1009,7 +1021,7 @@ deployments:
           memory: 128Mi
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.1-r4.lr-0"
+          tag: "0.3.0-alpine-3.24.1-r15.lr-0"
           pullPolicy: ""
     # EmptyDir is used for rabbitmq data when mq.storage is set to 0
     emptyDir:
@@ -1047,7 +1059,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/data-streamer
-      tag: "4.102.0-alpine-3.24.1-r4.lr-0"
+      tag: "4.108.0-alpine-3.24.1-r15.lr-0"
       pullPolicy: IfNotPresent
     resources:
       cpu: 100m
@@ -1065,6 +1077,8 @@ deployments:
     extraVolumeMounts: []
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     livenessProbe:
       initialDelaySeconds: 10
@@ -1106,6 +1120,8 @@ deployments:
     extraVolumeMounts: []
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     livenessProbe: 
       initialDelaySeconds: 10
@@ -1132,7 +1148,7 @@ deployments:
       maxReplicas: 5
     image:
       repository: lightruncom/router
-      tag: "1.30.4-r1-alpine-3.24.1-r4.lr-0"
+      tag: "1.30.4-r1-alpine-3.24.1-r15.lr-0"
       pullPolicy: IfNotPresent
     podSecurityContext: {}
     containerSecurityContext: {}
@@ -1148,6 +1164,8 @@ deployments:
       https: 8443
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     livenessProbe:
       initialDelaySeconds: 10

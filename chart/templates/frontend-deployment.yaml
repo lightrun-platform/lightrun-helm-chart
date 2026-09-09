@@ -125,9 +125,9 @@ spec:
       tolerations:
         {{ toYaml .Values.general.tolerations | nindent 8 }}
       {{- end }}
-      {{- if .Values.general.nodeSelector }}
+      {{- with coalesce .Values.deployments.frontend.nodeSelector .Values.general.nodeSelector }}
       nodeSelector:
-        {{ toYaml .Values.general.nodeSelector | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- if .Values.deployments.frontend.affinity }}
       affinity:
