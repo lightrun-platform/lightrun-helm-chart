@@ -1,0 +1,353 @@
+{{- if .Values.runtime_collector.enabled }}
+{{- include "runtime_collector.clickhouse.validateTls" . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "runtime_collector.name" . }}
+  {{- with .Values.runtime_collector.server.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    app: {{ include "runtime_collector.name" . }}
+    {{- with .Values.runtime_collector.server.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: {{ .Values.runtime_collector.server.replicas }}
+  strategy:
+    type: {{ .Values.runtime_collector.server.rollout_strategy }}
+  selector:
+    matchLabels:
+      app: {{ include "runtime_collector.name" . }}
+  template:
+    metadata:
+      {{- with .Values.runtime_collector.server.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ include "runtime_collector.name" . }}
+        {{- with .Values.runtime_collector.server.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if .Values.runtime_collector.server.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml .Values.runtime_collector.server.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ template "runtime_collector.serviceAccountName" . }}
+      {{- if .Values.runtime_collector.server.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.runtime_collector.server.podSecurityContext | nindent 8 }}
+      {{- end }}
+      {{- if .Values.secrets.defaults.dockerhub_config }}
+      imagePullSecrets:
+      {{- if .Values.secrets.defaults.dockerhub_config.existingSecret }}
+        - name: {{ .Values.secrets.defaults.dockerhub_config.existingSecret }}
+      {{- else }}
+        - name: {{ include "secrets.dockerhub.name" . }}
+      {{- end -}}
+      {{- end }}
+      initContainers:
+        - name: wait-for-clickhouse
+          image: "{{ .Values.runtime_collector.server.initContainers.wait_for_clickhouse.image.repository }}:{{ .Values.runtime_collector.server.initContainers.wait_for_clickhouse.image.tag }}"
+          imagePullPolicy: {{ .Values.runtime_collector.server.initContainers.wait_for_clickhouse.image.pullPolicy }}
+          securityContext:
+            {{- include "runtime_collector.initContainerSecurityContext" . | nindent 12 }}
+          resources:
+            {{- toYaml .Values.runtime_collector.server.initContainers.wait_for_clickhouse.resources | nindent 12 }}
+          {{- if or .Values.general.readOnlyRootFilesystem (include "runtime_collector.clickhouse.ca.mount" .) }}
+          volumeMounts:
+            {{- if .Values.general.readOnlyRootFilesystem }}
+            - name: tmpfs
+              mountPath: /tmp
+            {{- end }}
+            {{- if include "runtime_collector.clickhouse.ca.mount" . }}
+            {{- include "runtime_collector.clickhouse.ca.volumeMount" . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          command:
+            - sh
+            - -c
+            - {{ include "runtime_collector.clickhouse.waitForCommand" . | quote }}
+        - name: migrate-clickhouse
+          image: "{{ .Values.runtime_collector.server.initContainers.migrations.image.repository }}:{{ .Values.runtime_collector.server.image.tag }}"
+          imagePullPolicy: {{ .Values.runtime_collector.server.initContainers.migrations.image.pullPolicy }}
+          securityContext:
+            {{- include "runtime_collector.initContainerSecurityContext" . | nindent 12 }}
+          resources:
+            {{- toYaml .Values.runtime_collector.server.initContainers.migrations.resources | nindent 12 }}
+          env:
+            - name: CLICKHOUSE_HOST
+              value: {{ include "runtime_collector.clickhouse.hostname" . | quote }}
+            - name: CLICKHOUSE_NATIVE_PORT
+              value: {{ include "runtime_collector.clickhouse.nativePort" . | quote }}
+            - name: CLICKHOUSE_DATABASE
+              value: {{ .Values.runtime_collector.clickhouse.database | quote }}
+            - name: CLICKHOUSE_SECURE
+              value: {{ include "runtime_collector.clickhouse.nativeSecure" . | default "false" | quote }}
+            {{- with include "runtime_collector.clickhouse.cluster" . }}
+            - name: CLICKHOUSE_CLUSTER
+              value: {{ . | quote }}
+            {{- end }}
+            - name: CLICKHOUSE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "runtime_collector.clickhouse.secretName" . }}
+                  key: CLICKHOUSE_USERNAME
+            - name: CLICKHOUSE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "runtime_collector.clickhouse.secretName" . }}
+                  key: CLICKHOUSE_PASSWORD
+            {{- if include "runtime_collector.clickhouse.ca.mount" . }}
+            - name: SSL_CERT_FILE
+              value: /tmp/ca-certificates/ca.crt
+            {{- end }}
+          {{- if or .Values.general.readOnlyRootFilesystem (include "runtime_collector.clickhouse.ca.mount" .) }}
+          volumeMounts:
+            {{- if .Values.general.readOnlyRootFilesystem }}
+            - name: tmpfs
+              mountPath: /tmp
+            {{- end }}
+            {{- if include "runtime_collector.clickhouse.ca.mount" . }}
+            {{- include "runtime_collector.clickhouse.ca.volumeMount" . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          args:
+            - -path=/migrations
+            - {{ printf "-database=%s" (include "runtime_collector.clickhouse.migrateDatabaseUrl" .) | quote }}
+            - up
+        {{- if include "runtime_collector.internalCa.needed" . }}
+        - name: root-ca-creator
+          image: "{{ .Values.runtime_collector.server.image.repository }}:{{ .Values.runtime_collector.server.image.tag }}"
+          imagePullPolicy: {{ .Values.runtime_collector.server.image.pullPolicy }}
+          securityContext:
+            {{- include "runtime_collector.initContainerSecurityContext" . | nindent 12 }}
+          resources:
+            {{- toYaml .Values.runtime_collector.server.initContainers.internal_ca_truststore.resources | nindent 12 }}
+          env:
+            - name: KEYSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.backend.name" . }}
+                  key: KEYSTORE_PASSWORD
+          volumeMounts:
+            {{- if .Values.general.readOnlyRootFilesystem }}
+            - name: tmpfs
+              mountPath: /tmp
+            {{- end }}
+            - name: ca-cert
+              mountPath: /tmp/ca-certificates
+              readOnly: true
+            - name: p12
+              mountPath: /p12
+          command:
+            - sh
+            - -c
+            - |
+              keytool -import -trustcacerts -alias internalCa -keystore /p12/internalca -file  /tmp/ca-certificates/ca.crt -noprompt -storepass $KEYSTORE_PASSWORD && keytool -importkeystore -srckeystore /usr/lib/jvm/default-jvm/jre/lib/security/cacerts -destkeystore /p12/internalca -srcstorepass changeit -deststorepass $KEYSTORE_PASSWORD
+        {{- end }}
+      containers:
+        - name: {{ include "runtime_collector.name" . }}
+          securityContext:
+            {{- include "runtime_collector.containerSecurityContext" . | nindent 12 }}
+          image: "{{ .Values.runtime_collector.server.image.repository }}:{{ .Values.runtime_collector.server.image.tag }}"
+          imagePullPolicy: {{ .Values.runtime_collector.server.image.pullPolicy }}
+          ports:
+            - name: grpc
+              containerPort: {{ .Values.runtime_collector.server.service.port }}
+              protocol: TCP
+            - name: management
+              containerPort: {{ .Values.runtime_collector.server.service.managementPort }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: management
+            initialDelaySeconds: {{ .Values.runtime_collector.server.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.runtime_collector.server.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.runtime_collector.server.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.runtime_collector.server.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.runtime_collector.server.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: management
+            initialDelaySeconds: {{ .Values.runtime_collector.server.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.runtime_collector.server.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.runtime_collector.server.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.runtime_collector.server.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.runtime_collector.server.readinessProbe.failureThreshold }}
+          resources:
+            {{- toYaml .Values.runtime_collector.server.resources | nindent 12 }}
+          {{- if .Values.runtime_collector.server.envSecret }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.runtime_collector.server.envSecret }}
+          {{- end }}
+          env:
+            {{- if include "runtime_collector.internalCa.needed" . }}
+            - name: KEYSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.backend.name" . }}
+                  key: KEYSTORE_PASSWORD
+            {{- end }}
+            - name: SPRING_GRPC_SERVER_PORT
+              value: {{ .Values.runtime_collector.server.service.port | quote }}
+            - name: SPRING_R2DBC_URL
+              value: {{ include "runtime_collector.clickhouse.r2dbcUrl" . | quote }}
+            - name: SPRING_R2DBC_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "runtime_collector.clickhouse.secretName" . }}
+                  key: CLICKHOUSE_USERNAME
+            - name: SPRING_R2DBC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "runtime_collector.clickhouse.secretName" . }}
+                  key: CLICKHOUSE_PASSWORD
+            - name: RUNTIME_COLLECTOR_GRPC_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.runtime_collector_grpc.name" . }}
+                  key: RUNTIME_COLLECTOR_GRPC_SECRET
+            - name: SPRING_RABBITMQ_HOST
+              value: {{ include "lightrun-mq.endpoint" . | quote }}
+            - name: SPRING_RABBITMQ_PORT
+              value: {{ .Values.general.mq.port | quote }}
+            - name: SPRING_RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.backend.name" . }}
+                  key: SPRING_RABBITMQ_USERNAME
+            - name: SPRING_RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.backend.name" . }}
+                  key: SPRING_RABBITMQ_PASSWORD
+            - name: SPRING_RABBITMQ_VIRTUAL_HOST
+              value: "/"
+            {{- if and .Values.general.internal_tls.enabled .Values.general.mq.enabled }}
+            - name: SPRING_RABBITMQ_SSL_ENABLED
+              value: "true"
+            {{- if not .Values.general.internal_tls.certificates.verification }}
+            - name: SPRING_RABBITMQ_SSL_VALIDATE_SERVER_CERTIFICATE
+              value: "false"
+            {{- else if include "runtime_collector.rabbitmq.ca.mount" . }}
+            - name: SPRING_RABBITMQ_SSL_TRUST_STORE
+              value: "file:/p12/internalca"
+            - name: SPRING_RABBITMQ_SSL_TRUST_STORE_TYPE
+              value: "JKS"
+            - name: SPRING_RABBITMQ_SSL_TRUST_STORE_PASSWORD
+              value: "$(KEYSTORE_PASSWORD)"
+            {{- end }}
+            {{- end }}
+            - name: RUNTIME_COLLECTOR_SNAPSHOT_PARSER_QUEUE_NAME
+              value: {{ .Values.general.mq.snapshot_events.queue_name | quote }}
+            - name: RUNTIME_COLLECTOR_SERVER_GRPC_TARGET
+              value: {{ include "lightrun-be.grpcTarget" . | quote }}
+            - name: RUNTIME_COLLECTOR_SERVER_GRPC_USE_TLS
+              value: {{ .Values.general.internal_tls.enabled | quote }}
+            - name: RUNTIME_COLLECTOR_SERVER_GRPC_CERTIFICATE_VERIFICATION
+              value: {{ .Values.general.internal_tls.certificates.verification | quote }}
+            - name: RUNTIME_COLLECTOR_SERVER_GRPC_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.runtime_collector_grpc.name" . }}
+                  key: RUNTIME_COLLECTOR_GRPC_SECRET
+            - name: RUNTIME_COLLECTOR_SERVER_GRPC_MAX_INBOUND_MESSAGE_SIZE_BYTES
+              value: {{ .Values.runtime_collector.server.grpc.maxInboundMessageSizeBytes | int | quote }}
+            {{- if include "runtime_collector.internalTls.certEnabled" . }}
+            - name: SPRING_GRPC_SERVER_SSL_ENABLED
+              value: "true"
+            - name: SPRING_GRPC_SERVER_SSL_BUNDLE
+              value: "runtimecollectorgrpc"
+            - name: SPRING_SSL_BUNDLE_PEM_RUNTIMECOLLECTORGRPC_KEYSTORE_CERTIFICATE
+              value: /tls/tls.crt
+            - name: SPRING_SSL_BUNDLE_PEM_RUNTIMECOLLECTORGRPC_KEYSTORE_PRIVATE_KEY
+              value: /tls/tls.key
+            {{- end }}
+            {{- if include "runtime_collector.clickhouse.ca.mount" . }}
+            - name: SSL_CERT_FILE
+              value: /tmp/ca-certificates/ca.crt
+            {{- end }}
+            {{- if include "runtime_collector.internalCa.needed" . }}
+            - name: JDK_JAVA_OPTIONS
+              value: "-Djavax.net.ssl.trustStore=/p12/internalca -Djavax.net.ssl.trustStorePassword=$(KEYSTORE_PASSWORD)"
+            {{- end }}
+            {{- with .Values.runtime_collector.server.extraEnvs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- if or .Values.general.readOnlyRootFilesystem (include "runtime_collector.internalTls.certEnabled" .) (include "runtime_collector.clickhouse.ca.mount" .) (include "runtime_collector.internalCa.needed" .) .Values.runtime_collector.server.extraVolumeMounts }}
+          volumeMounts:
+            {{- if .Values.general.readOnlyRootFilesystem }}
+            ## Mount /tmp before nested /tmp/* secret mounts.
+            - name: tmpfs
+              mountPath: /tmp
+            {{- end }}
+            {{- if include "runtime_collector.internalTls.certEnabled" . }}
+            - name: internal-cert
+              mountPath: /tls
+              readOnly: true
+            {{- end }}
+            {{- if include "runtime_collector.clickhouse.ca.mount" . }}
+            {{- include "runtime_collector.clickhouse.ca.volumeMount" . | nindent 12 }}
+            {{- end }}
+            {{- if include "runtime_collector.internalCa.needed" . }}
+            - name: p12
+              mountPath: /p12
+              readOnly: true
+            {{- end }}
+            {{- with .Values.runtime_collector.server.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+      {{- if or .Values.general.readOnlyRootFilesystem (include "runtime_collector.internalTls.certEnabled" .) (include "runtime_collector.clickhouse.ca.mount" .) (include "runtime_collector.internalCa.needed" .) .Values.runtime_collector.server.extraVolumes }}
+      volumes:
+        {{- if include "runtime_collector.internalTls.certEnabled" . }}
+        - name: internal-cert
+          secret:
+            secretName: {{ include "runtime_collector.internalCertSecretName" . }}
+        {{- end }}
+        {{- if include "runtime_collector.clickhouse.ca.mount" . }}
+        {{- include "runtime_collector.clickhouse.ca.volume" . | nindent 8 }}
+        {{- end }}
+        {{- if include "runtime_collector.internalCa.needed" . }}
+        - name: ca-cert
+          secret:
+            secretName: {{ include "runtime_collector.internalCa.secretName" . }}
+            items:
+              - key: {{ include "runtime_collector.internalCa.secretKey" . }}
+                path: ca.crt
+        - name: p12
+          emptyDir:
+            sizeLimit: 16Mi
+        {{- end }}
+        {{- if .Values.general.readOnlyRootFilesystem }}
+        - name: tmpfs
+          emptyDir:
+            sizeLimit: {{ .Values.general.readOnlyRootFilesystem_tmpfs_sizeLimit }}
+        {{- end }}
+        {{- with .Values.runtime_collector.server.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.general.tolerations }}
+      tolerations:
+        {{- toYaml .Values.general.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.runtime_collector.server.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.runtime_collector.server.nodeSelector | nindent 8 }}
+      {{- else if .Values.general.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.general.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.runtime_collector.server.affinity }}
+      affinity:
+        {{- toYaml .Values.runtime_collector.server.affinity | nindent 8 }}
+      {{- end }}
+{{- end }}

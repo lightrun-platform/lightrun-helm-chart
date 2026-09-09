@@ -17,5 +17,11 @@ spec:
       targetPort: 8080
       protocol: TCP
       name: http
+    {{- if .Values.runtime_collector.enabled }}
+    - port: {{ .Values.deployments.backend.grpc.port }}
+      targetPort: grpc
+      protocol: TCP
+      name: grpc
+    {{- end }}
   selector:
     app: {{ include "lightrun-be.name" . }}

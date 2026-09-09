@@ -1,0 +1,181 @@
+{{- if and .Values.runtime_collector.enabled .Values.runtime_collector.clickhouse.local.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "runtime_collector.clickhouse.name" . }}
+  {{- with .Values.runtime_collector.clickhouse.local.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    app: {{ include "runtime_collector.clickhouse.name" . }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ include "runtime_collector.clickhouse.name" . }}
+  template:
+    metadata:
+      {{- with .Values.runtime_collector.clickhouse.local.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ include "runtime_collector.clickhouse.name" . }}
+        {{- with .Values.runtime_collector.clickhouse.local.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.runtime_collector.clickhouse.local.terminationGracePeriodSeconds }}
+      {{- if .Values.secrets.defaults.dockerhub_config }}
+      imagePullSecrets:
+      {{- if .Values.secrets.defaults.dockerhub_config.existingSecret }}
+        - name: {{ .Values.secrets.defaults.dockerhub_config.existingSecret }}
+      {{- else }}
+        - name: {{ include "secrets.dockerhub.name" . }}
+      {{- end -}}
+      {{- end }}
+      securityContext:
+        {{- include "runtime_collector.clickhouse.podSecurityContext" . | nindent 8 }}
+      containers:
+        - name: clickhouse
+          securityContext:
+            {{- include "runtime_collector.clickhouse.containerSecurityContext" . | nindent 12 }}
+          image: "{{ .Values.runtime_collector.clickhouse.local.image.repository }}:{{ .Values.runtime_collector.clickhouse.local.image.tag }}"
+          imagePullPolicy: {{ .Values.runtime_collector.clickhouse.local.image.pullPolicy }}
+          env:
+            ## CLICKHOUSE_DB breaks TLS startup; migrations create the database instead.
+            - name: CLICKHOUSE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "runtime_collector.clickhouse.secretName" . }}
+                  key: CLICKHOUSE_USERNAME
+            - name: CLICKHOUSE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "runtime_collector.clickhouse.secretName" . }}
+                  key: CLICKHOUSE_PASSWORD
+            - name: CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT
+              value: "1"
+            {{- with .Values.runtime_collector.clickhouse.local.extraEnvs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.runtime_collector.clickhouse.local.httpPort }}
+            - name: native
+              containerPort: {{ .Values.runtime_collector.clickhouse.local.nativePort }}
+          startupProbe:
+            httpGet:
+              path: /ping
+              port: http
+              scheme: {{ include "runtime_collector.clickhouse.httpScheme" . | upper }}
+              httpHeaders:
+                - name: Accept
+                  value: text/plain
+            initialDelaySeconds: {{ .Values.runtime_collector.clickhouse.local.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.runtime_collector.clickhouse.local.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.runtime_collector.clickhouse.local.startupProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.runtime_collector.clickhouse.local.startupProbe.successThreshold }}
+            failureThreshold: {{ .Values.runtime_collector.clickhouse.local.startupProbe.failureThreshold }}
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http
+              scheme: {{ include "runtime_collector.clickhouse.httpScheme" . | upper }}
+              httpHeaders:
+                - name: Accept
+                  value: text/plain
+            initialDelaySeconds: {{ .Values.runtime_collector.clickhouse.local.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.runtime_collector.clickhouse.local.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.runtime_collector.clickhouse.local.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.runtime_collector.clickhouse.local.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.runtime_collector.clickhouse.local.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: http
+              scheme: {{ include "runtime_collector.clickhouse.httpScheme" . | upper }}
+              httpHeaders:
+                - name: Accept
+                  value: text/plain
+            initialDelaySeconds: {{ .Values.runtime_collector.clickhouse.local.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.runtime_collector.clickhouse.local.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.runtime_collector.clickhouse.local.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.runtime_collector.clickhouse.local.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.runtime_collector.clickhouse.local.readinessProbe.failureThreshold }}
+          resources:
+            {{- toYaml .Values.runtime_collector.clickhouse.local.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/clickhouse
+            {{- if .Values.general.readOnlyRootFilesystem }}
+            ## Writable mount for users.d/default-user.xml rewritten by the entrypoint.
+            - name: users-config
+              mountPath: /etc/clickhouse-server/users.d
+            - name: log
+              mountPath: /var/log/clickhouse-server
+            - name: tmpfs
+              mountPath: /tmp
+            {{- end }}
+            {{- if include "runtime_collector.clickhouse.internalTls.certEnabled" . }}
+            - name: ssl-config
+              mountPath: /etc/clickhouse-server/config.d/ssl-config.xml
+              subPath: ssl-config.xml
+              readOnly: true
+            - name: internal-cert
+              mountPath: /tmp/certs/
+              readOnly: true
+            {{- end }}
+            {{- with .Values.runtime_collector.clickhouse.local.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        - name: data
+          {{- if .Values.runtime_collector.clickhouse.local.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.runtime_collector.clickhouse.local.persistence.existingClaim }}
+          {{- else }}
+          emptyDir:
+            sizeLimit: {{ .Values.runtime_collector.clickhouse.local.emptyDir.sizeLimit }}
+          {{- end }}
+        {{- if include "runtime_collector.clickhouse.internalTls.certEnabled" . }}
+        - name: ssl-config
+          configMap:
+            name: {{ include "runtime_collector.clickhouse.name" . }}-ssl-config
+        - name: internal-cert
+          secret:
+            secretName: {{ include "runtime_collector.clickhouse.internalCertSecretName" . }}
+        {{- end }}
+        {{- if .Values.general.readOnlyRootFilesystem }}
+        - name: users-config
+          emptyDir:
+            sizeLimit: {{ .Values.runtime_collector.clickhouse.local.emptyDir.usersConfigSizeLimit }}
+        - name: log
+          emptyDir:
+            sizeLimit: {{ .Values.runtime_collector.clickhouse.local.emptyDir.logSizeLimit }}
+        - name: tmpfs
+          emptyDir:
+            sizeLimit: {{ .Values.general.readOnlyRootFilesystem_tmpfs_sizeLimit }}
+        {{- end }}
+        {{- with .Values.runtime_collector.clickhouse.local.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- if .Values.general.tolerations }}
+      tolerations:
+        {{- toYaml .Values.general.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.runtime_collector.clickhouse.local.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.runtime_collector.clickhouse.local.nodeSelector | nindent 8 }}
+      {{- else if .Values.general.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.general.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.runtime_collector.clickhouse.local.affinity }}
+      affinity:
+        {{- toYaml .Values.runtime_collector.clickhouse.local.affinity | nindent 8 }}
+      {{- end }}
+{{- end }}

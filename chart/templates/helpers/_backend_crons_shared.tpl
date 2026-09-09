@@ -4,6 +4,12 @@
 ########################################
 */}}
 
+{{- define "lightrun-backend-crons.internalCa.mount" -}}
+{{- if .Values.general.internal_tls.enabled -}}
+{{- if or .Values.general.internal_tls.certificates.existing_ca_secret_name (and .Values.runtime_collector.enabled (eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates")) -}}true{{- end -}}
+{{- end -}}
+{{- end -}}
+
 {{/*
 Shared environment variables for backend and crons services
 */}}
@@ -145,6 +151,12 @@ Shared environment variables for backend and crons services
   value: {{ include "lightrun-mq.getQueueNameByPrefix" (dict "prefix" "mixpanel-events" "Values" .Values) | quote }}
 - name: KEYCLOAK_QUEUE_NAME
   value: {{ include "lightrun-mq.getQueueNameByPrefix" (dict "prefix" "keycloak-events" "Values" .Values) | quote }}
+{{- if .Values.runtime_collector.enabled }}
+- name: RUNTIME_COLLECTOR_SNAPSHOT_EVENTS_EXCHANGE_NAME
+  value: {{ .Values.general.mq.snapshot_events.exchange_name | quote }}
+- name: RUNTIME_COLLECTOR_SNAPSHOT_EVENTS_QUEUE_NAME
+  value: {{ .Values.general.mq.snapshot_events.queue_name | quote }}
+{{- end }}
 {{- end }}
 - name: LOGGING_USE-JSON-FORMAT
   value: "{{ .Values.deployments.backend.useJsonLogFormat }}"
@@ -171,10 +183,13 @@ Shared volumes for backend and crons services
       # Only select items that start with encryption-key-
       {{- include "encryption.key.items" . | nindent 6 }}
 
-{{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name  }}  
+{{- if include "lightrun-backend-crons.internalCa.mount" . }}
 - name: ca-cert
   secret:
-    secretName: {{ .Values.general.internal_tls.certificates.existing_ca_secret_name }}
+    secretName: {{ include "runtime_collector.internalCa.secretName" . }}
+    items:
+      - key: {{ include "runtime_collector.internalCa.secretKey" . }}
+        path: ca.crt
 {{- end }}
 - name: jcache-config
   configMap:
@@ -297,7 +312,7 @@ Shared init containers for backend and crons services
   command: ['sh', '-c', 'cp /tls/tls.crt /p12/crt.pem && cp /tls/tls.key /p12/key.pem && openssl pkcs12 -export -out /p12/lightrun.p12 -inkey /p12/key.pem -in /p12/crt.pem -passin pass:$KEYSTORE_PASSWORD -passout pass:$KEYSTORE_PASSWORD']
 {{- end }}
 
-{{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name }}  
+{{- if include "lightrun-backend-crons.internalCa.mount" . }}
 - name: root-ca-creator
   image: "{{ .Values.deployments.backend.image.repository }}:{{ .Values.deployments.backend.image.tag }}"
   securityContext: {{ include "lightrun-be.containerSecurityContext" . | indent 4 }}

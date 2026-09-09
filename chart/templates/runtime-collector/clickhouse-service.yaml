@@ -1,0 +1,26 @@
+{{- if and .Values.runtime_collector.enabled .Values.runtime_collector.clickhouse.local.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "runtime_collector.clickhouse.name" . }}
+  {{- with .Values.runtime_collector.clickhouse.local.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    app: {{ include "runtime_collector.clickhouse.name" . }}
+    {{- with .Values.runtime_collector.clickhouse.local.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: {{ include "runtime_collector.clickhouse.serviceHttpPort" . }}
+      targetPort: http
+    - name: native
+      port: {{ .Values.runtime_collector.clickhouse.local.nativePort }}
+      targetPort: native
+  selector:
+    app: {{ include "runtime_collector.clickhouse.name" . }}
+{{- end }}
