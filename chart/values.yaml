@@ -1307,6 +1307,7 @@ runtime_collector:
       podAnnotations: {}
       podLabels: {}
       annotations: {}
+      labels: {}
       extraEnvs: []
       envSecret: ""
       extraVolumes: []
