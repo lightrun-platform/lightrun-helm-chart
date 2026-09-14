@@ -1117,9 +1117,8 @@ http
 {{- end -}}
 
 {{/*
-Local ClickHouse follows general.internal_tls.certificates.verification, like every other
-internal-TLS connection. External ClickHouse has its own verify flag instead, so it can be
-turned off without affecting internal TLS verification chart-wide.
+Local ClickHouse follows general.internal_tls.certificates.verification; external ClickHouse
+has its own verify flag instead.
 */}}
 {{- define "runtime_collector.clickhouse.verification" -}}
 {{- if .Values.runtime_collector.clickhouse.local.enabled -}}
@@ -1181,11 +1180,6 @@ turned off without affecting internal TLS verification chart-wide.
 {{- if and .Values.general.mq.enabled (include "runtime_collector.internalCa.needed" .) -}}true{{- end -}}
 {{- end -}}
 
-{{/*
-Always mount a CA when ClickHouse TLS is enabled: client-v2 0.9.8 cannot skip verification.
-TODO: once client-v2 0.10.0 is GA, map certificates.verification: false to setSSLMode(TRUST)
-and gate this mount on verification again.
-*/}}
 {{- define "runtime_collector.internalCa.mount" -}}
 {{- if include "runtime_collector.clickhouse.internalTls.certEnabled" . -}}
 {{- if or (eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates") .Values.general.internal_tls.certificates.existing_ca_secret_name -}}true{{- end -}}

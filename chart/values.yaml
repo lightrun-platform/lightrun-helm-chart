@@ -492,7 +492,7 @@ secrets:
   clickhouse:
     user: ""
     password: ""
-  ## Shared secret authenticating backend/crons -> runtime_collector gRPC calls.
+  ## Shared secret for backend <-> runtime_collector gRPC calls, both directions.
   runtime_collector:
     grpc_secret: ""
   redis:
@@ -1188,7 +1188,8 @@ deployments:
 ## Runtime collector
 ######################
 runtime_collector:
-  enabled: false   # If set to `true`, will deploy the runtime-collector service
+  enabled: false
+  ## If set to `true`, will deploy the runtime-collector service
   server:
     replicas: 1
     rollout_strategy: RollingUpdate
@@ -1343,8 +1344,7 @@ runtime_collector:
       httpPort: 8123
       nativePort: 9000
       tls: false
-      ## Verify the server certificate when tls is true. Independent of
-      ## general.internal_tls.certificates.verification, which does not apply to this connection.
+      ## Verify the server certificate when tls is true. Independent of general.internal_tls.certificates.verification.
       verify: true
       existing_ca_secret_name: ""
       ## Cluster name for ON CLUSTER (ClickHouse Cloud / operator). Leave empty for single-node.

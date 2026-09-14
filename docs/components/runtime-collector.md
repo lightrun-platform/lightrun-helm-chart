@@ -97,7 +97,7 @@ runtime_collector:
 | **`external.httpPort`** | HTTP interface port (default: `8123`). |
 | **`external.nativePort`** | Native protocol port (default: `9000`). |
 | **`external.tls`** | Set to `true` when the external ClickHouse endpoint uses TLS. |
-| **`external.verify`** | Verify the server certificate when `tls: true` (default `true`). Independent of `general.internal_tls.certificates.verification`, which does not apply to this connection — lets you skip verification for this one external endpoint without disabling it chart-wide. |
+| **`external.verify`** | Verify the server certificate when `tls: true` (default `true`). Independent of `general.internal_tls.certificates.verification`. |
 | **`external.existing_ca_secret_name`** | Kubernetes secret with the CA certificate (`ca.crt` key). When set with `tls: true`, mounted automatically and `SSL_CERT_FILE` is set on runtime-collector and migrate init containers. |
 | **`external.cluster`** | ClickHouse cluster name, for clustered external deployments (ClickHouse Cloud, or an operator-managed cluster). When set, the database and the migrations table are created `ON CLUSTER`. Leave empty for a single-node instance. |
 
