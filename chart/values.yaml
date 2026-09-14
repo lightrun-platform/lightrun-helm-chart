@@ -1276,7 +1276,7 @@ runtime_collector:
     database: runtime_collector
     local:
       ## If true, deploy in-cluster ClickHouse; if false, use clickhouse.external
-      enabled: false
+      enabled: true
       httpPort: 8123
       nativePort: 9000
       image:
