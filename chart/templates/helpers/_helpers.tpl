@@ -1110,10 +1110,6 @@ http
 {{ $url }}
 {{- end -}}
 
-{{- define "runtime_collector.clickhouse.serviceHttpPort" -}}
-{{ .Values.runtime_collector.clickhouse.local.httpPort | default 8123 }}
-{{- end -}}
-
 {{- define "runtime_collector.clickhouse.nativeSecure" -}}
 {{- if .Values.runtime_collector.clickhouse.local.enabled -}}
 {{- if include "runtime_collector.clickhouse.internalTls.certEnabled" . -}}true{{- end -}}
@@ -1147,30 +1143,6 @@ has its own verify flag instead.
 
 {{- define "runtime_collector.clickhouse.internalTls.certEnabled" -}}
 {{- if and .Values.general.internal_tls.enabled .Values.runtime_collector.enabled .Values.runtime_collector.clickhouse.local.enabled -}}true
-{{- end -}}
-{{- end -}}
-
-{{- define "runtime_collector.clickhouse.internalCertSecretName" -}}
-{{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" -}}
-{{ include "runtime_collector.clickhouse.name" . }}-cert
-{{- else if eq .Values.general.internal_tls.certificates.source "existing_certificates" -}}
-{{ .Values.general.internal_tls.certificates.existing_certificates.runtime_collector_clickhouse }}
-{{- end -}}
-{{- end -}}
-
-{{- define "runtime_collector.internalCertSecretName" -}}
-{{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" -}}
-{{ include "runtime_collector.name" . }}-cert
-{{- else if eq .Values.general.internal_tls.certificates.source "existing_certificates" -}}
-{{ .Values.general.internal_tls.certificates.existing_certificates.runtime_collector }}
-{{- end -}}
-{{- end -}}
-
-{{- define "lightrun-be.internalCertSecretName" -}}
-{{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" -}}
-{{ include "lightrun-be.name" . }}-cert
-{{- else if eq .Values.general.internal_tls.certificates.source "existing_certificates" -}}
-{{ .Values.general.internal_tls.certificates.existing_certificates.backend }}
 {{- end -}}
 {{- end -}}
 

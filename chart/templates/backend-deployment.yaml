@@ -51,7 +51,11 @@ spec:
         {{- if include "runtime_collector.internalTls.certEnabled" . }}
         - name: grpc-tls-cert
           secret:
-            secretName: {{ include "lightrun-be.internalCertSecretName" . }}
+            {{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" }}
+            secretName: {{ include "lightrun-be.name" . }}-cert
+            {{- else if eq .Values.general.internal_tls.certificates.source "existing_certificates" }}
+            secretName: {{ .Values.general.internal_tls.certificates.existing_certificates.backend }}
+            {{- end }}
         {{- end }}
       {{- with .Values.deployments.backend.extraVolumes }}
         {{ toYaml . | nindent 8 }}

@@ -16,7 +16,7 @@ spec:
   type: ClusterIP
   ports:
     - name: http
-      port: {{ include "runtime_collector.clickhouse.serviceHttpPort" . }}
+      port: {{ include "runtime_collector.clickhouse.httpPort" . }}
       targetPort: http
     - name: native
       port: {{ .Values.runtime_collector.clickhouse.local.nativePort }}
