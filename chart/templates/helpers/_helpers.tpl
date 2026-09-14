@@ -1216,12 +1216,6 @@ ca.crt
 {{- if and (include "runtime_collector.clickhouse.nativeSecure" .) (not (include "runtime_collector.clickhouse.ca.mount" .)) (not (include "runtime_collector.clickhouse.verification" .)) -}}true{{- end -}}
 {{- end -}}
 
-{{- define "runtime_collector.clickhouse.validateTls" -}}
-{{- if and (include "runtime_collector.clickhouse.internalTls.certEnabled" .) (not (include "runtime_collector.clickhouse.ca.mount" .)) (include "runtime_collector.clickhouse.verification" .) -}}
-{{- fail "runtime_collector with local ClickHouse and internal TLS requires general.internal_tls.certificates.existing_ca_secret_name to be set, or certificates.verification: false, because the ClickHouse certificate cannot be verified without its CA. Provide the CA secret, set certificates.source to generate_self_signed_certificates, or disable verification." -}}
-{{- end -}}
-{{- end -}}
-
 {{- define "runtime_collector.clickhouse.ca.secretName" -}}
 {{- if include "runtime_collector.clickhouse.externalCa.mount" . -}}
 {{ .Values.runtime_collector.clickhouse.external.existing_ca_secret_name }}
