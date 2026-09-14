@@ -1257,20 +1257,3 @@ ca.crt
 {{- printf "until wget %s-T 5 -q -O- %s/ping | grep -q Ok; do echo waiting for clickhouse; sleep 2; done" $tlsOptions $endpoint -}}
 {{- end -}}
 
-{{- define "runtime_collector.clickhouse.migrateDatabaseUrl" -}}
-{{- $host := include "runtime_collector.clickhouse.hostname" . -}}
-{{- $port := include "runtime_collector.clickhouse.nativePort" . -}}
-{{- $database := .Values.runtime_collector.clickhouse.database -}}
-{{- $url := printf "clickhouse://%s:%s?database=%s&username=$(CLICKHOUSE_USERNAME)&password=$(CLICKHOUSE_PASSWORD)" $host $port $database -}}
-{{- if include "runtime_collector.clickhouse.nativeSecure" . -}}
-{{- $url = printf "%s&secure=true" $url -}}
-{{- if include "runtime_collector.clickhouse.skipVerify" . -}}
-{{- $url = printf "%s&skip_verify=true" $url -}}
-{{- end -}}
-{{- end -}}
-{{- with include "runtime_collector.clickhouse.cluster" . -}}
-{{- $url = printf "%s&x-cluster-name=%s" $url . -}}
-{{- end -}}
-{{ $url }}
-{{- end -}}
-

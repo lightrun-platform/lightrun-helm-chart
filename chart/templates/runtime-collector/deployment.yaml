@@ -87,6 +87,8 @@ spec:
               value: {{ .Values.runtime_collector.clickhouse.database | quote }}
             - name: CLICKHOUSE_SECURE
               value: {{ include "runtime_collector.clickhouse.nativeSecure" . | default "false" | quote }}
+            - name: CLICKHOUSE_VERIFY
+              value: {{ .Values.general.internal_tls.certificates.verification | quote }}
             {{- with include "runtime_collector.clickhouse.cluster" . }}
             - name: CLICKHOUSE_CLUSTER
               value: {{ . | quote }}
@@ -115,10 +117,6 @@ spec:
             {{- include "runtime_collector.clickhouse.ca.volumeMount" . | nindent 12 }}
             {{- end }}
           {{- end }}
-          args:
-            - -path=/migrations
-            - {{ printf "-database=%s" (include "runtime_collector.clickhouse.migrateDatabaseUrl" .) | quote }}
-            - up
         {{- if include "runtime_collector.internalCa.needed" . }}
         - name: root-ca-creator
           image: "{{ .Values.runtime_collector.server.image.repository }}:{{ .Values.runtime_collector.server.image.tag }}"
