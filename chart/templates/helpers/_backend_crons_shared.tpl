@@ -186,9 +186,9 @@ Shared volumes for backend and crons services
 {{- if include "lightrun-backend-crons.internalCa.mount" . }}
 - name: ca-cert
   secret:
-    secretName: {{ include "runtime_collector.internalCa.secretName" . }}
+    secretName: {{ include "internalTls.ca.secretName" . }}
     items:
-      - key: {{ include "runtime_collector.internalCa.secretKey" . }}
+      - key: {{ include "internalTls.ca.secretKey" . }}
         path: ca.crt
 {{- end }}
 - name: jcache-config
