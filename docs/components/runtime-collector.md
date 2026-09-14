@@ -1,8 +1,6 @@
 # Runtime Collector
 
-The **Runtime Collector** is an optional component that collects runtime intelligence data for Lightrun. When enabled, the chart deploys the runtime-collector service.
-
-Configuration is split into three sections:
+The **Runtime Collector** is an optional component that collects runtime intelligence data for Lightrun. Configuration is split into three sections:
 
 - **`runtime_collector.enabled`**: Enables or disables the component.
 - **`runtime_collector.server`**: Deployment settings for the runtime-collector application (image, scaling, probes, and service).
@@ -18,55 +16,20 @@ runtime_collector:
   enabled: true
 ```
 
-When enabled, the backend receives:
+## Credentials
 
-```yaml
-RUNTIME_COLLECTOR_GRPC_TARGET: "<release>-runtime-collector:9090"
-RUNTIME_COLLECTOR_GRPC_SECRET: <from the runtime-collector gRPC secret, see below>
-```
-
-## gRPC Shared Secret
-
-The backend authenticates to the runtime-collector gRPC service with a shared secret, stored in a dedicated secret:
-
-- If `deploy_secrets: true`, the chart creates `{{ .Release.name }}-runtime-collector-grpc` and injects it into both the backend pod and the runtime-collector server pod.
-- If `deploy_secrets: false`, the secret must be pre-created. The chart looks for `{{ .Release.name }}-runtime-collector-grpc`, or the name in `general.deploy_secrets.existing_secrets.runtime_collector`. It must contain a `RUNTIME_COLLECTOR_GRPC_SECRET` key.
+Runtime Collector uses two secrets: a gRPC shared secret between it and the backend, and ClickHouse credentials. See [Managing Secrets](../installation/secrets.md#mandatory-secret-fields) for how secrets are created or pre-provisioned, and which fields each one needs.
 
 ```yaml
 secrets:
   runtime_collector:
     grpc_secret: ""
-```
-
-## ClickHouse Credentials
-
-For **local ClickHouse**, credentials are stored in a dedicated ClickHouse secret:
-
-- If `deploy_secrets: true`, the chart creates `{{ .Release.name }}-runtime-collector-clickhouse`.
-- If `deploy_secrets: false`, the secret must be pre-created. The chart looks for `{{ .Release.name }}-runtime-collector-clickhouse`, or the name in `general.deploy_secrets.existing_secrets.clickhouse`.
-
-A pre-created secret must contain `CLICKHOUSE_USERNAME` and `CLICKHOUSE_PASSWORD`.
-
-```yaml
-secrets:
   clickhouse:
-    user: ""
-    password: ""
+    user: ""      # only used with local ClickHouse
+    password: ""  # only used with local ClickHouse
 ```
 
-For **external ClickHouse**, provide credentials inline or via an existing secret:
-
-```yaml
-runtime_collector:
-  clickhouse:
-    external:
-      username: ""
-      password: ""
-      existingSecret: ""  # If set, ignores inline username / password
-```
-
-> [!NOTE]
-> When using external ClickHouse with `existingSecret`, the chart does not create a ClickHouse credentials secret. For local ClickHouse or external inline credentials with `deploy_secrets: true`, the chart creates `{{ .Release.name }}-runtime-collector-clickhouse`.
+For external ClickHouse, credentials are set under `runtime_collector.clickhouse.external` instead — see [External ClickHouse](#external-clickhouse-runtime_collectorclickhouselocalenabled-false) below.
 
 ---
 
@@ -98,17 +61,16 @@ runtime_collector:
 | **`external.nativePort`** | Native protocol port (default: `9000`). |
 | **`external.tls`** | Set to `true` when the external ClickHouse endpoint uses TLS. |
 | **`external.verify`** | Verify the server certificate when `tls: true` (default `true`). Independent of `general.internal_tls.certificates.verification`. |
-| **`external.existing_ca_secret_name`** | Kubernetes secret with the CA certificate (`ca.crt` key). When set with `tls: true`, mounted automatically and `SSL_CERT_FILE` is set on runtime-collector and migrate init containers. |
+| **`external.existing_ca_secret_name`** | Kubernetes secret with the CA certificate (`ca.crt` key), used to verify the ClickHouse server certificate. See [CA Trust Behavior](#ca-trust-behavior) below. |
 | **`external.cluster`** | ClickHouse cluster name, for clustered external deployments (ClickHouse Cloud, or an operator-managed cluster). When set, the database and the migrations table are created `ON CLUSTER`. Leave empty for a single-node instance. |
-
-> [!NOTE]
-> **Local ClickHouse** with `general.internal_tls.enabled: true` uses TLS when service certificates are configured (see [Internal TLS](#internal-tls)). CA verification follows the same rules as backend and other services.
+| **`external.username` / `external.password`** | Inline ClickHouse credentials. Ignored if `existingSecret` is set. |
+| **`external.existingSecret`** | Name of an existing secret with `CLICKHOUSE_USERNAME` and `CLICKHOUSE_PASSWORD` keys, instead of the inline credentials above. |
 
 ---
 
 ## Local ClickHouse (`runtime_collector.clickhouse.local.enabled: true`)
 
-In this mode, the chart deploys a single-replica ClickHouse pod in the cluster and connects runtime-collector to it.
+In this mode, the chart deploys a single-replica ClickHouse pod in the cluster and connects runtime-collector to it. With `general.internal_tls.enabled: true`, this connection uses TLS like any other internal chart connection — see [Internal TLS](#internal-tls) below.
 
 ```yaml
 runtime_collector:
@@ -155,9 +117,9 @@ The pod runs two init containers before the application starts:
 
 ## Internal TLS
 
-When `general.internal_tls.enabled` is `true`, runtime-collector and local ClickHouse use TLS for internal communication, exactly like the other chart components — no extra opt-in is required.
+When `general.internal_tls.enabled` is `true`, runtime-collector and local ClickHouse use TLS for internal communication like any other chart component — no extra opt-in is required. See [Internal TLS](../advanced/internal_tls.md) for the general mechanism (certificate sources, verification).
 
-With `source: generate_self_signed_certificates` the chart generates the certificates for both services automatically. With `source: existing_certificates` you must provide a secret per service — TLS is enabled either way once `general.internal_tls.enabled` is `true`, so leaving a service's entry empty here doesn't fall back to plaintext, it fails at deploy time with an invalid (empty) secret reference, exactly like the other chart components:
+With `source: existing_certificates`, provide a secret for each of the two services:
 
 ```yaml
 general:
@@ -174,9 +136,9 @@ general:
 > [!IMPORTANT]
 > With `source: generate_self_signed_certificates`, neither side of the backend<->runtime-collector gRPC connection trusts the other's generated certificate — set `certificates.verification: false`, or use `existing_certificates` with a real shared CA, for either direction to work.
 
-### CA Trust Behavior (Runtime Collector)
+### CA Trust Behavior
 
-ClickHouse does not mount a CA — it only serves TLS and does not call other services. The CA is mounted on the **runtime-collector deployment** only (wait and migrate init containers, and the main container) so those clients can verify the ClickHouse server certificate when connecting. `wait-for-clickhouse` and `migrate-clickhouse` read it via `SSL_CERT_FILE`. The main container is a JVM process, which does not honor `SSL_CERT_FILE` — a `root-ca-creator` init container instead imports the CA into a JKS truststore, and the main container trusts it via `-Djavax.net.ssl.trustStore`.
+ClickHouse only serves TLS and never calls other services, so it never needs to trust anything itself. The CA is mounted on the **runtime-collector deployment** instead, so it can verify the ClickHouse server certificate: `wait-for-clickhouse` and `migrate-clickhouse` read it via `SSL_CERT_FILE`, and the main container (a JVM process, which doesn't honor `SSL_CERT_FILE`) trusts it through a Java truststore that the chart builds automatically.
 
 **Local ClickHouse** — a CA is mounted whenever one is available, so TLS works with either certificate source:
 
@@ -189,7 +151,7 @@ ClickHouse does not mount a CA — it only serves TLS and does not call other se
 **External ClickHouse** — set `clickhouse.external.existing_ca_secret_name` and it is mounted the same way, regardless of `external.verify`. If it is left empty, the certificate is validated against the system trust store, which is correct for a publicly trusted endpoint such as ClickHouse Cloud, unless `external.verify: false` is also set, in which case verification is skipped everywhere: `wait-for-clickhouse`, `migrate-clickhouse`, and the main runtime-collector container.
 
 > [!NOTE]
-> `SSL_CERT_FILE` **replaces** the system trust store rather than adding to it. Only set `existing_ca_secret_name` for an endpoint whose certificate that CA actually signed — pointing it at an unrelated CA makes an otherwise publicly trusted endpoint fail verification. To trust both, the secret must hold the private CA concatenated with the public bundle.
+> Only set `existing_ca_secret_name` for an endpoint whose certificate that CA actually signed — pointing it at an unrelated CA can break verification. For `wait-for-clickhouse` and `migrate-clickhouse`, `SSL_CERT_FILE` **replaces** the system trust store rather than adding to it, so a publicly trusted endpoint also needs that public CA bundle in the secret to keep working. The main container's Java truststore does not have this problem — it keeps the system's public CAs alongside the one from the secret.
 
 ---
 
