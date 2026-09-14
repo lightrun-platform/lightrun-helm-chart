@@ -316,10 +316,7 @@ spec:
         {{- if include "runtime_collector.internalCa.needed" . }}
         - name: ca-cert
           secret:
-            secretName: {{ include "internalTls.ca.secretName" . }}
-            items:
-              - key: {{ include "internalTls.ca.secretKey" . }}
-                path: ca.crt
+            secretName: {{ .Values.general.internal_tls.certificates.existing_ca_secret_name }}
         - name: p12
           emptyDir:
             sizeLimit: 16Mi

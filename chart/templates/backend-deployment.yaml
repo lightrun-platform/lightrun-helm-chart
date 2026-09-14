@@ -91,7 +91,7 @@ spec:
            - |
              CMD="/usr/lib/jvm/default-jvm/bin/java"
              # Add TLS opts if enabled
-             {{- if include "lightrun-backend-crons.internalCa.mount" . }}
+             {{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name }}
              CMD="$CMD -Djavax.net.ssl.trustStore=/p12/internalca"
              CMD="$CMD -Djavax.net.ssl.trustStorePassword=$(KEYSTORE_PASSWORD)"
              {{- end }}
