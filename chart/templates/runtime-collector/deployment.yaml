@@ -116,7 +116,7 @@ spec:
             {{- include "runtime_collector.clickhouse.ca.volumeMount" . | nindent 12 }}
             {{- end }}
           {{- end }}
-        {{- if include "runtime_collector.internalCa.needed" . }}
+        {{- if include "runtime_collector.trustStore.needed" . }}
         - name: root-ca-creator
           image: "{{ .Values.runtime_collector.server.image.repository }}:{{ .Values.runtime_collector.server.image.tag }}"
           imagePullPolicy: {{ .Values.runtime_collector.server.image.pullPolicy }}
@@ -135,16 +135,30 @@ spec:
             - name: tmpfs
               mountPath: /tmp
             {{- end }}
+            {{- if include "runtime_collector.internalCa.needed" . }}
             - name: ca-cert
               mountPath: /tmp/ca-certificates
               readOnly: true
+            {{- end }}
+            {{- if include "runtime_collector.clickhouse.ca.mount" . }}
+            - name: clickhouse-ca
+              mountPath: /tmp/clickhouse-ca-certificates
+              readOnly: true
+            {{- end }}
             - name: p12
               mountPath: /p12
           command:
             - sh
             - -c
             - |
-              keytool -import -trustcacerts -alias internalCa -keystore /p12/internalca -file  /tmp/ca-certificates/ca.crt -noprompt -storepass $KEYSTORE_PASSWORD && keytool -importkeystore -srckeystore /usr/lib/jvm/default-jvm/jre/lib/security/cacerts -destkeystore /p12/internalca -srcstorepass changeit -deststorepass $KEYSTORE_PASSWORD
+              set -e
+              {{- if include "runtime_collector.internalCa.needed" . }}
+              keytool -import -trustcacerts -alias internalCa -keystore /p12/internalca -file /tmp/ca-certificates/ca.crt -noprompt -storepass $KEYSTORE_PASSWORD
+              {{- end }}
+              {{- if include "runtime_collector.clickhouse.ca.mount" . }}
+              keytool -import -trustcacerts -alias clickhouseCa -keystore /p12/internalca -file /tmp/clickhouse-ca-certificates/ca.crt -noprompt -storepass $KEYSTORE_PASSWORD
+              {{- end }}
+              keytool -importkeystore -srckeystore /usr/lib/jvm/default-jvm/jre/lib/security/cacerts -destkeystore /p12/internalca -srcstorepass changeit -deststorepass $KEYSTORE_PASSWORD
         {{- end }}
       containers:
         - name: {{ include "runtime_collector.name" . }}
@@ -185,7 +199,7 @@ spec:
                 name: {{ .Values.runtime_collector.server.envSecret }}
           {{- end }}
           env:
-            {{- if include "runtime_collector.internalCa.needed" . }}
+            {{- if include "runtime_collector.trustStore.needed" . }}
             - name: KEYSTORE_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -267,11 +281,7 @@ spec:
             - name: SPRING_SSL_BUNDLE_PEM_RUNTIMECOLLECTORGRPC_KEYSTORE_PRIVATE_KEY
               value: /tls/tls.key
             {{- end }}
-            {{- if include "runtime_collector.clickhouse.ca.mount" . }}
-            - name: SSL_CERT_FILE
-              value: /tmp/ca-certificates/ca.crt
-            {{- end }}
-            {{- if include "runtime_collector.internalCa.needed" . }}
+            {{- if include "runtime_collector.trustStore.needed" . }}
             - name: JDK_JAVA_OPTIONS
               value: "-Djavax.net.ssl.trustStore=/p12/internalca -Djavax.net.ssl.trustStorePassword=$(KEYSTORE_PASSWORD)"
             {{- end }}
@@ -293,7 +303,7 @@ spec:
             {{- if include "runtime_collector.clickhouse.ca.mount" . }}
             {{- include "runtime_collector.clickhouse.ca.volumeMount" . | nindent 12 }}
             {{- end }}
-            {{- if include "runtime_collector.internalCa.needed" . }}
+            {{- if include "runtime_collector.trustStore.needed" . }}
             - name: p12
               mountPath: /p12
               readOnly: true
@@ -316,6 +326,8 @@ spec:
         - name: ca-cert
           secret:
             secretName: {{ .Values.general.internal_tls.certificates.existing_ca_secret_name }}
+        {{- end }}
+        {{- if include "runtime_collector.trustStore.needed" . }}
         - name: p12
           emptyDir:
             sizeLimit: 16Mi

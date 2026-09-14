@@ -1212,6 +1212,16 @@ ca.crt
 {{- if or (include "runtime_collector.internalCa.mount" .) (include "runtime_collector.clickhouse.externalCa.mount" .) -}}true{{- end -}}
 {{- end -}}
 
+{{/*
+The JDK does not honor SSL_CERT_FILE, so the runtime-collector's main container (and any other
+JVM consumer of a mounted CA) needs the CA imported into a JKS truststore instead - whenever
+either the backend's CA (runtime_collector.internalCa.needed) or ClickHouse's CA
+(runtime_collector.clickhouse.ca.mount) must be trusted.
+*/}}
+{{- define "runtime_collector.trustStore.needed" -}}
+{{- if or (include "runtime_collector.internalCa.needed" .) (include "runtime_collector.clickhouse.ca.mount" .) -}}true{{- end -}}
+{{- end -}}
+
 {{- define "runtime_collector.clickhouse.skipVerify" -}}
 {{- if and (include "runtime_collector.clickhouse.nativeSecure" .) (not (include "runtime_collector.clickhouse.ca.mount" .)) (not (include "runtime_collector.clickhouse.verification" .)) -}}true{{- end -}}
 {{- end -}}
