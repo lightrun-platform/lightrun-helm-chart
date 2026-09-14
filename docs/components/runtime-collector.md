@@ -175,9 +175,6 @@ general:
 
 ClickHouse does not mount a CA — it only serves TLS and does not call other services. The CA is mounted on the **runtime-collector deployment** only (wait and migrate init containers, and the main container) so those clients can verify the ClickHouse server certificate when connecting. Wherever it is mounted, `SSL_CERT_FILE` points at it.
 
-> [!IMPORTANT]
-> The `wait-for-clickhouse` and `migrate-clickhouse` init containers respect verification (`certificates.verification` for local, `external.verify` for external) and skip it when asked. The main runtime-collector container's own connection (Spring R2DBC) does not yet support skipping verification — it always verifies, regardless of either setting.
-
 **Local ClickHouse** — a CA is always mounted, so TLS works with either certificate source:
 
 | `certificates.source` | `existing_ca_secret_name` | CA that is mounted |
@@ -186,7 +183,7 @@ ClickHouse does not mount a CA — it only serves TLS and does not call other se
 | `existing_certificates` | set | `existing_ca_secret_name` (`ca.crt` key) |
 | `existing_certificates` | empty | None available — **rejected at install time**, since the certificate can be neither verified nor accepted unverified |
 
-**External ClickHouse** — set `clickhouse.external.existing_ca_secret_name` and it is mounted the same way, regardless of `external.verify`. If it is left empty, the certificate is validated against the system trust store, which is correct for a publicly trusted endpoint such as ClickHouse Cloud, unless `external.verify: false` is also set, in which case the `wait-for-clickhouse`/`migrate-clickhouse` init containers skip verification.
+**External ClickHouse** — set `clickhouse.external.existing_ca_secret_name` and it is mounted the same way, regardless of `external.verify`. If it is left empty, the certificate is validated against the system trust store, which is correct for a publicly trusted endpoint such as ClickHouse Cloud, unless `external.verify: false` is also set, in which case verification is skipped everywhere: `wait-for-clickhouse`, `migrate-clickhouse`, and the main runtime-collector container.
 
 > [!NOTE]
 > `SSL_CERT_FILE` **replaces** the system trust store rather than adding to it. Only set `existing_ca_secret_name` for an endpoint whose certificate that CA actually signed — pointing it at an unrelated CA makes an otherwise publicly trusted endpoint fail verification. To trust both, the secret must hold the private CA concatenated with the public bundle.

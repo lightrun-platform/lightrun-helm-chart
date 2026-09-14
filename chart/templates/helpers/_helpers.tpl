@@ -1103,7 +1103,11 @@ http
 {{- define "runtime_collector.clickhouse.r2dbcUrl" -}}
 {{- $endpoint := include "runtime_collector.clickhouse.endpoint" . -}}
 {{- $database := .Values.runtime_collector.clickhouse.database -}}
-{{ printf "r2dbc:clickhouse:%s/%s" $endpoint $database }}
+{{- $url := printf "r2dbc:clickhouse:%s/%s" $endpoint $database -}}
+{{- if include "runtime_collector.clickhouse.skipVerify" . -}}
+{{- $url = printf "%s?sslmode=none" $url -}}
+{{- end -}}
+{{ $url }}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.serviceHttpPort" -}}
