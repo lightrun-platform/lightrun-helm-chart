@@ -1103,7 +1103,11 @@ http
 {{- define "runtime_collector.clickhouse.r2dbcUrl" -}}
 {{- $endpoint := include "runtime_collector.clickhouse.endpoint" . -}}
 {{- $database := .Values.runtime_collector.clickhouse.database -}}
-{{ printf "r2dbc:clickhouse:%s/%s" $endpoint $database }}
+{{- $url := printf "r2dbc:clickhouse:%s/%s" $endpoint $database -}}
+{{- if include "runtime_collector.clickhouse.skipVerify" . -}}
+{{- $url = printf "%s?sslmode=none" $url -}}
+{{- end -}}
+{{ $url }}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.serviceHttpPort" -}}
@@ -1114,6 +1118,18 @@ http
 {{- if .Values.runtime_collector.clickhouse.local.enabled -}}
 {{- if include "runtime_collector.clickhouse.internalTls.certEnabled" . -}}true{{- end -}}
 {{- else if .Values.runtime_collector.clickhouse.external.tls -}}true{{- end -}}
+{{- end -}}
+
+{{/*
+Local ClickHouse follows general.internal_tls.certificates.verification; external ClickHouse
+has its own verify flag instead.
+*/}}
+{{- define "runtime_collector.clickhouse.verification" -}}
+{{- if .Values.runtime_collector.clickhouse.local.enabled -}}
+{{- if .Values.general.internal_tls.certificates.verification -}}true{{- end -}}
+{{- else -}}
+{{- if .Values.runtime_collector.clickhouse.external.verify -}}true{{- end -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.secretName" -}}
@@ -1168,11 +1184,6 @@ http
 {{- if and .Values.general.mq.enabled (include "runtime_collector.internalCa.needed" .) -}}true{{- end -}}
 {{- end -}}
 
-{{/*
-Always mount a CA when ClickHouse TLS is enabled: client-v2 0.9.8 cannot skip verification.
-TODO: once client-v2 0.10.0 is GA, map certificates.verification: false to setSSLMode(TRUST)
-and gate this mount on verification again.
-*/}}
 {{- define "runtime_collector.internalCa.mount" -}}
 {{- if include "runtime_collector.clickhouse.internalTls.certEnabled" . -}}
 {{- if or (eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates") .Values.general.internal_tls.certificates.existing_ca_secret_name -}}true{{- end -}}
@@ -1204,7 +1215,7 @@ ca.crt
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.skipVerify" -}}
-{{- if and (include "runtime_collector.clickhouse.nativeSecure" .) (not (include "runtime_collector.clickhouse.ca.mount" .)) (not .Values.general.internal_tls.certificates.verification) -}}true{{- end -}}
+{{- if and (include "runtime_collector.clickhouse.nativeSecure" .) (not (include "runtime_collector.clickhouse.ca.mount" .)) (not (include "runtime_collector.clickhouse.verification" .)) -}}true{{- end -}}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.validateTls" -}}

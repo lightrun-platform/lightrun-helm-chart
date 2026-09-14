@@ -84,6 +84,7 @@ runtime_collector:
       httpPort: 8123
       nativePort: 9000
       tls: false
+      verify: true
       existing_ca_secret_name: ""
       username: ""
       password: ""
@@ -95,7 +96,8 @@ runtime_collector:
 | **`external.host`** | ClickHouse hostname or FQDN. |
 | **`external.httpPort`** | HTTP interface port (default: `8123`). |
 | **`external.nativePort`** | Native protocol port (default: `9000`). |
-| **`external.tls`** | Set to `true` when the external ClickHouse endpoint uses TLS. Without a CA mount, connections skip certificate verification (`skip_verify`). |
+| **`external.tls`** | Set to `true` when the external ClickHouse endpoint uses TLS. |
+| **`external.verify`** | Verify the server certificate when `tls: true` (default `true`). Independent of `general.internal_tls.certificates.verification`. |
 | **`external.existing_ca_secret_name`** | Kubernetes secret with the CA certificate (`ca.crt` key). When set with `tls: true`, mounted automatically and `SSL_CERT_FILE` is set on runtime-collector and migrate init containers. |
 | **`external.cluster`** | ClickHouse cluster name, for clustered external deployments (ClickHouse Cloud, or an operator-managed cluster). When set, the database and the migrations table are created `ON CLUSTER`. Leave empty for a single-node instance. |
 
@@ -173,9 +175,6 @@ general:
 
 ClickHouse does not mount a CA — it only serves TLS and does not call other services. The CA is mounted on the **runtime-collector deployment** only (wait and migrate init containers, and the main container) so those clients can verify the ClickHouse server certificate when connecting. Wherever it is mounted, `SSL_CERT_FILE` points at it.
 
-> [!IMPORTANT]
-> `certificates.verification` has **no effect on the ClickHouse connection**. The collector uses ClickHouse `client-v2` 0.9.8, which provides no way to disable certificate verification — the `setSSLMode` escape hatch first appears in `0.10.0`, which is still pre-release ([#2309](https://github.com/ClickHouse/clickhouse-java/issues/2309), [#2389](https://github.com/ClickHouse/clickhouse-java/issues/2389)). The certificate is therefore always verified, and a CA is always mounted so that verification can succeed. Setting `verification: false` does not turn it off. This will be revisited when `0.10.0` reaches GA.
-
 **Local ClickHouse** — a CA is always mounted, so TLS works with either certificate source:
 
 | `certificates.source` | `existing_ca_secret_name` | CA that is mounted |
@@ -184,7 +183,7 @@ ClickHouse does not mount a CA — it only serves TLS and does not call other se
 | `existing_certificates` | set | `existing_ca_secret_name` (`ca.crt` key) |
 | `existing_certificates` | empty | None available — **rejected at install time**, since the certificate can be neither verified nor accepted unverified |
 
-**External ClickHouse** — set `clickhouse.external.existing_ca_secret_name` and it is mounted the same way, regardless of `verification`. If it is left empty, the certificate is validated against the system trust store, which is correct for a publicly trusted endpoint such as ClickHouse Cloud, unless `verification: false` is also set, in which case verification is skipped. This is the one remaining case where `verification` still changes anything, because there is no CA to trust.
+**External ClickHouse** — set `clickhouse.external.existing_ca_secret_name` and it is mounted the same way, regardless of `external.verify`. If it is left empty, the certificate is validated against the system trust store, which is correct for a publicly trusted endpoint such as ClickHouse Cloud, unless `external.verify: false` is also set, in which case verification is skipped everywhere: `wait-for-clickhouse`, `migrate-clickhouse`, and the main runtime-collector container.
 
 > [!NOTE]
 > `SSL_CERT_FILE` **replaces** the system trust store rather than adding to it. Only set `existing_ca_secret_name` for an endpoint whose certificate that CA actually signed — pointing it at an unrelated CA makes an otherwise publicly trusted endpoint fail verification. To trust both, the secret must hold the private CA concatenated with the public bundle.

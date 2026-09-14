@@ -88,7 +88,7 @@ spec:
             - name: CLICKHOUSE_SECURE
               value: {{ include "runtime_collector.clickhouse.nativeSecure" . | default "false" | quote }}
             - name: CLICKHOUSE_VERIFY
-              value: {{ .Values.general.internal_tls.certificates.verification | quote }}
+              value: {{ include "runtime_collector.clickhouse.verification" . | default "false" | quote }}
             {{- with include "runtime_collector.clickhouse.cluster" . }}
             - name: CLICKHOUSE_CLUSTER
               value: {{ . | quote }}
