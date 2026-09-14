@@ -106,6 +106,10 @@ spec:
             - name: SSL_CERT_FILE
               value: /tmp/ca-certificates/ca.crt
             {{- end }}
+          args:
+            - "-source=file:///migrations"
+            - "-database=clickhouse://$(CLICKHOUSE_HOST):$(CLICKHOUSE_NATIVE_PORT)?database=$(CLICKHOUSE_DATABASE)&username=$(CLICKHOUSE_USERNAME)&password=$(CLICKHOUSE_PASSWORD)&x-multi-statement=true{{ if include "runtime_collector.clickhouse.nativeSecure" . }}&secure=true{{ end }}"
+            - "up"
           {{- if or .Values.general.readOnlyRootFilesystem (include "runtime_collector.clickhouse.ca.mount" .) }}
           volumeMounts:
             {{- if .Values.general.readOnlyRootFilesystem }}
