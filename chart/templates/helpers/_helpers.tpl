@@ -1212,6 +1212,10 @@ ca.crt
 {{- if or (include "runtime_collector.internalCa.mount" .) (include "runtime_collector.clickhouse.externalCa.mount" .) -}}true{{- end -}}
 {{- end -}}
 
+{{- define "runtime_collector.trustStore.needed" -}}
+{{- if or (include "runtime_collector.internalCa.needed" .) (include "runtime_collector.clickhouse.ca.mount" .) -}}true{{- end -}}
+{{- end -}}
+
 {{- define "runtime_collector.clickhouse.skipVerify" -}}
 {{- if and (include "runtime_collector.clickhouse.nativeSecure" .) (not (include "runtime_collector.clickhouse.ca.mount" .)) (not (include "runtime_collector.clickhouse.verification" .)) -}}true{{- end -}}
 {{- end -}}

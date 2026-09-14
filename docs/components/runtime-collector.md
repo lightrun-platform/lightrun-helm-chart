@@ -176,7 +176,7 @@ general:
 
 ### CA Trust Behavior (Runtime Collector)
 
-ClickHouse does not mount a CA — it only serves TLS and does not call other services. The CA is mounted on the **runtime-collector deployment** only (wait and migrate init containers, and the main container) so those clients can verify the ClickHouse server certificate when connecting. Wherever it is mounted, `SSL_CERT_FILE` points at it.
+ClickHouse does not mount a CA — it only serves TLS and does not call other services. The CA is mounted on the **runtime-collector deployment** only (wait and migrate init containers, and the main container) so those clients can verify the ClickHouse server certificate when connecting. `wait-for-clickhouse` and `migrate-clickhouse` read it via `SSL_CERT_FILE`. The main container is a JVM process, which does not honor `SSL_CERT_FILE` — a `root-ca-creator` init container instead imports the CA into a JKS truststore, and the main container trusts it via `-Djavax.net.ssl.trustStore`.
 
 **Local ClickHouse** — a CA is mounted whenever one is available, so TLS works with either certificate source:
 
