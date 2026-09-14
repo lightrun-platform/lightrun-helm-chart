@@ -316,9 +316,9 @@ spec:
         {{- if include "runtime_collector.internalCa.needed" . }}
         - name: ca-cert
           secret:
-            secretName: {{ include "runtime_collector.internalCa.secretName" . }}
+            secretName: {{ include "internalTls.ca.secretName" . }}
             items:
-              - key: {{ include "runtime_collector.internalCa.secretKey" . }}
+              - key: {{ include "internalTls.ca.secretKey" . }}
                 path: ca.crt
         - name: p12
           emptyDir:

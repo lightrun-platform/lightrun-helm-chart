@@ -1190,7 +1190,7 @@ has its own verify flag instead.
 {{- end -}}
 {{- end -}}
 
-{{- define "runtime_collector.internalCa.secretName" -}}
+{{- define "internalTls.ca.secretName" -}}
 {{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" -}}
 {{ include "lightrun.fullname" . }}-internal-tls-ca
 {{- else -}}
@@ -1198,7 +1198,7 @@ has its own verify flag instead.
 {{- end -}}
 {{- end -}}
 
-{{- define "runtime_collector.internalCa.secretKey" -}}
+{{- define "internalTls.ca.secretKey" -}}
 {{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" -}}
 custom-ca.pem
 {{- else -}}
@@ -1228,7 +1228,7 @@ ca.crt
 {{- if include "runtime_collector.clickhouse.externalCa.mount" . -}}
 {{ .Values.runtime_collector.clickhouse.external.existing_ca_secret_name }}
 {{- else -}}
-{{ include "runtime_collector.internalCa.secretName" . }}
+{{ include "internalTls.ca.secretName" . }}
 {{- end -}}
 {{- end -}}
 
@@ -1236,7 +1236,7 @@ ca.crt
 {{- if include "runtime_collector.clickhouse.externalCa.mount" . -}}
 ca.crt
 {{- else -}}
-{{ include "runtime_collector.internalCa.secretKey" . }}
+{{ include "internalTls.ca.secretKey" . }}
 {{- end -}}
 {{- end -}}
 
