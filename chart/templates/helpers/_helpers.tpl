@@ -1150,6 +1150,19 @@ has its own verify flag instead.
 {{- if and .Values.general.internal_tls.enabled .Values.runtime_collector.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name -}}true{{- end -}}
 {{- end -}}
 
+{{/*
+Name of a service's own internal-TLS cert secret. Takes .selfSignedName (the
+service's own name helper output) and .existingCertificatesKey (its key under
+general.internal_tls.certificates.existing_certificates), merged with the root context.
+*/}}
+{{- define "internalTls.certSecretName" -}}
+{{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" -}}
+{{ .selfSignedName }}-cert
+{{- else if eq .Values.general.internal_tls.certificates.source "existing_certificates" -}}
+{{ index .Values.general.internal_tls.certificates.existing_certificates .existingCertificatesKey }}
+{{- end -}}
+{{- end -}}
+
 {{- define "runtime_collector.rabbitmq.ca.mount" -}}
 {{- if and .Values.general.mq.enabled (include "runtime_collector.internalCa.needed" .) -}}true{{- end -}}
 {{- end -}}

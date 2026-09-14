@@ -147,11 +147,7 @@ spec:
             name: {{ include "runtime_collector.clickhouse.name" . }}-ssl-config
         - name: internal-cert
           secret:
-            {{- if eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates" }}
-            secretName: {{ include "runtime_collector.clickhouse.name" . }}-cert
-            {{- else if eq .Values.general.internal_tls.certificates.source "existing_certificates" }}
-            secretName: {{ .Values.general.internal_tls.certificates.existing_certificates.runtime_collector_clickhouse }}
-            {{- end }}
+            secretName: {{ include "internalTls.certSecretName" (merge (dict "selfSignedName" (include "runtime_collector.clickhouse.name" .) "existingCertificatesKey" "runtime_collector_clickhouse") .) }}
         {{- end }}
         {{- if .Values.general.readOnlyRootFilesystem }}
         - name: users-config
