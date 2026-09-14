@@ -1343,6 +1343,9 @@ runtime_collector:
       httpPort: 8123
       nativePort: 9000
       tls: false
+      ## Verify the server certificate when tls is true. Independent of
+      ## general.internal_tls.certificates.verification, which does not apply to this connection.
+      verify: true
       existing_ca_secret_name: ""
       ## Cluster name for ON CLUSTER (ClickHouse Cloud / operator). Leave empty for single-node.
       cluster: ""

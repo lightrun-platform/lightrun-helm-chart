@@ -1116,6 +1116,19 @@ http
 {{- else if .Values.runtime_collector.clickhouse.external.tls -}}true{{- end -}}
 {{- end -}}
 
+{{/*
+Local ClickHouse follows general.internal_tls.certificates.verification, like every other
+internal-TLS connection. External ClickHouse has its own verify flag instead, so it can be
+turned off without affecting internal TLS verification chart-wide.
+*/}}
+{{- define "runtime_collector.clickhouse.verification" -}}
+{{- if .Values.runtime_collector.clickhouse.local.enabled -}}
+{{- if .Values.general.internal_tls.certificates.verification -}}true{{- end -}}
+{{- else -}}
+{{- if .Values.runtime_collector.clickhouse.external.verify -}}true{{- end -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "runtime_collector.clickhouse.secretName" -}}
 {{- if include "runtime_collector.clickhouse.existingSecret" . -}}
 {{ include "runtime_collector.clickhouse.existingSecret" . }}
@@ -1204,7 +1217,7 @@ ca.crt
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.skipVerify" -}}
-{{- if and (include "runtime_collector.clickhouse.nativeSecure" .) (not (include "runtime_collector.clickhouse.ca.mount" .)) (not .Values.general.internal_tls.certificates.verification) -}}true{{- end -}}
+{{- if and (include "runtime_collector.clickhouse.nativeSecure" .) (not (include "runtime_collector.clickhouse.ca.mount" .)) (not (include "runtime_collector.clickhouse.verification" .)) -}}true{{- end -}}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.validateTls" -}}
