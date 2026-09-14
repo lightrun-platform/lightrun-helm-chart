@@ -171,6 +171,9 @@ general:
         backend: ""
 ```
 
+> [!IMPORTANT]
+> With `source: generate_self_signed_certificates`, the backend does not trust runtime-collector's generated certificate when calling it — set `certificates.verification: false`, or use `existing_certificates` with a real shared CA, for that direction of the gRPC connection to work.
+
 ### CA Trust Behavior (Runtime Collector)
 
 ClickHouse does not mount a CA — it only serves TLS and does not call other services. The CA is mounted on the **runtime-collector deployment** only (wait and migrate init containers, and the main container) so those clients can verify the ClickHouse server certificate when connecting. Wherever it is mounted, `SSL_CERT_FILE` points at it.

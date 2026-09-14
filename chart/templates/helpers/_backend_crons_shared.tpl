@@ -5,9 +5,7 @@
 */}}
 
 {{- define "lightrun-backend-crons.internalCa.mount" -}}
-{{- if .Values.general.internal_tls.enabled -}}
-{{- if or .Values.general.internal_tls.certificates.existing_ca_secret_name (and .Values.runtime_collector.enabled (eq .Values.general.internal_tls.certificates.source "generate_self_signed_certificates")) -}}true{{- end -}}
-{{- end -}}
+{{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name -}}true{{- end -}}
 {{- end -}}
 
 {{/*
