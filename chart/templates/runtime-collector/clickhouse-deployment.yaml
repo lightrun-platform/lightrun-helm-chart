@@ -139,7 +139,7 @@ spec:
         - name: data
           {{- if .Values.runtime_collector.clickhouse.local.persistence.enabled }}
           persistentVolumeClaim:
-            claimName: {{ .Values.runtime_collector.clickhouse.local.persistence.existingClaim }}
+            claimName: {{ required "runtime_collector.clickhouse.local.persistence.existingClaim is required when persistence.enabled is true" .Values.runtime_collector.clickhouse.local.persistence.existingClaim }}
           {{- else }}
           emptyDir:
             sizeLimit: {{ .Values.runtime_collector.clickhouse.local.emptyDir.sizeLimit }}
