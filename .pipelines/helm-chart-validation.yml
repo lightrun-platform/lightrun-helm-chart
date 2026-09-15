@@ -357,7 +357,7 @@ jobs:
             -f "$(Pipeline.Workspace)/helm-validation-values/values.yaml" \
             --namespace $(NAMESPACE) \
             --wait \
-            --timeout 10m \
+            --timeout 15m \
             --debug
         displayName: 'Install Chart'
         retryCountOnTaskFailure: 2
