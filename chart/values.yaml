@@ -1309,6 +1309,7 @@ runtime_collector:
       annotations: {}
       labels: {}
       extraEnvs: []
+      envSecret: ""
       extraVolumes: []
       extraVolumeMounts: []
       podSecurityContext: {}
