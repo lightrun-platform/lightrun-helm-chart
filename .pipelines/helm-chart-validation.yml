@@ -98,22 +98,27 @@ jobs:
               content: $LICENSE_CONTENT
               signature: $LICENSE_SIGNATURE
             keycloak:
-              password: test123
+              password: $TEST_STRING
             db:
               user: test_user
-              password: test123
+              password: $TEST_STRING
             mq:
               user: test_user
-              password: test123
+              password: $TEST_STRING
             redis:
-              password: test123
+              password: $TEST_STRING
+            clickhouse:
+              user: runtime_collector
+              password: $TEST_STRING
+            runtime_collector:
+              grpc_secret: $TEST_STRING
             customCa:
               customCaCertificate: $(CUSTOM_CA_CERTIFICATE)
             defaults:
               dockerhub_config:
                 configContent: $(DOCKERHUB_CONFIG)
-              mail_password: test123
-              keystore_password: test123
+              mail_password: $TEST_STRING
+              keystore_password: $TEST_STRING
 
           certificate:
             tls:
@@ -182,8 +187,32 @@ jobs:
               image:
                 repository: lightruncom/artifacts-internal
                 tag: ${APP_VERSION}
+
+          runtime_collector:
+            enabled: true
+            server:
+              image:
+                repository: lightruncom/runtime-collector-internal
+                tag: ${APP_VERSION}
+              initContainers:
+                migrations:
+                  image:
+                    repository: lightruncom/runtime-collector-migrations-internal
+              resources:
+                requests:
+                  cpu: "0m"
+                  memory: "0Mi"
+            clickhouse:
+              local:
+                enabled: true
+                resources:
+                  requests:
+                    cpu: "0m"
+                    memory: "0Mi"
           EOF
         displayName: 'Create Values File'
+        env:
+          TEST_STRING: test123
 
       - script: |
           set -euo pipefail
@@ -330,7 +359,7 @@ jobs:
             -f "$(Pipeline.Workspace)/helm-validation-values/values.yaml" \
             --namespace $(NAMESPACE) \
             --wait \
-            --timeout 10m \
+            --timeout 15m \
             --debug
         displayName: 'Install Chart'
         retryCountOnTaskFailure: 2
