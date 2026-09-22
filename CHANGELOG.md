@@ -205,7 +205,7 @@
 
 
 <a name="v3.49.0"></a>
-## [v3.49.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.48.2...v3.49.0) - 2026-07-28
+## [v3.49.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.48.3...v3.49.0) - 2026-07-28
 
 
 
@@ -244,6 +244,43 @@
  
 
 - [bump-chart-tags (#246)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/3aaa63b)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.48.3"></a>
+## [v3.48.3](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.48.2...v3.48.3) - 2026-09-22
+
+
+
+### Versions
+
+| Service       | Repository                | Tag                              |
+|---------------|---------------------------|----------------------------------|
+| artifacts     | lightruncom/artifacts     | 1.89.3-release.cd584c9d61        |
+| backend       | lightruncom/server        | 1.89.3-release.cd584c9d61        |
+| crons         | lightruncom/server        | 1.89.3-release.cd584c9d61        |
+| data_streamer | lightruncom/data-streamer | 4.109.0-alpine-3.24.1-r17.lr-0   |
+| frontend      | lightruncom/webapp        | 1.89.3-release.cd584c9d61        |
+| keycloak      | lightruncom/keycloak      | 1.89.3-release.cd584c9d61        |
+| mysql         | mysql                     | 8.4.7                            |
+| rabbitmq      | lightruncom/rabbitmq      | 4.3.5-alpine.lr-8                |
+| redis         | lightruncom/redis         | 7.4.11-alpine-3.24.1-r17.lr-0    |
+| router        | lightruncom/router        | 1.30.4-r1-alpine-3.24.1-r17.lr-0 |
+ 
+ 
+
+
+### Security (1 change)
+
+- [bump chart-helper->0.3.0-alpine-3.24.1-r17.lr-0, data-streamer->4.109.0, rabbitmq->4.3.5-alpine.lr-8, redis->7.4.11-alpine-3.24.1-r17.lr-0, router->1.30.4-r1-alpine-3.24.1-r17.lr-0 (#297)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/ff6a966)
 
 
   Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
