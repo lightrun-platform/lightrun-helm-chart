@@ -985,10 +985,10 @@ Usage: {{ include "lightrun.datadogAnnotations" (dict "serviceName" "lightrun-be
 {{- $readOnlyRootFilesystem := dict "readOnlyRootFilesystem" (.Values.general.readOnlyRootFilesystem) -}}
 {{- $baseSecurityContext := include "baseSecurityContext" . | fromYaml -}}
 {{- $localSecurityContext := mustMerge $baseSecurityContext $readOnlyRootFilesystem -}}
-{{- if .Values.runtime_collector.server.containerSecurityContext -}}
-{{- $mergedSecurityContext := mergeOverwrite $localSecurityContext (.Values.runtime_collector.server.containerSecurityContext | default dict) -}}
+{{- if .Values.deployments.runtime_collector.server.containerSecurityContext -}}
+{{- $mergedSecurityContext := mergeOverwrite $localSecurityContext (.Values.deployments.runtime_collector.server.containerSecurityContext | default dict) -}}
 {{- $mergedSecurityContext | toYaml -}}
-{{- else if kindIs "invalid" .Values.runtime_collector.server.containerSecurityContext -}}
+{{- else if kindIs "invalid" .Values.deployments.runtime_collector.server.containerSecurityContext -}}
 {{ default dict | toYaml -}}
 {{- else -}}
 {{- $localSecurityContext | toYaml -}}
@@ -1005,9 +1005,9 @@ Usage: {{ include "lightrun.datadogAnnotations" (dict "serviceName" "lightrun-be
 {{- $readOnlyRootFilesystem := dict "readOnlyRootFilesystem" (.Values.general.readOnlyRootFilesystem) -}}
 {{- $baseSecurityContext := include "baseSecurityContext" . | fromYaml -}}
 {{- $localSecurityContext := mustMerge $baseSecurityContext $readOnlyRootFilesystem -}}
-{{- if .Values.runtime_collector.clickhouse.local.containerSecurityContext -}}
-{{- $localSecurityContext = mergeOverwrite $localSecurityContext (deepCopy .Values.runtime_collector.clickhouse.local.containerSecurityContext) -}}
-{{- else if kindIs "invalid" .Values.runtime_collector.clickhouse.local.containerSecurityContext -}}
+{{- if .Values.deployments.runtime_collector.clickhouse.local.containerSecurityContext -}}
+{{- $localSecurityContext = mergeOverwrite $localSecurityContext (deepCopy .Values.deployments.runtime_collector.clickhouse.local.containerSecurityContext) -}}
+{{- else if kindIs "invalid" .Values.deployments.runtime_collector.clickhouse.local.containerSecurityContext -}}
 {{- $localSecurityContext = dict -}}
 {{- end -}}
 {{- if .Values.general.openshift -}}
@@ -1018,8 +1018,8 @@ Usage: {{ include "lightrun.datadogAnnotations" (dict "serviceName" "lightrun-be
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.podSecurityContext" -}}
-{{- if .Values.runtime_collector.clickhouse.local.podSecurityContext -}}
-{{- toYaml .Values.runtime_collector.clickhouse.local.podSecurityContext -}}
+{{- if .Values.deployments.runtime_collector.clickhouse.local.podSecurityContext -}}
+{{- toYaml .Values.deployments.runtime_collector.clickhouse.local.podSecurityContext -}}
 {{- else if .Values.general.openshift -}}
 {{- dict | toYaml -}}
 {{- else -}}
@@ -1028,55 +1028,55 @@ Usage: {{ include "lightrun.datadogAnnotations" (dict "serviceName" "lightrun-be
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.username" -}}
-{{- if .Values.runtime_collector.clickhouse.local.enabled -}}
+{{- if .Values.deployments.runtime_collector.clickhouse.local.enabled -}}
 {{ .Values.secrets.clickhouse.user }}
 {{- else -}}
-{{ .Values.runtime_collector.clickhouse.external.username }}
+{{ .Values.deployments.runtime_collector.clickhouse.external.username }}
 {{- end -}}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.password" -}}
-{{- if .Values.runtime_collector.clickhouse.local.enabled -}}
+{{- if .Values.deployments.runtime_collector.clickhouse.local.enabled -}}
 {{ .Values.secrets.clickhouse.password }}
 {{- else -}}
-{{ .Values.runtime_collector.clickhouse.external.password }}
+{{ .Values.deployments.runtime_collector.clickhouse.external.password }}
 {{- end -}}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.existingSecret" -}}
-{{- if not .Values.runtime_collector.clickhouse.local.enabled -}}
-{{ .Values.runtime_collector.clickhouse.external.existingSecret }}
+{{- if not .Values.deployments.runtime_collector.clickhouse.local.enabled -}}
+{{ .Values.deployments.runtime_collector.clickhouse.external.existingSecret }}
 {{- end -}}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.hostname" -}}
-{{- if .Values.runtime_collector.clickhouse.local.enabled -}}
+{{- if .Values.deployments.runtime_collector.clickhouse.local.enabled -}}
 {{ include "runtime_collector.clickhouse.name" . }}
 {{- else -}}
-{{ required "runtime_collector.clickhouse.external.host is required when clickhouse.local.enabled is false" .Values.runtime_collector.clickhouse.external.host }}
+{{ required "runtime_collector.clickhouse.external.host is required when clickhouse.local.enabled is false" .Values.deployments.runtime_collector.clickhouse.external.host }}
 {{- end -}}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.httpPort" -}}
-{{- if .Values.runtime_collector.clickhouse.local.enabled -}}
-{{ .Values.runtime_collector.clickhouse.local.httpPort }}
+{{- if .Values.deployments.runtime_collector.clickhouse.local.enabled -}}
+{{ .Values.deployments.runtime_collector.clickhouse.local.httpPort }}
 {{- else -}}
-{{ .Values.runtime_collector.clickhouse.external.httpPort }}
+{{ .Values.deployments.runtime_collector.clickhouse.external.httpPort }}
 {{- end -}}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.nativePort" -}}
-{{- if .Values.runtime_collector.clickhouse.local.enabled -}}
-{{ .Values.runtime_collector.clickhouse.local.nativePort }}
+{{- if .Values.deployments.runtime_collector.clickhouse.local.enabled -}}
+{{ .Values.deployments.runtime_collector.clickhouse.local.nativePort }}
 {{- else -}}
-{{ .Values.runtime_collector.clickhouse.external.nativePort }}
+{{ .Values.deployments.runtime_collector.clickhouse.external.nativePort }}
 {{- end -}}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.httpScheme" -}}
-{{- if .Values.runtime_collector.clickhouse.local.enabled -}}
+{{- if .Values.deployments.runtime_collector.clickhouse.local.enabled -}}
 {{- if include "runtime_collector.clickhouse.internalTls.certEnabled" . -}}https{{- else -}}http{{- end -}}
-{{- else if .Values.runtime_collector.clickhouse.external.tls -}}
+{{- else if .Values.deployments.runtime_collector.clickhouse.external.tls -}}
 https
 {{- else -}}
 http
@@ -1084,8 +1084,8 @@ http
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.cluster" -}}
-{{- if not .Values.runtime_collector.clickhouse.local.enabled -}}
-{{ .Values.runtime_collector.clickhouse.external.cluster }}
+{{- if not .Values.deployments.runtime_collector.clickhouse.local.enabled -}}
+{{ .Values.deployments.runtime_collector.clickhouse.external.cluster }}
 {{- end -}}
 {{- end -}}
 
@@ -1102,7 +1102,7 @@ http
 
 {{- define "runtime_collector.clickhouse.r2dbcUrl" -}}
 {{- $endpoint := include "runtime_collector.clickhouse.endpoint" . -}}
-{{- $database := .Values.runtime_collector.clickhouse.database -}}
+{{- $database := .Values.deployments.runtime_collector.clickhouse.database -}}
 {{- $url := printf "r2dbc:clickhouse:%s/%s" $endpoint $database -}}
 {{- if include "runtime_collector.clickhouse.skipVerify" . -}}
 {{- $url = printf "%s?sslmode=none" $url -}}
@@ -1111,13 +1111,13 @@ http
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.serviceHttpPort" -}}
-{{ .Values.runtime_collector.clickhouse.local.httpPort | default 8123 }}
+{{ .Values.deployments.runtime_collector.clickhouse.local.httpPort | default 8123 }}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.nativeSecure" -}}
-{{- if .Values.runtime_collector.clickhouse.local.enabled -}}
+{{- if .Values.deployments.runtime_collector.clickhouse.local.enabled -}}
 {{- if include "runtime_collector.clickhouse.internalTls.certEnabled" . -}}true{{- end -}}
-{{- else if .Values.runtime_collector.clickhouse.external.tls -}}true{{- end -}}
+{{- else if .Values.deployments.runtime_collector.clickhouse.external.tls -}}true{{- end -}}
 {{- end -}}
 
 {{/*
@@ -1125,10 +1125,10 @@ Local ClickHouse follows general.internal_tls.certificates.verification; externa
 has its own verify flag instead.
 */}}
 {{- define "runtime_collector.clickhouse.verification" -}}
-{{- if .Values.runtime_collector.clickhouse.local.enabled -}}
+{{- if .Values.deployments.runtime_collector.clickhouse.local.enabled -}}
 {{- if .Values.general.internal_tls.certificates.verification -}}true{{- end -}}
 {{- else -}}
-{{- if .Values.runtime_collector.clickhouse.external.verify -}}true{{- end -}}
+{{- if .Values.deployments.runtime_collector.clickhouse.external.verify -}}true{{- end -}}
 {{- end -}}
 {{- end -}}
 
@@ -1141,12 +1141,12 @@ has its own verify flag instead.
 {{- end -}}
 
 {{- define "runtime_collector.internalTls.certEnabled" -}}
-{{- if and .Values.general.internal_tls.enabled .Values.runtime_collector.enabled -}}true
+{{- if and .Values.general.internal_tls.enabled .Values.deployments.runtime_collector.enabled -}}true
 {{- end -}}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.internalTls.certEnabled" -}}
-{{- if and .Values.general.internal_tls.enabled .Values.runtime_collector.enabled .Values.runtime_collector.clickhouse.local.enabled -}}true
+{{- if and .Values.general.internal_tls.enabled .Values.deployments.runtime_collector.enabled .Values.deployments.runtime_collector.clickhouse.local.enabled -}}true
 {{- end -}}
 {{- end -}}
 
@@ -1175,7 +1175,7 @@ has its own verify flag instead.
 {{- end -}}
 
 {{- define "runtime_collector.internalCa.needed" -}}
-{{- if and .Values.general.internal_tls.enabled .Values.runtime_collector.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name -}}true{{- end -}}
+{{- if and .Values.general.internal_tls.enabled .Values.deployments.runtime_collector.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name -}}true{{- end -}}
 {{- end -}}
 
 {{- define "runtime_collector.rabbitmq.ca.mount" -}}
@@ -1205,7 +1205,7 @@ ca.crt
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.externalCa.mount" -}}
-{{- if and (not .Values.runtime_collector.clickhouse.local.enabled) .Values.runtime_collector.clickhouse.external.tls .Values.runtime_collector.clickhouse.external.existing_ca_secret_name -}}true{{- end -}}
+{{- if and (not .Values.deployments.runtime_collector.clickhouse.local.enabled) .Values.deployments.runtime_collector.clickhouse.external.tls .Values.deployments.runtime_collector.clickhouse.external.existing_ca_secret_name -}}true{{- end -}}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.ca.mount" -}}
@@ -1222,7 +1222,7 @@ ca.crt
 
 {{- define "runtime_collector.clickhouse.ca.secretName" -}}
 {{- if include "runtime_collector.clickhouse.externalCa.mount" . -}}
-{{ .Values.runtime_collector.clickhouse.external.existing_ca_secret_name }}
+{{ .Values.deployments.runtime_collector.clickhouse.external.existing_ca_secret_name }}
 {{- else -}}
 {{ include "internalTls.ca.secretName" . }}
 {{- end -}}
