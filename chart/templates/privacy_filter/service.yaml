@@ -1,0 +1,23 @@
+{{ if .Values.general.privacy_filter.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "privacy_filter.name" . }}
+  {{- with .Values.deployments.privacy_filter.service.annotations }}
+  annotations:
+    {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.deployments.privacy_filter.service.labels }}
+  labels:
+    {{ toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8786
+      protocol: TCP
+      targetPort: http
+  selector:
+    app: {{ include "privacy_filter.name" . }}
+{{ end }}
