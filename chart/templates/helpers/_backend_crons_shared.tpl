@@ -145,7 +145,7 @@ Shared environment variables for backend and crons services
   value: {{ include "lightrun-mq.getQueueNameByPrefix" (dict "prefix" "mixpanel-events" "Values" .Values) | quote }}
 - name: KEYCLOAK_QUEUE_NAME
   value: {{ include "lightrun-mq.getQueueNameByPrefix" (dict "prefix" "keycloak-events" "Values" .Values) | quote }}
-{{- if .Values.deployments.runtime_collector.enabled }}
+{{- if .Values.runtime_collector.enabled }}
 - name: RUNTIME_COLLECTOR_SNAPSHOT_EVENTS_EXCHANGE_NAME
   value: {{ .Values.general.mq.snapshot_events.exchange_name | quote }}
 - name: RUNTIME_COLLECTOR_SNAPSHOT_EVENTS_QUEUE_NAME

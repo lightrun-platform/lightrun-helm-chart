@@ -70,7 +70,7 @@ spec:
   {{- toYaml .Values.deployments.artifacts.podDisruptionBudget | nindent 2 }}
 {{- end }}
 ---
-{{- if and .Values.deployments.runtime_collector.enabled .Values.deployments.runtime_collector.server.podDisruptionBudget }}
+{{- if and .Values.runtime_collector.enabled .Values.runtime_collector.server.podDisruptionBudget }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
@@ -79,5 +79,5 @@ spec:
   selector:
     matchLabels:
       app: {{ include "runtime_collector.name" . }}
-  {{- toYaml .Values.deployments.runtime_collector.server.podDisruptionBudget | nindent 2 }}
+  {{- toYaml .Values.runtime_collector.server.podDisruptionBudget | nindent 2 }}
 {{- end }}
