@@ -152,6 +152,15 @@ Shared environment variables for backend and crons services
 - name: INTEGRATIONS_SIEM_STREAMING-SERVICE_URL
   value: "{{ include "http.scheme" . }}://{{ include "data_streamer.name" . }}:8080/events/post"
 {{- end }}
+{{- if .Values.general.privacy_filter.enabled }}
+- name: PRIVACY_FILTER_ENABLED
+  value: "true"
+- name: PRIVACY_FILTER_URL
+  value: "http://{{ include "privacy_filter.name" . }}:8786"
+{{- else }}
+- name: PRIVACY_FILTER_ENABLED
+  value: "false"
+{{- end }}
 {{- end -}}
 
 {{/*
