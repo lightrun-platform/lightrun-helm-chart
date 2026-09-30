@@ -11,7 +11,7 @@ There are two modes:
 > When using external RabbitMQ, ensure that the provided endpoints are reachable.
 
 > [!Important]
-> - Runtime Collector snapshot ingestion requires RabbitMQ 4.3 or later for quorum queue delayed retry. The bundled image is 4.3.6.
+> - Runtime Collector snapshot queue settings support RabbitMQ 4.0.9.
 > - Minimum size requirements: 0.5 vCPU, 1Gi memory.
 
 ## RabbitMQ Enabled by Default in 3.30.0 Chart Version
@@ -72,7 +72,7 @@ Review the following scenarios to determine the necessary actions for your upgra
 ### **External RabbitMQ Configuration (general.mq.local: false)**
 To use an external RabbitMQ instance, set general.mq.local to false. In this mode, the chart will not deploy a local RabbitMQ pod but will connect to an existing RabbitMQ.
 
-When Runtime Collector is enabled, provision the snapshot exchange, main quorum queue, DLQ, and binding on the external broker. Use the same queue names, limits, TTLs, and dead-letter route as the local definitions in `chart/templates/rabbitmq-cm.yaml`. Set `x-single-active-consumer: true`, `x-delayed-retry-type: failed`, `x-delayed-retry-min: 15000`, `x-delayed-retry-max: 60000`, and `x-delivery-limit: 10` on the main queue only. The chart does not configure an external broker.
+When Runtime Collector is enabled, provision the snapshot exchange, main quorum queue, DLQ, and binding on the external broker. Use the same queue names, limits, TTLs, and dead-letter route as the local definitions in `chart/templates/rabbitmq-cm.yaml`. Set `x-single-active-consumer: true` and `x-delivery-limit: 10` on the main queue only. Requeued messages have no configured delay. The chart does not configure an external broker.
 
 ```yaml
   mq:
