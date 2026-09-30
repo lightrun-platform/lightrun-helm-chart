@@ -9,9 +9,9 @@ data:
   ssl-config.xml: |
     <clickhouse>
         <http_port remove="1"/>
-        <https_port>{{ .Values.runtime_collector.clickhouse.local.httpPort }}</https_port>
+        <https_port>{{ .Values.deployments.runtime_collector.clickhouse.local.httpPort }}</https_port>
         <tcp_port remove="1"/>
-        <tcp_port_secure>{{ .Values.runtime_collector.clickhouse.local.nativePort }}</tcp_port_secure>
+        <tcp_port_secure>{{ .Values.deployments.runtime_collector.clickhouse.local.nativePort }}</tcp_port_secure>
         <openSSL>
             <server>
                 <certificateFile>/tmp/certs/tls.crt</certificateFile>

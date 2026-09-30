@@ -2,18 +2,19 @@
 
 The **Runtime Collector** is an optional component that collects runtime intelligence data for Lightrun. Configuration is split into three sections:
 
-- **`runtime_collector.enabled`**: Enables or disables the component.
-- **`runtime_collector.server`**: Deployment settings for the runtime-collector application (image, scaling, probes, and service).
-- **`runtime_collector.clickhouse`**: ClickHouse connection settings. ClickHouse can be deployed [**locally**](#local-clickhouse-runtime_collectorclickhouselocalenabled-true) with the chart or connected as an [**external**](#external-clickhouse-runtime_collectorclickhouselocalenabled-false) instance.
+- **`deployments.runtime_collector.enabled`**: Enables or disables the component.
+- **`deployments.runtime_collector.server`**: Deployment settings for the runtime-collector application (image, scaling, probes, and service).
+- **`deployments.runtime_collector.clickhouse`**: ClickHouse connection settings. ClickHouse can be deployed [**locally**](#local-clickhouse-runtime_collectorclickhouselocalenabled-true) with the chart or connected as an [**external**](#external-clickhouse-runtime_collectorclickhouselocalenabled-false) instance.
 
 > [!NOTE]
-> Runtime Collector is **disabled by default** (`runtime_collector.enabled: false`).
+> Runtime Collector is **disabled by default** (`deployments.runtime_collector.enabled: false`).
 
 ## Enable Runtime Collector
 
 ```yaml
-runtime_collector:
-  enabled: true
+deployments:
+  runtime_collector:
+    enabled: true
 ```
 
 ## Credentials
@@ -38,20 +39,21 @@ For external ClickHouse, credentials are set under `runtime_collector.clickhouse
 In this mode, ClickHouse is **not deployed inside the cluster**. The runtime-collector connects to an existing ClickHouse instance.
 
 ```yaml
-runtime_collector:
-  clickhouse:
-    local:
-      enabled: false
-    external:
-      host: "clickhouse.example.com"
-      httpPort: 8123
-      nativePort: 9000
-      tls: false
-      verify: true
-      existing_ca_secret_name: ""
-      username: ""
-      password: ""
-      existingSecret: ""
+deployments:
+  runtime_collector:
+    clickhouse:
+      local:
+        enabled: false
+      external:
+        host: "clickhouse.example.com"
+        httpPort: 8123
+        nativePort: 9000
+        tls: false
+        verify: true
+        existing_ca_secret_name: ""
+        username: ""
+        password: ""
+        existingSecret: ""
 ```
 
 | Property | Description |
@@ -73,28 +75,29 @@ runtime_collector:
 In this mode, the chart deploys a single-replica ClickHouse pod in the cluster and connects runtime-collector to it. With `general.internal_tls.enabled: true`, this connection uses TLS like any other internal chart connection — see [Internal TLS](#internal-tls) below.
 
 ```yaml
-runtime_collector:
-  clickhouse:
-    local:
-      enabled: true
-      httpPort: 8123
-      nativePort: 9000
-      image:
-        repository: clickhouse/clickhouse-server
-        tag: "25.3-alpine"
-        pullPolicy: IfNotPresent
-      resources:
-        requests:
-          cpu: 500m
-          memory: 1Gi
-        limits:
-          cpu: 500m
-          memory: 1Gi
-      persistence:
-        enabled: false
-        existingClaim: ""
-      emptyDir:
-        sizeLimit: 10Gi
+deployments:
+  runtime_collector:
+    clickhouse:
+      local:
+        enabled: true
+        httpPort: 8123
+        nativePort: 9000
+        image:
+          repository: clickhouse/clickhouse-server
+          tag: "25.3-alpine"
+          pullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        persistence:
+          enabled: false
+          existingClaim: ""
+        emptyDir:
+          sizeLimit: 10Gi
 ```
 
 > [!NOTE]
@@ -141,9 +144,10 @@ general:
 ## Database Name
 
 ```yaml
-runtime_collector:
-  clickhouse:
-    database: runtime_collector
+deployments:
+  runtime_collector:
+    clickhouse:
+      database: runtime_collector
 ```
 
 The `migrate-clickhouse` init container creates this database if it does not already exist, then

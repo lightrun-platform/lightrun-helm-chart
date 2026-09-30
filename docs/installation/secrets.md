@@ -59,12 +59,12 @@ When managing secrets externally, ensure the following fields are present in eac
 
 #### **ClickHouse secret** (`{{ .Release.name }}-runtime-collector-clickhouse`)
 
-Required when [Runtime Collector](../components/runtime-collector.md) is enabled and credentials are not supplied via `runtime_collector.clickhouse.external.existingSecret`.
+Required when [Runtime Collector](../components/runtime-collector.md) is enabled and credentials are not supplied via `deployments.runtime_collector.clickhouse.external.existingSecret`.
 
 | Secret Key | Description | Value Source |
 |------------|-------------|--------------|
-| `CLICKHOUSE_PASSWORD` | ClickHouse password | `secrets.clickhouse.password` (local) or `runtime_collector.clickhouse.external.password` (external) |
-| `CLICKHOUSE_USERNAME` | ClickHouse username | `secrets.clickhouse.user` (local) or `runtime_collector.clickhouse.external.username` (external) |
+| `CLICKHOUSE_PASSWORD` | ClickHouse password | `secrets.clickhouse.password` (local) or `deployments.runtime_collector.clickhouse.external.password` (external) |
+| `CLICKHOUSE_USERNAME` | ClickHouse username | `secrets.clickhouse.user` (local) or `deployments.runtime_collector.clickhouse.external.username` (external) |
 
 #### **Runtime Collector gRPC secret** (`{{ .Release.name }}-runtime-collector-grpc`)
 
