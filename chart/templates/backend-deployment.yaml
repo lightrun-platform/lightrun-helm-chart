@@ -81,7 +81,7 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
-            {{- if .Values.runtime_collector.enabled }}
+            {{- if .Values.deployments.runtime_collector.enabled }}
             - name: grpc
               containerPort: {{ .Values.deployments.backend.grpc.port }}
               protocol: TCP
@@ -163,10 +163,10 @@ spec:
           env:
           {{- include "lightrun-backend-crons.environmentVariables" . | nindent 12 }}
             - name: RUNTIME_COLLECTOR_ENABLED
-              value: {{ .Values.runtime_collector.enabled | quote }}
-            {{- if .Values.runtime_collector.enabled }}
+              value: {{ .Values.deployments.runtime_collector.enabled | quote }}
+            {{- if .Values.deployments.runtime_collector.enabled }}
             - name: RUNTIME_COLLECTOR_GRPC_TARGET
-              value: "{{ include "runtime_collector.name" . }}:{{ .Values.runtime_collector.server.service.port }}"
+              value: "{{ include "runtime_collector.name" . }}:{{ .Values.deployments.runtime_collector.server.service.port }}"
             - name: RUNTIME_COLLECTOR_GRPC_SECRET
               valueFrom:
                 secretKeyRef:
@@ -178,8 +178,8 @@ spec:
               value: {{ .Values.general.internal_tls.certificates.verification | quote }}
             {{- end }}
             - name: SERVER_GRPC_ENABLED
-              value: {{ .Values.runtime_collector.enabled | quote }}
-            {{- if .Values.runtime_collector.enabled }}
+              value: {{ .Values.deployments.runtime_collector.enabled | quote }}
+            {{- if .Values.deployments.runtime_collector.enabled }}
             - name: SERVER_GRPC_SECRET
               valueFrom:
                 secretKeyRef:
