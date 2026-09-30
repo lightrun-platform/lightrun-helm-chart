@@ -973,6 +973,19 @@ Usage: {{ include "lightrun.datadogAnnotations" (dict "serviceName" "lightrun-be
 {{ include "lightrun.fullname" . }}-runtime-collector-clickhouse
 {{- end -}}
 
+{{/*
+Migrations image tag. Must match the server tag unless allowTagOverride is true.
+*/}}
+{{- define "runtime_collector.migrations.imageTag" -}}
+{{- $serverTag := toString .Values.deployments.runtime_collector.server.image.tag -}}
+{{- $migrations := .Values.deployments.runtime_collector.server.initContainers.migrations.image -}}
+{{- $tag := toString ($migrations.tag | default $serverTag) -}}
+{{- if and (ne $tag $serverTag) (not $migrations.allowTagOverride) -}}
+{{- fail (printf "deployments.runtime_collector.server.initContainers.migrations.image.tag (%s) must match deployments.runtime_collector.server.image.tag (%s). Set migrations.image.allowTagOverride=true to override (not recommended)." $tag $serverTag) -}}
+{{- end -}}
+{{- $tag -}}
+{{- end -}}
+
 {{- define "runtime_collector.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create -}}
     {{ default (include "runtime_collector.name" .) .Values.serviceAccount.name }}
