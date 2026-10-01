@@ -322,3 +322,33 @@ Shared init containers for backend and crons services
   command: ['sh', '-c', 'keytool -import -trustcacerts -alias internalCa -keystore /p12/internalca -file  /tmp/ca-certificates/ca.crt -noprompt -storepass $KEYSTORE_PASSWORD && keytool -importkeystore -srckeystore /usr/lib/jvm/default-jvm/jre/lib/security/cacerts -destkeystore /p12/internalca -srcstorepass changeit -deststorepass $KEYSTORE_PASSWORD']
 {{- end }}
 {{- end -}}
+
+{{- define "lightrun-backend.environmentVariablesRaw" -}}
+{{- include "lightrun-backend-crons.environmentVariables" . | nindent 0 }}
+- name: SPRING_PROFILES_ACTIVE
+  value: "prod,swagger,cluster"
+{{- if .Values.deployments.backend.extraEnvs }}
+{{- toYaml .Values.deployments.backend.extraEnvs | nindent 0 }}
+{{- if not (include "list-of-maps-contains" (list .Values.deployments.backend.extraEnvs "_JAVA_OPTIONS") ) }}
+- name: "_JAVA_OPTIONS"
+  value: {{- toYaml (include "calculate-heap-size" .Values.deployments.backend) | nindent 3  }}
+{{- end }}
+{{- else }}
+- name: "_JAVA_OPTIONS"
+  value: {{- toYaml (include "calculate-heap-size" .Values.deployments.backend) | nindent 3  }}
+{{- end }}
+{{- end -}}
+
+{{- define "lightrun-crons.environmentVariablesRaw" -}}
+{{- include "lightrun-backend-crons.environmentVariables" . | nindent 0 }}
+- name: SPRING_PROFILES_ACTIVE
+  value: "prod,swagger,cluster,cron"
+{{- $mergedExtraEnvs := include "lightrun-crons.mergedExtraEnvs" . }}
+{{- if $mergedExtraEnvs }}
+{{- $mergedExtraEnvs | nindent 0 }}
+{{- end }}
+{{- if and (not (include "list-of-maps-contains" (list .Values.deployments.crons.extraEnvs "_JAVA_OPTIONS"))) (not (include "list-of-maps-contains" (list .Values.deployments.backend.extraEnvs "_JAVA_OPTIONS"))) }}
+- name: "_JAVA_OPTIONS"
+  value: {{- toYaml (include "calculate-heap-size" (list .Values.deployments.crons 1 3)) | nindent 3  }}
+{{- end }}
+{{- end -}}
