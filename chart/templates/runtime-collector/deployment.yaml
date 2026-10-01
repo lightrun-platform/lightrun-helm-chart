@@ -71,7 +71,7 @@ spec:
             - -c
             - {{ include "runtime_collector.clickhouse.waitForCommand" . | quote }}
         - name: migrate-clickhouse
-          image: "{{ .Values.deployments.runtime_collector.server.initContainers.migrations.image.repository }}:{{ .Values.deployments.runtime_collector.server.image.tag }}"
+          image: "{{ .Values.deployments.runtime_collector.server.initContainers.migrations.image.repository }}:{{ include "runtime_collector.migrations.imageTag" . }}"
           imagePullPolicy: {{ .Values.deployments.runtime_collector.server.initContainers.migrations.image.pullPolicy }}
           securityContext:
             {{- include "runtime_collector.initContainerSecurityContext" . | nindent 12 }}

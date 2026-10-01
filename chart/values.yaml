@@ -1229,7 +1229,12 @@ deployments:
           image:
             repository: lightruncom/runtime-collector-migrations
             pullPolicy: IfNotPresent
-            ## Tag always follows runtime_collector.server.image.tag
+            ## Leave empty to use deployments.runtime_collector.server.image.tag.
+            tag: ""
+            ## Migrations and the Collector server MUST run the same version.
+            ## Setting this to true allows a different migrations tag, which is
+            ## NOT recommended and intended for local development only.
+            allowTagOverride: false
           resources:
             requests:
               cpu: 500m
