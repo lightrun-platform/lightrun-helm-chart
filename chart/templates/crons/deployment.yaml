@@ -139,6 +139,8 @@ spec:
                 name: {{ include "secrets.backend.name" . }}
           env:
           {{- include "lightrun-backend-crons.environmentVariables" . | nindent 12 }}
+            - name: SERVER_GRPC_ENABLED
+              value: "false"
             - name: SPRING_PROFILES_ACTIVE
               value: "prod,swagger,cluster,cron"
             {{- $mergedExtraEnvs := include "lightrun-crons.mergedExtraEnvs" . }}
