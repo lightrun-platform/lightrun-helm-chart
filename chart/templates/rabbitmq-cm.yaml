@@ -120,6 +120,8 @@ data:
             "x-dead-letter-exchange": "",
             "x-dead-letter-routing-key": "{{ $snapshot_queue_name }}.dlq",
             "x-queue-type": "quorum",
+            "x-single-active-consumer": true,
+            "x-delivery-limit": {{ .Values.general.mq.snapshot_events.main_queue.delivery_limit | int }},
             "x-message-ttl": {{ .Values.general.mq.snapshot_events.main_queue.message_ttl | int }},
             "x-max-length": {{ .Values.general.mq.snapshot_events.main_queue.max_length | int }},
             "x-overflow": {{ .Values.general.mq.snapshot_events.main_queue.overflow | quote }},

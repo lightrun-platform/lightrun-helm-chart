@@ -96,6 +96,7 @@ general:
       exchange_name: "snapshot-events"
       queue_name: "runtime-collector-snapshot-events"
       main_queue:
+        delivery_limit: 10
         message_ttl: 86400000
         max_length: 10000
         overflow: "reject-publish"
