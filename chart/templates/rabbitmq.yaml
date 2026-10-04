@@ -18,10 +18,12 @@ spec:
         {{- with .Values.deployments.rabbitmq.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-      {{ with .Values.deployments.rabbitmq.podAnnotations }}
       annotations:
-        {{ toYaml . | nindent 8 }}
-      {{ end }}
+        # Restart RabbitMQ when its config changes: definitions.json is only imported at startup.
+        checksum/config: {{ include (print $.Template.BasePath "/rabbitmq-cm.yaml") . | sha256sum }}
+        {{- with .Values.deployments.rabbitmq.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       terminationGracePeriodSeconds: 10
       securityContext: {{- include "rabbitmq.podBaseSecurityContext" . | indent 8 }}
