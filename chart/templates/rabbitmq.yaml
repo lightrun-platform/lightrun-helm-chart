@@ -19,7 +19,6 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       annotations:
-        # Restart RabbitMQ when its config changes: definitions.json is only imported at startup.
         checksum/config: {{ include (print $.Template.BasePath "/rabbitmq-cm.yaml") . | sha256sum }}
         {{- with .Values.deployments.rabbitmq.podAnnotations }}
         {{- toYaml . | nindent 8 }}
