@@ -11,7 +11,7 @@ There are two modes:
 > When using external RabbitMQ, ensure that the provided endpoints are reachable.
 
 > [!Important]
-> - Supports RabbitMQ versions 3.12.x.
+> - Runtime Collector snapshot queue settings support RabbitMQ 4.0.9.
 > - Minimum size requirements: 0.5 vCPU, 1Gi memory.
 
 ## RabbitMQ Enabled by Default in 3.30.0 Chart Version
@@ -46,13 +46,13 @@ Review the following scenarios to determine the necessary actions for your upgra
 
 
 > [!NOTE]
-> **For air-gapped or restricted environments**: If your environment has no access to DockerHub, you must provide the RabbitMQ container image (like `lightruncom/rabbitmq:4.0.9-alpine.lr-0`) through your internal container registry. Override the image source in your `values.yaml` as shown below:
+> **For air-gapped or restricted environments**: If your environment has no access to DockerHub, you must provide the RabbitMQ container image (like `lightruncom/rabbitmq:4.3.6-alpine.lr-2`) through your internal container registry. Override the image source in your `values.yaml` as shown below:
 > ```yaml
-> general:
->   mq:
+> deployments:
+>   rabbitmq:
 >     image:
 >       repository: your-internal-registry.example.com/lightruncom/rabbitmq
->       tag: 4.0.9-alpine.lr-0
+>       tag: 4.3.6-alpine.lr-2
 > ```
 
 
@@ -71,6 +71,8 @@ Review the following scenarios to determine the necessary actions for your upgra
 
 ### **External RabbitMQ Configuration (general.mq.local: false)**
 To use an external RabbitMQ instance, set general.mq.local to false. In this mode, the chart will not deploy a local RabbitMQ pod but will connect to an existing RabbitMQ.
+
+When Runtime Collector is enabled, provision the snapshot exchange, main quorum queue, DLQ, and binding on the external broker. Use the same queue names, limits, TTLs, and dead-letter route as the local definitions in `chart/templates/rabbitmq-cm.yaml`. Set `x-single-active-consumer: true` and `x-delivery-limit: 10` on the main queue only. Requeued messages have no configured delay. The chart does not configure an external broker.
 
 ```yaml
   mq:
@@ -144,7 +146,7 @@ deployments:
     useJsonLogFormat: false
     image:
       repository: lightruncom/rabbitmq
-      tag: 3.12.14-alpine
+      tag: "4.3.6-alpine.lr-2"
       pullPolicy: IfNotPresent
     resources:
       cpu: 500m
