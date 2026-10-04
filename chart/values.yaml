@@ -1265,6 +1265,12 @@ deployments:
       affinity: {}
       podDisruptionBudget: {}
       topologySpreadConstraints: []
+      startupProbe:
+        initialDelaySeconds: 30
+        periodSeconds: 5
+        timeoutSeconds: 5
+        successThreshold: 1
+        failureThreshold: 60
       livenessProbe:
         initialDelaySeconds: 10
         periodSeconds: 20

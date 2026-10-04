@@ -173,6 +173,15 @@ spec:
             - name: management
               containerPort: {{ .Values.deployments.runtime_collector.server.service.managementPort }}
               protocol: TCP
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: management
+            initialDelaySeconds: {{ .Values.deployments.runtime_collector.server.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.deployments.runtime_collector.server.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.deployments.runtime_collector.server.startupProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.deployments.runtime_collector.server.startupProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.runtime_collector.server.startupProbe.failureThreshold }}
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
