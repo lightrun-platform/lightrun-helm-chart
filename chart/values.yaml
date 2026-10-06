@@ -1193,7 +1193,10 @@ deployments:
     ## If set to `true`, will deploy the runtime-collector service
     server:
       replicas: 1
-      rollout_strategy: RollingUpdate
+      ## Recreate (not RollingUpdate): the migrate-clickhouse init container can run
+      ## schema migrations that are breaking for the previous server version, so the
+      ## old and new pods must never run concurrently.
+      rollout_strategy: Recreate
       image:
         repository: lightruncom/runtime-collector
         tag: ""
@@ -1214,6 +1217,11 @@ deployments:
           cpu: 500m
           memory: 512Mi
       initContainers:
+        wait_for_rabbitmq:
+          image:
+            repository: lightruncom/chart-helper
+            tag: "0.3.0-alpine-3.24.2-r2.lr-0"
+            pullPolicy: ""
         wait_for_clickhouse:
           image:
             repository: lightruncom/chart-helper

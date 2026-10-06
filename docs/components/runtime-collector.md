@@ -111,12 +111,16 @@ deployments:
 
 Configuration for the runtime-collector application deployment.
 
-The pod runs two init containers before the application starts:
+The pod runs these init containers before the application starts (`wait-for-rabbitmq` only when `general.mq.enabled: true`):
 
 | Init container | Purpose |
 | -------------- | ------- |
+| **`wait-for-rabbitmq`** | Polls the RabbitMQ management API until it responds. Image is configurable under `server.initContainers.wait_for_rabbitmq`. |
 | **`wait-for-clickhouse`** | Polls the ClickHouse HTTP `/ping` endpoint until it responds. Image is configurable under `server.initContainers.wait_for_clickhouse`. |
 | **`migrate-clickhouse`** | Creates the database if it does not exist and applies the schema migrations. Image repository is configurable under `server.initContainers.migrations`; its tag always follows `server.image.tag`, because the two images are released together. |
+
+> [!NOTE]
+> `server.rollout_strategy` defaults to `Recreate`, not `RollingUpdate`: `migrate-clickhouse` can run schema migrations that break the previous server version, so the old and new pods must never run concurrently.
 
 ## Internal TLS
 
