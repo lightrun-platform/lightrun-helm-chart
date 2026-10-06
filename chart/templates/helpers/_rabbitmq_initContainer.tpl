@@ -7,7 +7,7 @@ Create a wait-for-rabbitmq init container
 - name: wait-for-rabbitmq
   image: "{{ $imageConfig.image.repository }}:{{ $imageConfig.image.tag }}"
   imagePullPolicy: {{ $imageConfig.image.pullPolicy }}
-  securityContext: {{ include $securityContext . | indent 10 }}
+  securityContext:{{ include $securityContext . | nindent 10 }}
   command:
     - sh
     - /scripts/wait-for-200.sh

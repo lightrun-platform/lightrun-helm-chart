@@ -49,6 +49,9 @@ spec:
       {{- end -}}
       {{- end }}
       initContainers:
+        {{- if .Values.general.mq.enabled }}
+        {{- include "lightrun-mq.initContainer.wait-for-rabbitmq" (merge (dict "imageConfig" .Values.deployments.runtime_collector.server.initContainers.wait_for_rabbitmq "securityContext" "runtime_collector.initContainerSecurityContext") .) | nindent 8 }}
+        {{- end }}
         - name: wait-for-clickhouse
           image: "{{ .Values.deployments.runtime_collector.server.initContainers.wait_for_clickhouse.image.repository }}:{{ .Values.deployments.runtime_collector.server.initContainers.wait_for_clickhouse.image.tag }}"
           imagePullPolicy: {{ .Values.deployments.runtime_collector.server.initContainers.wait_for_clickhouse.image.pullPolicy }}
