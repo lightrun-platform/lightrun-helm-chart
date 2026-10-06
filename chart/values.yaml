@@ -106,7 +106,8 @@ general:
         max_length: 1000
         overflow: "reject-publish"
         max_length_bytes: 268435456
-    ## Request queue for the privacy filter (AMQP RPC: each request carries reply_to).
+    ## Queues for the privacy filter: requests carry {"input": ...} and a correlation_id;
+    ## replies go to response_queue with the same correlation_id.
     ## Only created when general.privacy_filter.enabled is true.
     ## The name must not match policy.queue_regex_pattern: that policy's limits
     ## (2000 messages / 1MB) are sized for small events, not texts to redact.
@@ -1179,14 +1180,14 @@ deployments:
     extraEnvs: []
     podSecurityContext: {}
     containerSecurityContext: {}
-    service:
-      annotations: {}
-      labels: {}
     extraVolumes: []
     extraVolumeMounts: []
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
     affinity: {}
+    # Shutdown drains in-flight requests (up to OPF_SHUTDOWN_TIMEOUT_SECONDS, 30s by default)
+    # and then stops the engine.
+    terminationGracePeriodSeconds: 60
     # Model warm-up happens on startup; startupProbe covers up to
     # periodSeconds * failureThreshold seconds before liveness/readiness apply.
     startupProbe:

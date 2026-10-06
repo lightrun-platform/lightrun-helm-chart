@@ -24,6 +24,8 @@ metadata:
   {{- end }}
 spec:
   replicas: {{ .Values.deployments.privacy_filter.replicas }}
+  strategy:
+    type: {{ $privacyFilter.rollout_strategy }}
   selector:
     matchLabels:
       app: {{ include "privacy_filter.name" . }}
@@ -39,6 +41,13 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- with $privacyFilter.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # Covers the service's own drain (OPF_SHUTDOWN_TIMEOUT_SECONDS, 30s by default: in-flight
+      # requests finish, the rest are requeued) plus engine shutdown.
+      terminationGracePeriodSeconds: {{ $privacyFilter.terminationGracePeriodSeconds }}
       serviceAccountName: {{ template "privacy_filter.serviceAccountName" . }}
         {{- if .Values.deployments.privacy_filter.podSecurityContext }}
       securityContext:
@@ -64,7 +73,8 @@ spec:
           env:
             - name: OPF_PORT
               value: "8786"
-            # Requests arrive over RabbitMQ (AMQP RPC); HTTP serves only /health and /ready.
+            # Requests arrive on the request queue and replies go to the response queue;
+            # HTTP serves only the /health and /ready probes.
             - name: OPF_RABBITMQ_HOST
               value: {{ include "lightrun-mq.endpoint" . | quote }}
             - name: OPF_RABBITMQ_PORT
