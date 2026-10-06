@@ -122,6 +122,10 @@ The following resources are mandatory and will be created by the `definitions.js
 | mixpanel-events       | /     | true    | false        | ""                   | mixpanel-events.dlq         | quorum     | chart      |
 | keycloak-events       | /     | true    | false        | ""                   | keycloak-events.dlq         | quorum     | chart      |
 | keycloak-events.dlq   | /     | true    | false        |                      |                             | quorum     | chart      |
+| privacy-filter-requests     | /     | true    | false        | ""                   | privacy-filter-requests.dlq | quorum     | chart      |
+| privacy-filter-requests.dlq | /     | true    | false        |                      |                             | quorum     | chart      |
+| privacy-filter-responses    | /     | true    | false        |                      |                             | quorum     | chart      |
+
 
 Deploy the following ConfigMap which is required to define the RabbitMQ resources via the definitions.json file. This configuration is mandatory for proper Lightrun integration:
 

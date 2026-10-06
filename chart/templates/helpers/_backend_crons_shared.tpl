@@ -161,8 +161,10 @@ Shared environment variables for backend and crons services
 {{- if .Values.general.privacy_filter.enabled }}
 - name: PRIVACY_FILTER_ENABLED
   value: "true"
-- name: PRIVACY_FILTER_URL
-  value: "http://{{ include "privacy_filter.name" . }}:8786"
+- name: PRIVACY_FILTER_QUEUE_NAME
+  value: {{ .Values.general.mq.privacy_filter.queue_name | quote }}
+- name: PRIVACY_FILTER_RESPONSE_QUEUE_NAME
+  value: {{ .Values.general.mq.privacy_filter.response_queue.name | quote }}
 {{- else }}
 - name: PRIVACY_FILTER_ENABLED
   value: "false"

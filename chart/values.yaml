@@ -106,6 +106,43 @@ general:
         max_length: 1000
         overflow: "reject-publish"
         max_length_bytes: 268435456
+    ## Request queue for the privacy filter (AMQP RPC: each request carries reply_to).
+    ## Only created when general.privacy_filter.enabled is true.
+    ## The name must not match policy.queue_regex_pattern: that policy's limits
+    ## (2000 messages / 1MB) are sized for small events, not texts to redact.
+    privacy_filter:
+      queue_name: "privacy-filter-requests"
+      main_queue:
+        # Crash protection only: RabbitMQ 4 doesn't count a requeue towards it, so
+        # the service retries transient failures itself (deployments.privacy_filter.rabbitmq.max_attempts).
+        delivery_limit: 5
+        message_ttl: 3600000 # 1h: an RPC caller has given up by then
+        max_length: 10000
+        overflow: "reject-publish"
+        max_length_bytes: 1073741824 # 1GiB
+      dlq:
+        message_ttl: 604800000 # 7d
+        max_length: 1000
+        overflow: "reject-publish"
+        max_length_bytes: 268435456
+      ## Minimum RabbitMQ sizing while the privacy filter is enabled (larger values in
+      ## deployments.rabbitmq.resources / emptyDir.sizeLimit are kept), so a burst of
+      ## redaction requests can queue up in the broker:
+      ## - memory: RabbitMQ blocks ALL publishers at 40% of it (vm_memory_high_watermark),
+      ##   and large in-flight messages count against it;
+      ## - storage: quorum queues keep message bodies on disk; the queues below can hold
+      ##   ~2.3GiB plus write-ahead log, and exceeding emptyDir's limit evicts the pod;
+      rabbitmq:
+        cpu: "1"
+        memory: 4Gi
+        storage: 10Gi
+        max_message_size: 16777216 # 16MiB
+      response_queue:
+        name: "privacy-filter-responses"
+        message_ttl: 86400000 # 24h
+        max_length: 10000
+        overflow: "reject-publish"
+        max_length_bytes: 1073741824 # 1GiB
     ## RabbitMQ Policy configuration
     ## Applies on all queues that match queue_regex_pattern
     policy:
@@ -1110,6 +1147,18 @@ deployments:
       repository: lightruncom/privacy-filter
       tag: ""
       pullPolicy: IfNotPresent
+    rabbitmq:
+      # Unacknowledged requests a pod holds at once; the service's own budgets
+      # decide what runs, the rest waits in RabbitMQ.
+      prefetch: 32
+      # Tries per request for transient failures before it's dead-lettered.
+      max_attempts: 3
+    initContainers:
+      wait_for_rabbitmq:
+        image:
+          repository: lightruncom/chart-helper
+          tag: "0.3.0-alpine-3.24.2-r2.lr-0"
+          pullPolicy: ""
     resources:
       requests:
         cpu: "1500m"
@@ -1149,14 +1198,14 @@ deployments:
       timeoutSeconds: 5
       successThreshold: 1
       failureThreshold: 3
-      path: /healthz
+      path: /health
     readinessProbe:
       initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 5
       successThreshold: 1
       failureThreshold: 3
-      path: /readyz
+      path: /ready
 
   artifacts:
     loglevel: notice

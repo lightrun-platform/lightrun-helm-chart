@@ -1,5 +1,11 @@
 {{ if .Values.general.privacy_filter.enabled }}
+{{- if not .Values.general.mq.enabled }}
+{{- fail "general.privacy_filter.enabled requires general.mq.enabled: the privacy filter receives its requests over RabbitMQ" }}
+{{- end }}
 {{- $privacyFilter := .Values.deployments.privacy_filter }}
+{{- $tls := .Values.general.internal_tls }}
+{{- /* Trust the internal CA for RabbitMQ TLS, like the runtime collector does. */}}
+{{- $mountInternalCa := and $tls.enabled $tls.certificates.verification (or (eq $tls.certificates.source "generate_self_signed_certificates") $tls.certificates.existing_ca_secret_name) }}
 {{- $nodeSelector := deepCopy (.Values.general.nodeSelector | default dict) }}
 {{- if $privacyFilter.nodeSelector }}
 {{- $nodeSelector = deepCopy $privacyFilter.nodeSelector }}
@@ -46,17 +52,54 @@ spec:
         - name: {{ include "secrets.dockerhub.name" . }}
       {{- end -}}
       {{- end }}
+      initContainers:
+      {{- include "lightrun-mq.initContainer.wait-for-rabbitmq" (merge (dict "imageConfig" $privacyFilter.initContainers.wait_for_rabbitmq "securityContext" "privacy_filter.containerSecurityContext") .) | nindent 6 }}
       containers:
         - name: {{ include "privacy_filter.name" . }}
           securityContext: {{- include "privacy_filter.containerSecurityContext" . | indent 12 }}
           resources:
             {{- toYaml .Values.deployments.privacy_filter.resources | nindent 12 }}
-          image: {{ .Values.deployments.privacy_filter.image.repository }}:{{ .Values.deployments.privacy_filter.image.tag }}
+          image: "{{ .Values.deployments.privacy_filter.image.repository }}:{{ .Values.deployments.privacy_filter.image.tag }}"
           imagePullPolicy: {{ .Values.deployments.privacy_filter.image.pullPolicy }}
-          {{- with .Values.deployments.privacy_filter.extraEnvs }}
           env:
+            - name: OPF_PORT
+              value: "8786"
+            # Requests arrive over RabbitMQ (AMQP RPC); HTTP serves only /health and /ready.
+            - name: OPF_RABBITMQ_HOST
+              value: {{ include "lightrun-mq.endpoint" . | quote }}
+            - name: OPF_RABBITMQ_PORT
+              value: {{ .Values.general.mq.port | quote }}
+            - name: OPF_RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.backend.name" . }}
+                  key: SPRING_RABBITMQ_USERNAME
+            - name: OPF_RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.backend.name" . }}
+                  key: SPRING_RABBITMQ_PASSWORD
+            - name: OPF_RABBITMQ_QUEUE
+              value: {{ .Values.general.mq.privacy_filter.queue_name | quote }}
+            - name: OPF_RABBITMQ_RESPONSE_QUEUE
+              value: {{ .Values.general.mq.privacy_filter.response_queue.name | quote }}
+            - name: OPF_RABBITMQ_PREFETCH
+              value: {{ $privacyFilter.rabbitmq.prefetch | quote }}
+            - name: OPF_RABBITMQ_MAX_ATTEMPTS
+              value: {{ $privacyFilter.rabbitmq.max_attempts | quote }}
+            {{- if $tls.enabled }}
+            - name: OPF_RABBITMQ_SSL
+              value: "true"
+            - name: OPF_RABBITMQ_SSL_VERIFY
+              value: {{ $tls.certificates.verification | quote }}
+            {{- if $mountInternalCa }}
+            - name: OPF_RABBITMQ_SSL_CA_FILE
+              value: /etc/opf/internal-ca/custom-ca.pem
+            {{- end }}
+            {{- end }}
+            {{- with $privacyFilter.extraEnvs }}
             {{- toYaml . | nindent 12 }}
-          {{- end }}
+            {{- end }}
           ports:
             - name: http
               containerPort: 8786
@@ -87,9 +130,16 @@ spec:
             httpGet:
               path: {{ .Values.deployments.privacy_filter.readinessProbe.path }}
               port: http
-          {{- with .Values.deployments.privacy_filter.extraVolumeMounts }}
+          {{- if or $mountInternalCa $privacyFilter.extraVolumeMounts }}
           volumeMounts:
+            {{- if $mountInternalCa }}
+            - name: internal-ca
+              mountPath: /etc/opf/internal-ca
+              readOnly: true
+            {{- end }}
+            {{- with $privacyFilter.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- end }}
       {{- if $tolerations }}
       tolerations:
@@ -103,8 +153,18 @@ spec:
       affinity:
         {{ toYaml .Values.deployments.privacy_filter.affinity | nindent 8 }}
       {{- end }}
-      {{- with .Values.deployments.privacy_filter.extraVolumes }}
+      {{- if or $mountInternalCa $privacyFilter.extraVolumes }}
       volumes:
+        {{- if $mountInternalCa }}
+        - name: internal-ca
+          secret:
+            secretName: {{ include "internalTls.ca.secretName" . }}
+            items:
+              - key: custom-ca.pem
+                path: custom-ca.pem
+        {{- end }}
+        {{- with $privacyFilter.extraVolumes }}
         {{- toYaml . | nindent 8 }}
+        {{- end }}
       {{- end }}
 {{ end }}

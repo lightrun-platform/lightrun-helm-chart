@@ -72,6 +72,54 @@ data:
         {{- end }}
         {{- end }}
         {{- $last_index := sub (len $regular_queue_names) 1 }}
+        {{- if .Values.general.privacy_filter.enabled }}
+        {{- $pf := .Values.general.mq.privacy_filter }}
+        {
+          "name": {{ $pf.response_queue.name | quote }},
+          "vhost": "/",
+          "durable": true,
+          "auto_delete": false,
+          "arguments": {
+            "x-queue-type": "quorum",
+            "x-message-ttl": {{ $pf.response_queue.message_ttl | int }},
+            "x-max-length": {{ $pf.response_queue.max_length | int }},
+            "x-overflow": {{ $pf.response_queue.overflow | quote }},
+            "x-max-length-bytes": {{ $pf.response_queue.max_length_bytes | int }},
+            "x-created-by": "lightrun-onprem-server-chart"
+          }
+        },
+        {
+          "name": "{{ $pf.queue_name }}.dlq",
+          "vhost": "/",
+          "durable": true,
+          "auto_delete": false,
+          "arguments": {
+            "x-queue-type": "quorum",
+            "x-message-ttl": {{ $pf.dlq.message_ttl | int }},
+            "x-max-length": {{ $pf.dlq.max_length | int }},
+            "x-overflow": {{ $pf.dlq.overflow | quote }},
+            "x-max-length-bytes": {{ $pf.dlq.max_length_bytes | int }},
+            "x-created-by": "lightrun-onprem-server-chart"
+          }
+        },
+        {
+          "name": {{ $pf.queue_name | quote }},
+          "vhost": "/",
+          "durable": true,
+          "auto_delete": false,
+          "arguments": {
+            "x-dead-letter-exchange": "",
+            "x-dead-letter-routing-key": "{{ $pf.queue_name }}.dlq",
+            "x-queue-type": "quorum",
+            "x-delivery-limit": {{ $pf.main_queue.delivery_limit | int }},
+            "x-message-ttl": {{ $pf.main_queue.message_ttl | int }},
+            "x-max-length": {{ $pf.main_queue.max_length | int }},
+            "x-overflow": {{ $pf.main_queue.overflow | quote }},
+            "x-max-length-bytes": {{ $pf.main_queue.max_length_bytes | int }},
+            "x-created-by": "lightrun-onprem-server-chart"
+          }
+        }{{ if or $regular_queue_names .Values.deployments.runtime_collector.enabled }},{{ end }}
+        {{- end }}
         {{- range $index, $queue_name := $regular_queue_names }}
         {
           "name": "{{ $queue_name }}.dlq",
@@ -148,7 +196,11 @@ data:
   rabbitmq.conf: |
     queue_master_locator=min-masters
     vm_memory_high_watermark.relative=0.4
-    total_memory_available_override_value = {{ include "lightrun-mq.toBytes" .Values.deployments.rabbitmq.resources.memory }}
+    total_memory_available_override_value = {{ include "lightrun-mq.toBytes" (include "lightrun-mq.sizing" . | fromYaml).memory }}
+    {{- if .Values.general.privacy_filter.enabled }}
+    # Redaction requests carry whole texts; RabbitMQ 4 refuses messages over 16 MiB by default.
+    max_message_size = {{ .Values.general.mq.privacy_filter.rabbitmq.max_message_size | int }}
+    {{- end }}
     definitions.skip_if_unchanged = false
     definitions.import_backend = local_filesystem
     definitions.local.path = /etc/rabbitmq/conf.d/definitions.json
