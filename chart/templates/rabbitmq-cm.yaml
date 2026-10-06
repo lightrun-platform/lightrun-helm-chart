@@ -65,9 +65,14 @@ data:
         {{- if .Values.deployments.runtime_collector.enabled }}
         {{- $snapshot_queue_name = .Values.general.mq.snapshot_events.queue_name }}
         {{- end }}
+        {{- $privacy_filter_queue_names := list }}
+        {{- if .Values.general.privacy_filter.enabled }}
+        {{- $pfq := .Values.general.mq.privacy_filter }}
+        {{- $privacy_filter_queue_names = list $pfq.queue_name (printf "%s.dlq" $pfq.queue_name) $pfq.response_queue.name }}
+        {{- end }}
         {{- $regular_queue_names := list }}
         {{- range $queue_names }}
-        {{- if ne . $snapshot_queue_name }}
+        {{- if and (ne . $snapshot_queue_name) (not (has . $privacy_filter_queue_names)) }}
         {{- $regular_queue_names = append $regular_queue_names . }}
         {{- end }}
         {{- end }}

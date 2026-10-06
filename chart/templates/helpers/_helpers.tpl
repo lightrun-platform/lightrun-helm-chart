@@ -413,38 +413,17 @@ Usage:
 {{ include "rabbitmq.toBytes" .Values.path.to.the.Value }}
 */}}
 {{/*
-Effective RabbitMQ sizing as YAML (cpu, memory, storage). With the privacy filter enabled,
-deployments.rabbitmq.resources / emptyDir.sizeLimit are raised to at least
-general.mq.privacy_filter.rabbitmq, so the broker can absorb bursts of redaction requests;
-larger configured values are kept.
+Effective RabbitMQ sizing as YAML (cpu, memory, storage): deployments.rabbitmq, or, while
+the privacy filter is enabled, general.mq.privacy_filter.rabbitmq instead (sized for bursts
+of redaction requests). An empty storage means no emptyDir size limit.
 */}}
 {{- define "lightrun-mq.sizing" -}}
-{{- $cpu := toString .Values.deployments.rabbitmq.resources.cpu -}}
-{{- $memory := toString .Values.deployments.rabbitmq.resources.memory -}}
-{{- $storage := toString .Values.deployments.rabbitmq.emptyDir.sizeLimit -}}
+{{- $rabbitmq := .Values.deployments.rabbitmq -}}
+{{- $sizing := dict "cpu" $rabbitmq.resources.cpu "memory" $rabbitmq.resources.memory "storage" $rabbitmq.emptyDir.sizeLimit -}}
 {{- if .Values.general.privacy_filter.enabled -}}
-{{- $min := .Values.general.mq.privacy_filter.rabbitmq -}}
-{{- if lt (int (include "lightrun-mq.toMillicores" $cpu)) (int (include "lightrun-mq.toMillicores" (toString $min.cpu))) -}}
-{{- $cpu = toString $min.cpu -}}
+{{- $sizing = .Values.general.mq.privacy_filter.rabbitmq -}}
 {{- end -}}
-{{- if lt (int64 (include "lightrun-mq.toBytes" $memory)) (int64 (include "lightrun-mq.toBytes" (toString $min.memory))) -}}
-{{- $memory = toString $min.memory -}}
-{{- end -}}
-{{- if lt (int64 (include "lightrun-mq.toBytes" $storage)) (int64 (include "lightrun-mq.toBytes" (toString $min.storage))) -}}
-{{- $storage = toString $min.storage -}}
-{{- end -}}
-{{- end -}}
-cpu: {{ $cpu | quote }}
-memory: {{ $memory | quote }}
-storage: {{ $storage | quote }}
-{{- end -}}
-
-{{- define "lightrun-mq.toMillicores" -}}
-{{- if hasSuffix "m" . -}}
-{{- trimSuffix "m" . | int -}}
-{{- else -}}
-{{- mulf (float64 .) 1000 | int -}}
-{{- end -}}
+{{- toYaml $sizing -}}
 {{- end -}}
 
 {{- define "lightrun-mq.toBytes" -}}
@@ -708,7 +687,7 @@ Container SecurityContext of lightrun data_streamer
 
 
 {{- define "privacy_filter.name" -}}
-{{ include "lightrun.fullname" . }}-privacy-filter
+{{- printf "%s-privacy-filter" (include "lightrun.fullname" . | trunc 48 | trimSuffix "-") -}}
 {{- end -}}
 
 

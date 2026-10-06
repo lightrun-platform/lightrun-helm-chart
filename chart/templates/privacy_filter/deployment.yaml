@@ -176,7 +176,7 @@ spec:
           secret:
             secretName: {{ include "internalTls.ca.secretName" . }}
             items:
-              - key: custom-ca.pem
+              - key: {{ include "internalTls.ca.secretKey" . }}
                 path: custom-ca.pem
         {{- end }}
         {{- with $privacyFilter.extraVolumes }}

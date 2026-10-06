@@ -126,8 +126,8 @@ general:
         max_length: 1000
         overflow: "reject-publish"
         max_length_bytes: 268435456
-      ## Minimum RabbitMQ sizing while the privacy filter is enabled (larger values in
-      ## deployments.rabbitmq.resources / emptyDir.sizeLimit are kept), so a burst of
+      ## RabbitMQ sizing while the privacy filter is enabled -- used instead of
+      ## deployments.rabbitmq.resources / emptyDir.sizeLimit, so a burst of
       ## redaction requests can queue up in the broker:
       ## - memory: RabbitMQ blocks ALL publishers at 40% of it (vm_memory_high_watermark),
       ##   and large in-flight messages count against it;
