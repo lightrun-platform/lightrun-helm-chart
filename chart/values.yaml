@@ -1193,9 +1193,6 @@ deployments:
     ## If set to `true`, will deploy the runtime-collector service
     server:
       replicas: 1
-      ## Recreate (not RollingUpdate): the migrate-clickhouse init container can run
-      ## schema migrations that are breaking for the previous server version, so the
-      ## old and new pods must never run concurrently.
       rollout_strategy: Recreate
       image:
         repository: lightruncom/runtime-collector
