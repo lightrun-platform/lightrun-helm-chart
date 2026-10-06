@@ -1303,10 +1303,10 @@ deployments:
         resources:
           requests:
             cpu: 500m
-            memory: 1Gi
+            memory: 4Gi
           limits:
             cpu: 500m
-            memory: 1Gi
+            memory: 4Gi
         persistence:
           # If true, use an existing PersistentVolumeClaim instead of an EmptyDir.
           enabled: false
