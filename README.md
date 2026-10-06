@@ -18,6 +18,7 @@ The `lightrun` Helm chart provides a reliable and efficient way to deploy and ma
 | [**MySQL**](docs/components/database.md)            | Stores application data (can be local or external).                                                            |
 | [**RabbitMQ**](docs/components/rabbitmq.md)         | [**Optional**] Manages the event message queue, primarily for sending telemetry to Lightrun (local or external). |
 | [**Datastreamer**](docs/components/datastreamer.md) | [**Optional**] Sends audit logs to various SIEM systems.                                                         |
+| [**Runtime Collector**](docs/components/runtime-collector.md) | [**Optional**] Collects runtime intelligence data; uses ClickHouse for storage (local or external). |
 
 ## Getting Started
 ### **Quick Start Installation**

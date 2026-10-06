@@ -72,6 +72,9 @@ general:
         redis: ""
         rabbitmq: ""
         data_streamer: ""
+        artifacts: ""
+        runtime_collector: ""
+        runtime_collector_clickhouse: ""
 ```
 
 > [!NOTE] 

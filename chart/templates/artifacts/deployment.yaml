@@ -23,6 +23,10 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- if .Values.deployments.artifacts.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{ toYaml .Values.deployments.artifacts.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
       serviceAccountName: {{ template "artifacts.serviceAccountName" . }}
         {{- if .Values.deployments.artifacts.podSecurityContext }}
       securityContext:
@@ -96,9 +100,9 @@ spec:
       tolerations:
         {{ toYaml .Values.general.tolerations | nindent 8 }}
       {{- end }}
-      {{- if .Values.general.nodeSelector }}
+      {{- with coalesce .Values.deployments.artifacts.nodeSelector .Values.general.nodeSelector }}
       nodeSelector:
-        {{ toYaml .Values.general.nodeSelector | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- if .Values.deployments.artifacts.affinity }}
       affinity:

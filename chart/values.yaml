@@ -28,6 +28,8 @@ general:
       ## Only relevant if deploy_secrets: false
       backend: ""
       keycloak: ""
+      clickhouse: ""
+      runtime_collector: ""
 
   ################
   ## Openshift (tested with version 4.12.5)
@@ -88,6 +90,22 @@ general:
     queue_names:
       - "mixpanel-events"
       - "keycloak-events"
+    ## Snapshot events exchange/queue for Runtime Collector.
+    ## Only created when runtime_collector.enabled is true.
+    snapshot_events:
+      exchange_name: "snapshot-events"
+      queue_name: "runtime-collector-snapshot-events"
+      main_queue:
+        delivery_limit: 10
+        message_ttl: 86400000
+        max_length: 10000
+        overflow: "reject-publish"
+        max_length_bytes: 268435456
+      dlq:
+        message_ttl: 604800000
+        max_length: 1000
+        overflow: "reject-publish"
+        max_length_bytes: 268435456
     ## RabbitMQ Policy configuration
     ## Applies on all queues that match queue_regex_pattern
     policy:
@@ -193,6 +211,9 @@ general:
         rabbitmq: ""
         data_streamer: ""
         artifacts: ""
+        runtime_collector: ""
+        runtime_collector_clickhouse: ""
+        backend: ""
 
   ############
   ## Router ##
@@ -282,8 +303,8 @@ general:
 
   nodeSelector: {}
   #   purpose: stage
-  ## If you want to set node selector for Lightrun deployments, delete the `{}` in the line above
-  ## and uncomment this example block
+  ## Applied to all Lightrun deployments/statefulsets. Override per workload with
+  ## deployments.<name>.nodeSelector. Delete the `{}` above and uncomment this example block
   #  label-key1: "label-value1"
   #  label-key2: "label-value2"
 
@@ -475,6 +496,13 @@ secrets:
   mq:
     user: ""
     password: ""
+  ## Used when runtime_collector is enabled with local ClickHouse.
+  clickhouse:
+    user: ""
+    password: ""
+  ## Shared secret for backend <-> runtime_collector gRPC calls, both directions.
+  runtime_collector:
+    grpc_secret: ""
   redis:
     # redis authentication.
     # requires to enable auth in deployments.redis.auth.enabled by set to true
@@ -567,6 +595,8 @@ deployments:
     extraVolumeMounts: []
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     livenessProbe:
       initialDelaySeconds: 10
@@ -605,6 +635,9 @@ deployments:
       #example:
       ## includeMetrics: ["connected_agents_per_runtime","connected_agents_total","actions_count_active_total","companies_count_total"]
     jar_name: LightrunServer.jar
+    grpc:
+      port: 9092
+      maxOutboundMessageSizeBytes: 104857600
     artifacts:
       enable: true
       s3_url: https://artifacts.lightrun.com/ #TODO: deprecated since 2.1.7
@@ -624,20 +657,22 @@ deployments:
       wait_for_keycloak:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.1-r0.lr-0"
+          tag: "0.3.0-alpine-3.24.2-r2.lr-0"
           pullPolicy: ""
       p12_creator:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.1-r0.lr-0"
+          tag: "0.3.0-alpine-3.24.2-r2.lr-0"
           pullPolicy: ""
       wait_for_rabbitmq:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.1-r0.lr-0"
+          tag: "0.3.0-alpine-3.24.2-r2.lr-0"
           pullPolicy: ""
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     lifecycle:
       preStop:
@@ -666,6 +701,10 @@ deployments:
       path: /management/health/readiness
     dbConnector: "mariadb" # either mysql for versions < .1.31 or mariadb (default) for versions > 1.31
     dumpsEmptyDirSizeLimit: 5Gi
+    dumpsPersistence:
+      enabled: false
+      # The PVC must use ReadWriteMany access mode (multiple backend replicas mount the same claim).
+      existingClaim: ""
     asyncProfiler:
       # deployments.backend.asyncProfiler.enabled -- Run async-profiler on every backend pod
       ## ref: https://github.com/async-profiler/async-profiler
@@ -674,12 +713,12 @@ deployments:
         download_async_profiler:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.1-r0.lr-0"
+            tag: "0.3.0-alpine-3.24.2-r2.lr-0"
             pullPolicy: ""
         persist_async_profiler:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.1-r0.lr-0"
+            tag: "0.3.0-alpine-3.24.2-r2.lr-0"
             pullPolicy: ""
       # Download URL end point for async profiler binary, ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
       downloadUrl: "https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz"
@@ -715,6 +754,8 @@ deployments:
     extraVolumes: []
     extraVolumeMounts: []
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     lifecycle:
       preStop:
@@ -742,6 +783,10 @@ deployments:
       failureThreshold: 3
       path: /management/health/readiness
     dumpsEmptyDirSizeLimit: 5Gi
+    dumpsPersistence:
+      enabled: false
+      # The PVC must use ReadWriteMany access mode (multiple replicas mount the same claim).
+      existingClaim: ""
     asyncProfiler:
       # deployments.crons.asyncProfiler.enabled -- Run async-profiler on every crons pod
       ## ref: https://github.com/async-profiler/async-profiler
@@ -750,12 +795,12 @@ deployments:
         download_async_profiler:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.1-r0.lr-0"
+            tag: "0.3.0-alpine-3.24.2-r2.lr-0"
             pullPolicy: ""
         persist_async_profiler:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.1-r0.lr-0"
+            tag: "0.3.0-alpine-3.24.2-r2.lr-0"
             pullPolicy: ""
       # Download URL end point for async profiler binary, ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
       downloadUrl: "https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz"
@@ -800,14 +845,16 @@ deployments:
       cluster_cert:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.1-r0.lr-0"
+          tag: "0.3.0-alpine-3.24.2-r2.lr-0"
           pullPolicy: ""
       wait_for_rabbitmq:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.1-r0.lr-0"
+          tag: "0.3.0-alpine-3.24.2-r2.lr-0"
           pullPolicy: ""          
     topologySpreadConstraints: []
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     startupProbe:
       initialDelaySeconds: 10
@@ -836,12 +883,12 @@ deployments:
         download_async_profiler:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.1-r0.lr-0"
+            tag: "0.3.0-alpine-3.24.2-r2.lr-0"
             pullPolicy: ""
         persist_async_profiler:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.1-r0.lr-0"
+            tag: "0.3.0-alpine-3.24.2-r2.lr-0"
             pullPolicy: ""
       # Download URL end point for async profiler binary, ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
       downloadUrl: "https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz"
@@ -881,7 +928,7 @@ deployments:
       enabled: false
     image:
       repository: lightruncom/redis
-      tag: "7.4.9-alpine-3.24.1-r0.lr-0"
+      tag: "7.4.11-alpine-3.24.2-r2.lr-0"
       pullPolicy: IfNotPresent
     resources:
       cpu: 2000m
@@ -897,6 +944,8 @@ deployments:
     # EmptyDir is used for redis data persistence
     emptyDir:
       sizeLimit: 5Gi
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     livenessProbe:
       initialDelaySeconds: 50
@@ -912,6 +961,7 @@ deployments:
       failureThreshold: 3
 
   mysql:
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
     nodeSelector: {}
     podSecurityContext:
       # when using PVC , it is necessarily to set fsGroup so pod will have write permission to the mounted volume
@@ -920,7 +970,7 @@ deployments:
     containerSecurityContext: {}
     image:
       repository: mysql
-      tag: 8.4.7
+      tag: 8.4.10
       pullPolicy: IfNotPresent
     resources:
       cpu: 2000m
@@ -954,7 +1004,7 @@ deployments:
     useJsonLogFormat: false
     image:
       repository: lightruncom/rabbitmq
-      tag: "4.3.2-alpine.lr-0"
+      tag: "4.3.6-alpine.lr-3"
       pullPolicy: IfNotPresent
     resources:
       cpu: 500m
@@ -965,6 +1015,7 @@ deployments:
       annotations: {}
       labels: {}
       ## prometheus autodiscovery annotations could be added to the service
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
     nodeSelector: {}
     podSecurityContext:
       # when using PVC , it is necessarily to set fsGroup so pod will have write permission to the mounted volume
@@ -978,7 +1029,7 @@ deployments:
           memory: 128Mi
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.1-r0.lr-0"
+          tag: "0.3.0-alpine-3.24.2-r2.lr-0"
           pullPolicy: ""
     # EmptyDir is used for rabbitmq data when mq.storage is set to 0
     emptyDir:
@@ -1016,7 +1067,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/data-streamer
-      tag: "4.97.0-alpine-3.24.1-r0.lr-0"
+      tag: "4.111.0-alpine-3.24.2-r2.lr-0"
       pullPolicy: IfNotPresent
     resources:
       cpu: 100m
@@ -1034,6 +1085,8 @@ deployments:
     extraVolumeMounts: []
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     livenessProbe:
       initialDelaySeconds: 10
@@ -1130,6 +1183,8 @@ deployments:
     extraVolumeMounts: []
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     livenessProbe: 
       initialDelaySeconds: 10
@@ -1156,7 +1211,7 @@ deployments:
       maxReplicas: 5
     image:
       repository: lightruncom/router
-      tag: "1.30.3-r0-alpine-3.24.1-r0.lr-0"
+      tag: "1.30.4-r1-alpine-3.24.2-r2.lr-0"
       pullPolicy: IfNotPresent
     podSecurityContext: {}
     containerSecurityContext: {}
@@ -1172,6 +1227,8 @@ deployments:
       https: 8443
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
+    # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
+    nodeSelector: {}
     affinity: {}
     livenessProbe:
       initialDelaySeconds: 10
@@ -1189,3 +1246,181 @@ deployments:
       worker_processes: 3
       worker_connections: 10240
       worker_rlimit_nofile: 20480 # hast to be less than ulimits of the system
+
+  ######################
+  ## Runtime collector
+  ######################
+  runtime_collector:
+    enabled: false
+    ## If set to `true`, will deploy the runtime-collector service
+    server:
+      replicas: 1
+      rollout_strategy: RollingUpdate
+      image:
+        repository: lightruncom/runtime-collector
+        tag: ""
+        pullPolicy: IfNotPresent
+      service:
+        type: ClusterIP
+        port: 9090
+        managementPort: 9091
+        annotations: {}
+        labels: {}
+      grpc:
+        maxInboundMessageSizeBytes: 104857600
+      resources:
+        requests:
+          cpu: 500m
+          memory: 512Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      initContainers:
+        wait_for_clickhouse:
+          image:
+            repository: lightruncom/chart-helper
+            tag: "0.3.0-alpine-3.24.1-r4.lr-0"
+            pullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+        migrations:
+          image:
+            repository: lightruncom/runtime-collector-migrations
+            pullPolicy: IfNotPresent
+            ## Leave empty to use deployments.runtime_collector.server.image.tag.
+            tag: ""
+            ## Migrations and the Collector server MUST run the same version.
+            ## Setting this to true allows a different migrations tag, which is
+            ## NOT recommended and intended for local development only.
+            allowTagOverride: false
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+        internal_ca_truststore:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+      podAnnotations: {}
+      podLabels: {}
+      annotations: {}
+      labels: {}
+      extraEnvs: []
+      envSecret: ""
+      extraVolumes: []
+      extraVolumeMounts: []
+      podSecurityContext: {}
+      containerSecurityContext: {}
+      nodeSelector: {}
+      affinity: {}
+      podDisruptionBudget: {}
+      topologySpreadConstraints: []
+      startupProbe:
+        initialDelaySeconds: 30
+        periodSeconds: 5
+        timeoutSeconds: 5
+        successThreshold: 1
+        failureThreshold: 60
+      livenessProbe:
+        initialDelaySeconds: 10
+        periodSeconds: 20
+        timeoutSeconds: 5
+        successThreshold: 1
+        failureThreshold: 3
+      readinessProbe:
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        timeoutSeconds: 5
+        successThreshold: 1
+        failureThreshold: 3
+
+    clickhouse:
+      database: runtime_collector
+      local:
+        ## If true, deploy in-cluster ClickHouse; if false, use clickhouse.external
+        enabled: true
+        httpPort: 8123
+        nativePort: 9000
+        image:
+          repository: clickhouse/clickhouse-server
+          tag: "25.3-alpine"
+          pullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        persistence:
+          # If true, use an existing PersistentVolumeClaim instead of an EmptyDir.
+          enabled: false
+          # Name of an existing PersistentVolumeClaim (ReadWriteOnce is enough for 1 replica).
+          existingClaim: ""
+        emptyDir:
+          sizeLimit: 10Gi
+          logSizeLimit: 512Mi
+          ## Used when general.readOnlyRootFilesystem is true.
+          usersConfigSizeLimit: 16Mi
+        terminationGracePeriodSeconds: 60
+        service:
+          annotations: {}
+          labels: {}
+        podAnnotations: {}
+        podLabels: {}
+        annotations: {}
+        labels: {}
+        extraEnvs: []
+        envSecret: ""
+        extraVolumes: []
+        extraVolumeMounts: []
+        podSecurityContext: {}
+        containerSecurityContext:
+          runAsUser: 101
+          runAsGroup: 101
+        nodeSelector: {}
+        affinity: {}
+        startupProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 30
+        livenessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+
+      external:
+        host: ""
+        username: ""
+        password: ""
+        existingSecret: ""
+        httpPort: 8123
+        nativePort: 9000
+        tls: false
+        ## Verify the server certificate when tls is true. Independent of general.internal_tls.certificates.verification.
+        verify: true
+        existing_ca_secret_name: ""
+        ## Cluster name for ON CLUSTER (ClickHouse Cloud / operator). Leave empty for single-node.
+        cluster: ""
