@@ -1,6 +1,7 @@
 
 | Chart version | Lightrun version          |
 |---------------|---------------------------|
+| 3.54.0        | 1.95.0-release.72a147fd69  |
 | 3.53.0        | 1.94.0-release.ca7f103590  |
 | 3.52.0        | 1.93.1-release.f7506fc70c  |
 | 3.51.0        | 1.92.0-release.efbba77e8a  |
