@@ -1,4 +1,55 @@
 
+<a name="v3.54.0"></a>
+## [v3.54.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.53.0...v3.54.0) - 2026-10-06
+
+
+
+### Versions
+
+| Service       | Repository                | Tag                             |
+|---------------|---------------------------|---------------------------------|
+| artifacts     | lightruncom/artifacts     | 1.95.0-release.72a147fd69       |
+| backend       | lightruncom/server        | 1.95.0-release.72a147fd69       |
+| crons         | lightruncom/server        | 1.95.0-release.72a147fd69       |
+| data_streamer | lightruncom/data-streamer | 4.111.0-alpine-3.24.2-r2.lr-0   |
+| frontend      | lightruncom/webapp        | 1.95.0-release.72a147fd69       |
+| keycloak      | lightruncom/keycloak      | 1.95.0-release.72a147fd69       |
+| mysql         | mysql                     | 8.4.10                          |
+| rabbitmq      | lightruncom/rabbitmq      | 4.3.6-alpine.lr-3               |
+| redis         | lightruncom/redis         | 7.4.11-alpine-3.24.2-r2.lr-0    |
+| router        | lightruncom/router        | 1.30.4-r1-alpine-3.24.2-r2.lr-0 |
+
+
+ 
+ 
+
+
+### Security (3 changes)
+
+- [bump chart-helper->0.3.0-alpine-3.24.2-r2.lr-0, data-streamer->4.111.0, rabbitmq->4.3.6-alpine.lr-3, redis->7.4.11-alpine-3.24.2-r2.lr-0, router->1.30.4-r1-alpine-3.24.2-r2.lr-0 (#321)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/192e6fb)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+
+- [bump chart-helper->0.3.0-alpine-3.24.2-r1.lr-0, data-streamer->4.110.0-alpine-3.24.2-r1.lr-0, rabbitmq->4.3.6-alpine.lr-2, redis->7.4.11-alpine-3.24.2-r1.lr-0, router->1.30.4-r1-alpine-3.24.2-r1.lr-0 (#318)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/4f29141)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+
+- [bump chart-helper->0.3.0-alpine-3.24.2-r0.lr-0, data-streamer->4.110.0, rabbitmq->4.3.6-alpine.lr-1, redis->7.4.11-alpine-3.24.2-r0.lr-0, router->1.30.4-r1-alpine-3.24.2-r0.lr-0 (#317)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/e46ccb1)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.53.0"></a>
 ## [v3.53.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.52.0...v3.53.0) - 2026-09-27
 
