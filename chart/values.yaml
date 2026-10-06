@@ -137,7 +137,7 @@ general:
         cpu: "1"
         memory: 4Gi
         storage: 10Gi
-        max_message_size: 16777216 # 16MiB
+        max_message_size: 67108864 # 64MiB
       response_queue:
         name: "privacy-filter-responses"
         message_ttl: 86400000 # 24h
@@ -1188,6 +1188,8 @@ deployments:
     # Shutdown drains in-flight requests (up to OPF_SHUTDOWN_TIMEOUT_SECONDS, 30s by default)
     # and then stops the engine.
     terminationGracePeriodSeconds: 60
+    # Writable /tmp (also $HOME) for runtime caches: vLLM, torch and Triton.
+    tmpSizeLimit: 2Gi
     # Model warm-up happens on startup; startupProbe covers up to
     # periodSeconds * failureThreshold seconds before liveness/readiness apply.
     startupProbe:

@@ -73,6 +73,10 @@ spec:
           env:
             - name: OPF_PORT
               value: "8786"
+            # The pod runs as a non-root user without a home directory, and possibly with a
+            # read-only root filesystem; vLLM/torch/Triton write caches under $HOME.
+            - name: HOME
+              value: /tmp/home
             # Requests arrive on the request queue and replies go to the response queue;
             # HTTP serves only the /health and /ready probes.
             - name: OPF_RABBITMQ_HOST
@@ -140,8 +144,9 @@ spec:
             httpGet:
               path: {{ .Values.deployments.privacy_filter.readinessProbe.path }}
               port: http
-          {{- if or $mountInternalCa $privacyFilter.extraVolumeMounts }}
           volumeMounts:
+            - name: tmp
+              mountPath: /tmp
             {{- if $mountInternalCa }}
             - name: internal-ca
               mountPath: /etc/opf/internal-ca
@@ -150,7 +155,6 @@ spec:
             {{- with $privacyFilter.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
-          {{- end }}
       {{- if $tolerations }}
       tolerations:
         {{ toYaml $tolerations | nindent 8 }}
@@ -163,8 +167,10 @@ spec:
       affinity:
         {{ toYaml .Values.deployments.privacy_filter.affinity | nindent 8 }}
       {{- end }}
-      {{- if or $mountInternalCa $privacyFilter.extraVolumes }}
       volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: {{ $privacyFilter.tmpSizeLimit }}
         {{- if $mountInternalCa }}
         - name: internal-ca
           secret:
@@ -176,5 +182,4 @@ spec:
         {{- with $privacyFilter.extraVolumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-      {{- end }}
 {{ end }}
