@@ -89,10 +89,10 @@ deployments:
         resources:
           requests:
             cpu: 500m
-            memory: 1Gi
+            memory: 4Gi
           limits:
             cpu: 500m
-            memory: 1Gi
+            memory: 4Gi
         persistence:
           enabled: false
           existingClaim: ""
