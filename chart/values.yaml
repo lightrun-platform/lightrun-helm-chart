@@ -1108,7 +1108,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/privacy-filter
-      tag: "latest"
+      tag: ""
       pullPolicy: IfNotPresent
     resources:
       requests:
