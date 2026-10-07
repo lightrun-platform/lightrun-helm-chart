@@ -46,7 +46,9 @@
  
  
  
+### Fixed (1 change)
 
+- [retryInterval (#241)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/c872312fc71818aa031ea68ac83df3e8c02cadbf)
  
 
 
