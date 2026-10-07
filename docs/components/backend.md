@@ -53,6 +53,15 @@ backend:
   annotations: {}  # Deprecated in favor of podAnnotations
 ```
 
+#### Server External Host & Port
+
+```yaml
+  serverExternalHost: ""  # Sets SERVER_EXTERNAL_HOST. Defaults to general.lightrun_endpoint
+  serverExternalPort: 443 # Sets SERVER_EXTERNAL_PORT
+```
+
+Applies to both backend and crons. Use these instead of overriding `SERVER_EXTERNAL_HOST`/`SERVER_EXTERNAL_PORT` in `extraEnvs`, which produces duplicate env entries that Kubernetes server-side apply (Helm v4 default) rejects.
+
 #### Extra Environment Variables
 ```yaml
 extraEnvs: []
