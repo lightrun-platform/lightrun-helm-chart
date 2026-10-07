@@ -638,8 +638,8 @@ deployments:
       repository_url: https://artifacts.lightrun.com/
       supported_versions_url: https://artifacts.lightrun.com/supported-versions.json
       resolution_mode: latest
-    serverExternalHost: ""
-    serverExternalPort: 443
+    overrideServerExternalHost: ""
+    overrideServerExternalPort: ""
     extraEnvs: []
     podSecurityContext: {}
     containerSecurityContext: {}

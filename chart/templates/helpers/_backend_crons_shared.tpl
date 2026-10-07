@@ -98,9 +98,9 @@ Shared environment variables for backend and crons services
 - name: INTEGRATIONS_DATADOG_ENABLE
   value: "false"
 - name: SERVER_EXTERNAL_HOST
-  value: "{{ .Values.deployments.backend.serverExternalHost | default .Values.general.lightrun_endpoint }}"
+  value: "{{ .Values.deployments.backend.overrideServerExternalHost | default .Values.general.lightrun_endpoint }}"
 - name: SERVER_EXTERNAL_PORT
-  value: "{{ .Values.deployments.backend.serverExternalPort | default 443 }}"
+  value: "{{ .Values.deployments.backend.overrideServerExternalPort | default 443 }}"
 - name: SPRING_REDIS_HOST
   value: {{ include "lightrun-redis.endpoint" . }}
 - name: SPRING_REDIS_PORT
