@@ -412,6 +412,20 @@ following a base 2 or base 10 number system.
 Usage:
 {{ include "rabbitmq.toBytes" .Values.path.to.the.Value }}
 */}}
+{{/*
+Effective RabbitMQ sizing as YAML (cpu, memory, storage): deployments.rabbitmq, or, while
+the privacy filter is enabled, general.mq.privacy_filter.rabbitmq instead (sized for bursts
+of redaction requests). An empty storage means no emptyDir size limit.
+*/}}
+{{- define "lightrun-mq.sizing" -}}
+{{- $rabbitmq := .Values.deployments.rabbitmq -}}
+{{- $sizing := dict "cpu" $rabbitmq.resources.cpu "memory" $rabbitmq.resources.memory "storage" $rabbitmq.emptyDir.sizeLimit -}}
+{{- if .Values.general.privacy_filter.enabled -}}
+{{- $sizing = .Values.general.mq.privacy_filter.rabbitmq -}}
+{{- end -}}
+{{- toYaml $sizing -}}
+{{- end -}}
+
 {{- define "lightrun-mq.toBytes" -}}
 {{- $value := int (regexReplaceAll "([0-9]+).*" . "${1}") }}
 {{- $unit := regexReplaceAll "[0-9]+(.*)" . "${1}" }}
@@ -658,6 +672,51 @@ Container SecurityContext of lightrun data_streamer
 {{- $mergedSecurityContext := mergeOverwrite  $localSecurityContext (.Values.deployments.data_streamer.containerSecurityContext | default dict) -}}
 {{- $mergedSecurityContext | toYaml -}}
 {{- else if kindIs "invalid" .Values.deployments.data_streamer.containerSecurityContext -}}
+{{ default dict | toYaml -}}
+{{- else -}}
+{{/*use default values from baseSecurityContext*/}}
+{{- $localSecurityContext | toYaml -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+###################
+## Privacy filter ##
+###################
+*/}}
+
+
+{{- define "privacy_filter.name" -}}
+{{- printf "%s-privacy-filter" (include "lightrun.fullname" . | trunc 48 | trimSuffix "-") -}}
+{{- end -}}
+
+
+
+{{/*
+Create the name of the lightrun privacy_filter service account to use
+*/}}
+{{- define "privacy_filter.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+    {{ default (include "privacy_filter.name" .) .Values.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Container SecurityContext of lightrun privacy_filter
+*/}}
+{{- define "privacy_filter.containerSecurityContext" -}}
+{{/*Define a local variable baseSecurityContext with the minimum required securityContext on the container level*/}}
+{{- $readOnlyRootFilesystem := dict "readOnlyRootFilesystem" (.Values.general.readOnlyRootFilesystem) -}}
+{{- $baseSecurityContext := include "baseSecurityContext" . | fromYaml -}}
+{{- $localSecurityContext := mustMerge $baseSecurityContext $readOnlyRootFilesystem -}}
+{{/*If user provided values for containerSecurityContext, merge them with the baseSecurityContext*/}}
+{{/*Values passed by user will override defaults*/}}
+{{- if .Values.deployments.privacy_filter.containerSecurityContext -}}
+{{- $mergedSecurityContext := mergeOverwrite  $localSecurityContext (.Values.deployments.privacy_filter.containerSecurityContext | default dict) -}}
+{{- $mergedSecurityContext | toYaml -}}
+{{- else if kindIs "invalid" .Values.deployments.privacy_filter.containerSecurityContext -}}
 {{ default dict | toYaml -}}
 {{- else -}}
 {{/*use default values from baseSecurityContext*/}}

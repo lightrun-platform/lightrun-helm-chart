@@ -1,4 +1,5 @@
 {{ if and .Values.general.mq.enabled .Values.general.mq.local -}}
+{{- $sizing := include "lightrun-mq.sizing" . | fromYaml }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -93,11 +94,11 @@ spec:
           {{- end }}
           resources:
             requests:
-              cpu: {{ .Values.deployments.rabbitmq.resources.cpu }}
-              memory: {{ .Values.deployments.rabbitmq.resources.memory }}
+              cpu: {{ $sizing.cpu }}
+              memory: {{ $sizing.memory }}
             limits:
-              cpu: {{ .Values.deployments.rabbitmq.resources.cpu }}
-              memory: {{ .Values.deployments.rabbitmq.resources.memory }}        
+              cpu: {{ $sizing.cpu }}
+              memory: {{ $sizing.memory }}
           env:
           - name: RABBITMQ_DEFAULT_USER
             valueFrom:
@@ -198,7 +199,11 @@ spec:
           {{- end }}
       {{- end }}
       - name: {{ include "lightrun-mq.storage.name" . }}
+        {{- if $sizing.storage }}
         emptyDir:
-          sizeLimit: {{ .Values.deployments.rabbitmq.emptyDir.sizeLimit }}
+          sizeLimit: {{ $sizing.storage }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
 
 {{ end }}

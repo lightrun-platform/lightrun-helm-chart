@@ -1,0 +1,185 @@
+{{ if .Values.general.privacy_filter.enabled }}
+{{- if not .Values.general.mq.enabled }}
+{{- fail "general.privacy_filter.enabled requires general.mq.enabled: the privacy filter receives its requests over RabbitMQ" }}
+{{- end }}
+{{- $privacyFilter := .Values.deployments.privacy_filter }}
+{{- $tls := .Values.general.internal_tls }}
+{{- /* Trust the internal CA for RabbitMQ TLS, like the runtime collector does. */}}
+{{- $mountInternalCa := and $tls.enabled $tls.certificates.verification (or (eq $tls.certificates.source "generate_self_signed_certificates") $tls.certificates.existing_ca_secret_name) }}
+{{- $nodeSelector := deepCopy (.Values.general.nodeSelector | default dict) }}
+{{- if $privacyFilter.nodeSelector }}
+{{- $nodeSelector = deepCopy $privacyFilter.nodeSelector }}
+{{- end }}
+{{- if $privacyFilter.instanceFamily }}
+{{- $_ := set $nodeSelector "karpenter.k8s.aws/instance-family" $privacyFilter.instanceFamily }}
+{{- end }}
+{{- $tolerations := concat (.Values.general.tolerations | default list) ($privacyFilter.tolerations | default list) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "privacy_filter.name" . }}
+  {{- with .Values.deployments.privacy_filter.annotations }}
+  annotations:
+    {{ toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.deployments.privacy_filter.replicas }}
+  strategy:
+    type: {{ $privacyFilter.rollout_strategy }}
+  selector:
+    matchLabels:
+      app: {{ include "privacy_filter.name" . }}
+  template:
+    metadata:
+      {{- with .Values.deployments.privacy_filter.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ include "privacy_filter.name" . }}
+        {{- with .Values.deployments.privacy_filter.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with $privacyFilter.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # Covers the service's own drain (OPF_SHUTDOWN_TIMEOUT_SECONDS, 30s by default: in-flight
+      # requests finish, the rest are requeued) plus engine shutdown.
+      terminationGracePeriodSeconds: {{ $privacyFilter.terminationGracePeriodSeconds }}
+      serviceAccountName: {{ template "privacy_filter.serviceAccountName" . }}
+        {{- if .Values.deployments.privacy_filter.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.deployments.privacy_filter.podSecurityContext | nindent 8 }}
+        {{- end }}
+      {{- if .Values.secrets.defaults.dockerhub_config }}
+      imagePullSecrets:
+      {{- if .Values.secrets.defaults.dockerhub_config.existingSecret }}
+        - name: {{ .Values.secrets.defaults.dockerhub_config.existingSecret }}
+      {{- else }}
+        - name: {{ include "secrets.dockerhub.name" . }}
+      {{- end -}}
+      {{- end }}
+      initContainers:
+      {{- include "lightrun-mq.initContainer.wait-for-rabbitmq" (merge (dict "imageConfig" $privacyFilter.initContainers.wait_for_rabbitmq "securityContext" "privacy_filter.containerSecurityContext") .) | nindent 6 }}
+      containers:
+        - name: {{ include "privacy_filter.name" . }}
+          securityContext: {{- include "privacy_filter.containerSecurityContext" . | indent 12 }}
+          resources:
+            {{- toYaml .Values.deployments.privacy_filter.resources | nindent 12 }}
+          image: "{{ .Values.deployments.privacy_filter.image.repository }}:{{ .Values.deployments.privacy_filter.image.tag }}"
+          imagePullPolicy: {{ .Values.deployments.privacy_filter.image.pullPolicy }}
+          env:
+            - name: OPF_PORT
+              value: "8786"
+            # The pod runs as a non-root user without a home directory, and possibly with a
+            # read-only root filesystem; vLLM/torch/Triton write caches under $HOME.
+            - name: HOME
+              value: /tmp/home
+            # Requests arrive on the request queue and replies go to the response queue;
+            # HTTP serves only the /health and /ready probes.
+            - name: OPF_RABBITMQ_HOST
+              value: {{ include "lightrun-mq.endpoint" . | quote }}
+            - name: OPF_RABBITMQ_PORT
+              value: {{ .Values.general.mq.port | quote }}
+            - name: OPF_RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.backend.name" . }}
+                  key: SPRING_RABBITMQ_USERNAME
+            - name: OPF_RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "secrets.backend.name" . }}
+                  key: SPRING_RABBITMQ_PASSWORD
+            - name: OPF_RABBITMQ_QUEUE
+              value: {{ .Values.general.mq.privacy_filter.queue_name | quote }}
+            - name: OPF_RABBITMQ_RESPONSE_QUEUE
+              value: {{ .Values.general.mq.privacy_filter.response_queue.name | quote }}
+            - name: OPF_RABBITMQ_PREFETCH
+              value: {{ $privacyFilter.rabbitmq.prefetch | quote }}
+            - name: OPF_RABBITMQ_MAX_ATTEMPTS
+              value: {{ $privacyFilter.rabbitmq.max_attempts | quote }}
+            {{- if $tls.enabled }}
+            - name: OPF_RABBITMQ_SSL
+              value: "true"
+            - name: OPF_RABBITMQ_SSL_VERIFY
+              value: {{ $tls.certificates.verification | quote }}
+            {{- if $mountInternalCa }}
+            - name: OPF_RABBITMQ_SSL_CA_FILE
+              value: /etc/opf/internal-ca/custom-ca.pem
+            {{- end }}
+            {{- end }}
+            {{- with $privacyFilter.extraEnvs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 8786
+              protocol: TCP
+          # Model warm-up runs during startup; the startupProbe guards that window
+          # before liveness/readiness take over.
+          startupProbe:
+            httpGet:
+              path: {{ .Values.deployments.privacy_filter.readinessProbe.path }}
+              port: http
+            periodSeconds: {{ .Values.deployments.privacy_filter.startupProbe.periodSeconds }}
+            failureThreshold: {{ .Values.deployments.privacy_filter.startupProbe.failureThreshold }}
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.deployments.privacy_filter.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.deployments.privacy_filter.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.deployments.privacy_filter.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.deployments.privacy_filter.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.privacy_filter.livenessProbe.failureThreshold }}
+            httpGet:
+              path: {{ .Values.deployments.privacy_filter.livenessProbe.path }}
+              port: http
+          readinessProbe:
+            initialDelaySeconds: {{ .Values.deployments.privacy_filter.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.deployments.privacy_filter.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.deployments.privacy_filter.readinessProbe.periodSeconds }}
+            successThreshold: {{ .Values.deployments.privacy_filter.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.deployments.privacy_filter.readinessProbe.failureThreshold }}
+            httpGet:
+              path: {{ .Values.deployments.privacy_filter.readinessProbe.path }}
+              port: http
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            {{- if $mountInternalCa }}
+            - name: internal-ca
+              mountPath: /etc/opf/internal-ca
+              readOnly: true
+            {{- end }}
+            {{- with $privacyFilter.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      {{- if $tolerations }}
+      tolerations:
+        {{ toYaml $tolerations | nindent 8 }}
+      {{- end }}
+      {{- if $nodeSelector }}
+      nodeSelector:
+        {{ toYaml $nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.deployments.privacy_filter.affinity }}
+      affinity:
+        {{ toYaml .Values.deployments.privacy_filter.affinity | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: {{ $privacyFilter.tmpSizeLimit }}
+        {{- if $mountInternalCa }}
+        - name: internal-ca
+          secret:
+            secretName: {{ include "internalTls.ca.secretName" . }}
+            items:
+              - key: {{ include "internalTls.ca.secretKey" . }}
+                path: custom-ca.pem
+        {{- end }}
+        {{- with $privacyFilter.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+{{ end }}

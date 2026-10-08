@@ -70,6 +70,18 @@ spec:
   {{- toYaml .Values.deployments.artifacts.podDisruptionBudget | nindent 2 }}
 {{- end }}
 ---
+{{- if and .Values.general.privacy_filter.enabled .Values.deployments.privacy_filter.podDisruptionBudget }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "privacy_filter.name" . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "privacy_filter.name" . }}
+  {{- toYaml .Values.deployments.privacy_filter.podDisruptionBudget | nindent 2 }}
+{{- end }}
+---
 {{- if and .Values.deployments.runtime_collector.enabled .Values.deployments.runtime_collector.server.podDisruptionBudget }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget

@@ -122,6 +122,12 @@ The following resources are mandatory and will be created by the `definitions.js
 | mixpanel-events       | /     | true    | false        | ""                   | mixpanel-events.dlq         | quorum     | chart      |
 | keycloak-events       | /     | true    | false        | ""                   | keycloak-events.dlq         | quorum     | chart      |
 | keycloak-events.dlq   | /     | true    | false        |                      |                             | quorum     | chart      |
+| privacy-filter-requests     | /     | true    | false        | ""                   | privacy-filter-requests.dlq | quorum     | chart      |
+| privacy-filter-requests.dlq | /     | true    | false        |                      |                             | quorum     | chart      |
+| privacy-filter-responses    | /     | true    | false        |                      |                             | quorum     | chart      |
+
+The `privacy-filter-*` queues are only needed when `general.privacy_filter.enabled` is true. Their arguments (delivery limit, TTLs, length limits) must match the example below exactly: RabbitMQ refuses a declaration whose arguments differ from an existing queue's.
+
 
 Deploy the following ConfigMap which is required to define the RabbitMQ resources via the definitions.json file. This configuration is mandatory for proper Lightrun integration:
 
@@ -213,8 +219,53 @@ data:
           "arguments": {
             "x-queue-type": "quorum",
             "x-created-by": "chart"
-          }          
-        }     
+          }
+        },
+        {
+          "name": "privacy-filter-responses",
+          "vhost": "/",
+          "durable": true,
+          "auto_delete": false,
+          "arguments": {
+            "x-queue-type": "quorum",
+            "x-message-ttl": 86400000,
+            "x-max-length": 10000,
+            "x-overflow": "reject-publish",
+            "x-max-length-bytes": 1073741824,
+            "x-created-by": "chart"
+          }
+        },
+        {
+          "name": "privacy-filter-requests.dlq",
+          "vhost": "/",
+          "durable": true,
+          "auto_delete": false,
+          "arguments": {
+            "x-queue-type": "quorum",
+            "x-message-ttl": 604800000,
+            "x-max-length": 1000,
+            "x-overflow": "reject-publish",
+            "x-max-length-bytes": 268435456,
+            "x-created-by": "chart"
+          }
+        },
+        {
+          "name": "privacy-filter-requests",
+          "vhost": "/",
+          "durable": true,
+          "auto_delete": false,
+          "arguments": {
+            "x-dead-letter-exchange": "",
+            "x-dead-letter-routing-key": "privacy-filter-requests.dlq",
+            "x-queue-type": "quorum",
+            "x-delivery-limit": 5,
+            "x-message-ttl": 3600000,
+            "x-max-length": 10000,
+            "x-overflow": "reject-publish",
+            "x-max-length-bytes": 1073741824,
+            "x-created-by": "chart"
+          }
+        }
       ]
     }
 ```
