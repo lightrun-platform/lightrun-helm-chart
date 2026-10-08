@@ -1158,7 +1158,7 @@ deployments:
       wait_for_rabbitmq:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.2-r2.lr-0"
+          tag: "0.3.0-alpine-3.24.2-r4.lr-0"
           pullPolicy: ""
     resources:
       requests:
