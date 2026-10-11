@@ -297,6 +297,8 @@ spec:
             - name: JDK_JAVA_OPTIONS
               value: "-Djavax.net.ssl.trustStore=/p12/internalca -Djavax.net.ssl.trustStorePassword=$(KEYSTORE_PASSWORD)"
             {{- end }}
+            - name: LOGGING_USE_JSON_FORMAT
+              value: "{{ .Values.deployments.runtime_collector.server.useJsonLogFormat }}"
             {{- with .Values.deployments.runtime_collector.server.extraEnvs }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

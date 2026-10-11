@@ -111,6 +111,13 @@ deployments:
 
 Configuration for the runtime-collector application deployment.
 
+```yaml
+deployments:
+  runtime_collector:
+    server:
+      useJsonLogFormat: false  # Enables structured JSON logging
+```
+
 The pod runs these init containers before the application starts (`wait-for-rabbitmq` only when `general.mq.enabled: true`):
 
 | Init container | Purpose |
