@@ -1308,6 +1308,7 @@ deployments:
     enabled: false
     ## If set to `true`, will deploy the runtime-collector service
     server:
+      useJsonLogFormat: false
       replicas: 1
       rollout_strategy: Recreate
       image:
