@@ -209,6 +209,10 @@ data:
     definitions.skip_if_unchanged = false
     definitions.import_backend = local_filesystem
     definitions.local.path = /etc/rabbitmq/conf.d/definitions.json
+    {{- if .Values.general.mq.management_stats }}
+    management_agent.disable_metrics_collector = false
+    management.disable_stats = false
+    {{- end }}
     
     log.default.level = {{ .Values.deployments.rabbitmq.loglevel }}
     log.console.level = {{ .Values.deployments.rabbitmq.loglevel }}
