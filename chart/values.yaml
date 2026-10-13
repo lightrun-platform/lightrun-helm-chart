@@ -166,6 +166,9 @@ general:
     ## if `local: true`, a mq_endpoint will be ignored.
     port: "5672"
 
+    # Enable management API statistics (queue depths, acknowledgements and redeliveries).
+    management_stats: false
+
     metrics: false
     ## If true, will enable prometheus plugin of RabbitMQ
     ## metrics will be served on mq service, port 15692
