@@ -1165,11 +1165,6 @@ deployments:
           repository: lightruncom/chart-helper
           tag: "0.3.0-alpine-3.24.2-r5.lr-0"
           pullPolicy: ""
-    # Sized for a dedicated GPU node, the smallest being AWS g6f.2xlarge (8 vCPU, 32 GiB,
-    # 1/4 of an L4 GPU). The service uses one Uvicorn worker and a single decode thread,
-    # so it needs a few cores; memory headroom is for large inputs (tokenization buffers).
-    # On a g6f instance also set OPF_GPU_MEMORY_UTILIZATION (e.g. "0.75") via extraEnvs,
-    # since the default of 0.9 does not fit a fractional GPU.
     resources:
       requests:
         cpu: "3"

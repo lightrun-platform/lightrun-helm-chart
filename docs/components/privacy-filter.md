@@ -10,10 +10,14 @@ When enabled, the backend sends it the texts of **snapshots** and **logs** colle
 ## How it works
 
 ```
-Agent ──► Backend ──► [privacy-filter-requests] ──► Privacy Filter
-                                                          │
-Backend (stores redacted data) ◄── [privacy-filter-responses]
+                      RabbitMQ
+                ┌──────────────────────────┐
+Backend ──────► │ privacy-filter-requests  │ ──────► Privacy Filter
+Backend ◄────── │ privacy-filter-responses │ ◄──────
+                └──────────────────────────┘
 ```
+
+Privacy Filter communicates only through two **RabbitMQ queues**: it reads requests from `privacy-filter-requests` and writes replies to `privacy-filter-responses`.
 
 1. The backend publishes the texts to redact to the request queue (in chunks of up to 1000 texts).
 2. A Privacy Filter pod consumes them, runs the model and publishes the redacted texts, in the same order, to the response queue. Replies carry the request's `correlation_id` and an opaque context, so neither side keeps per-request state.
