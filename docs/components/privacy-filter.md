@@ -77,8 +77,8 @@ deployments:
       repository: lightruncom/privacy-filter
       tag: ""
     resources:
-      requests: { cpu: "3", memory: 8Gi }
-      limits:   { cpu: "4", memory: 12Gi }
+      requests: { cpu: "2", memory: 5Gi }
+      limits:   { cpu: "3", memory: 6Gi }
     nodeSelector: {}
     tolerations: []
 ```

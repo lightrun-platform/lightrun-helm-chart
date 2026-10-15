@@ -1167,11 +1167,11 @@ deployments:
           pullPolicy: ""
     resources:
       requests:
-        cpu: "3"
-        memory: "8Gi"
+        cpu: "2"
+        memory: "5Gi"
       limits:
-        cpu: "4"
-        memory: "12Gi"
+        cpu: "3"
+        memory: "6Gi"
     instanceFamily: ""
     nodeSelector: {}
     tolerations: []
