@@ -69,10 +69,17 @@ Review the following scenarios to determine the necessary actions for your upgra
 >   - If `general.mq.local: false`, all other RabbitMQ properties (such as storage, policies or metrics) **will be ignored** because the external RabbitMQ is expected to be pre-configured.
 >   - If `general.mq.local: true`, only 1 replica of rabbitmq will be deployed. in addition, we do not support more than 1 replica of rabbitmq with local. Such configurations will result in unexpected behavior.
 
+### Runtime Collector scaling
+
+Set `deployments.runtime_collector.server.replicas` to run multiple Collector pods. Each pod can consume snapshot events concurrently from the same queue. Declare the snapshot queue without `x-single-active-consumer` on both local and external brokers.
+
+> [!WARNING]
+> RabbitMQ cannot change `x-single-active-consumer` on an existing queue. Queues previously declared with this argument set to `true` must be recreated without it; a Helm upgrade alone cannot apply this change. Pause snapshot publishers, drain all ready and unacknowledged messages, and stop the Collector pods before recreating the empty main snapshot queue. Restore its exchange binding before resuming consumers and publishers. Deleting a non-empty queue loses its pending messages.
+
 ### **External RabbitMQ Configuration (general.mq.local: false)**
 To use an external RabbitMQ instance, set general.mq.local to false. In this mode, the chart will not deploy a local RabbitMQ pod but will connect to an existing RabbitMQ.
 
-When Runtime Collector is enabled, provision the snapshot exchange, main quorum queue, DLQ, and binding on the external broker. Use the same queue names, limits, TTLs, and dead-letter route as the local definitions in `chart/templates/rabbitmq-cm.yaml`. Set `x-single-active-consumer: true` and `x-delivery-limit: 10` on the main queue only. Requeued messages have no configured delay. The chart does not configure an external broker.
+When Runtime Collector is enabled, provision the snapshot exchange, main quorum queue, DLQ, and binding on the external broker. Use the same queue names, limits, TTLs, and dead-letter route as the local definitions in `chart/templates/rabbitmq-cm.yaml`. Set `x-delivery-limit: 10` on the main queue only. Requeued messages have no configured delay. The chart does not configure an external broker.
 
 ```yaml
   mq:
