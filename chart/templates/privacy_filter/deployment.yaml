@@ -111,6 +111,11 @@ spec:
               value: /etc/opf/internal-ca/custom-ca.pem
             {{- end }}
             {{- end }}
+            # Tell the NVIDIA container runtime to expose the node's GPU; ignored on CPU nodes.
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: all
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: compute,utility
             {{- with $privacyFilter.extraEnvs }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
