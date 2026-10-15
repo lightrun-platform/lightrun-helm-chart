@@ -71,10 +71,7 @@ Review the following scenarios to determine the necessary actions for your upgra
 
 ### Runtime Collector scaling
 
-Set `deployments.runtime_collector.server.replicas` to run multiple Collector pods. Each pod can consume snapshot events concurrently from the same queue. Declare the snapshot queue without `x-single-active-consumer` on both local and external brokers.
-
-> [!WARNING]
-> RabbitMQ cannot change `x-single-active-consumer` on an existing queue. Queues previously declared with this argument set to `true` must be recreated without it; a Helm upgrade alone cannot apply this change. Pause snapshot publishers, drain all ready and unacknowledged messages, and stop the Collector pods before recreating the empty main snapshot queue. Restore its exchange binding before resuming consumers and publishers. Deleting a non-empty queue loses its pending messages.
+Set `deployments.runtime_collector.server.replicas` to run multiple Collector pods. Each pod can consume snapshot events concurrently from the same queue.
 
 ### **External RabbitMQ Configuration (general.mq.local: false)**
 To use an external RabbitMQ instance, set general.mq.local to false. In this mode, the chart will not deploy a local RabbitMQ pod but will connect to an existing RabbitMQ.
