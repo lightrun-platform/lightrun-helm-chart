@@ -1,11 +1,14 @@
 # Privacy Filter
 
-The **Privacy Filter** is an optional service that redacts personal data (PII) from text before Lightrun stores it. It runs an AI model (`openai/privacy-filter`) on a GPU and replaces private values with placeholders, e.g. `Email <PRIVATE_EMAIL>`.
+The **Privacy Filter** is an optional service that redacts personal data (PII) from text before Lightrun stores it. It runs the `openai/privacy-filter` model on a GPU and replaces detected private values with `<REDACTED>`.
 
-When enabled, the backend sends it the texts of **snapshots** and **logs** collected from agents, and stores only the redacted result.
+When enabled, the backend sends candidate text from **snapshots** and **logs** to the service and stores the returned redacted values.
+
+> [!IMPORTANT]
+> Enabling Privacy Filter adds a GPU workload and increases RabbitMQ resource requirements. This can create significant infrastructure costs. Review [GPU node requirements](#gpu-node-requirements) and capacity with your infrastructure team before enabling it.
 
 > [!NOTE]
-> Privacy Filter is **disabled by default** and **requires RabbitMQ** (`general.mq.enabled: true`). It needs an NVIDIA GPU node.
+> Privacy Filter is **disabled by default** and requires RabbitMQ (`general.mq.enabled: true`), an NVIDIA GPU node, and a compatible NVIDIA container runtime.
 
 ## How it works
 
@@ -21,22 +24,35 @@ Privacy Filter communicates only through two **RabbitMQ queues**: it reads reque
 
 1. The backend publishes the texts to redact to the request queue (in chunks of up to 1000 texts).
 2. A Privacy Filter pod consumes them, runs the model and publishes the redacted texts, in the same order, to the response queue. Replies carry the request's `correlation_id` and an opaque context, so neither side keeps per-request state.
-3. The backend consumes the reply and stores the data. A snapshot waits as a pending record, holding no personal data, until all its texts are back.
+3. The backend consumes the reply and stores the completed data. While a snapshot is pending, candidate text sent for redaction is replaced with internal markers.
 
 Privacy Filter has no inbound traffic and **no Kubernetes Service**: it only connects out to RabbitMQ. Its HTTP port (`8786`) serves just the `/health` and `/ready` probes.
 
 ### Failure behavior
 
-Nothing is ever stored unredacted.
+For text selected for AI redaction, Lightrun rejects data that cannot be queued safely and uses a failure placeholder when processing cannot complete. AI detection is not a guarantee that every sensitive value will be identified; continue to use customer-configured PII patterns for organization-specific data.
 
 | Situation | Result |
 | --------- | ------ |
 | Transient failure in the service (engine error, timeout) | Retried up to `rabbitmq.max_attempts` times. |
-| Request can never succeed (invalid, too large) or retries exhausted | Error reply; the request moves to `<request queue>.dlq`. The backend stores the text as `<REDACTION_FAILED>`. |
+| Request can never succeed (invalid, too large) or retries exhausted | Error reply; the request moves to `<request queue>.dlq`. The backend stores `<PII_REDACTION_FAILED>` in place of the candidate text. |
 | Request can't be queued (queue full, RabbitMQ down) | The agent's data is rejected with a `Retry-After`, so the agent retries. |
-| No reply for a snapshot (e.g. request expired in RabbitMQ) | After ~65 minutes the snapshot is stored with the missing texts marked `<REDACTION_FAILED>`. |
+| No reply for a snapshot (e.g. request expired in RabbitMQ) | After approximately 65 minutes, the snapshot is stored with the missing candidate texts marked `<PII_REDACTION_FAILED>`. |
 
-## Enable Privacy Filter
+## Before you enable Privacy Filter
+
+Confirm the following requirements:
+
+- Your Lightrun and Helm chart versions include the Privacy Filter component.
+- RabbitMQ is enabled in the chart.
+- The cluster has a dedicated NVIDIA GPU node with a compatible NVIDIA container runtime and driver.
+- Node labels and taints are available to keep the workload on the intended GPU node.
+- The nodes have sufficient image storage. The model is embedded in a large container image and can take several minutes to pull and initialize.
+- Your infrastructure team has reviewed the expected GPU and RabbitMQ costs.
+
+The chart does not provision a GPU node by itself. In a cluster with node auto-provisioning, scheduling the Privacy Filter pod can cause an eligible GPU instance to be created. In a statically provisioned cluster, create the GPU node before enabling the component.
+
+## Enable the Privacy Filter infrastructure
 
 ```yaml
 general:
@@ -46,10 +62,17 @@ general:
     enabled: true
 ```
 
-This deploys the Privacy Filter pod, creates its queues and tells the backend and crons to use it.
+This setting:
 
-> [!NOTE]
-> The chart enables the infrastructure. Whether a company's data is actually filtered is controlled in the Lightrun server: the feature must be rolled out and the company must opt in.
+- Deploys one Privacy Filter replica by default.
+- Creates the request, response, and dead-letter queues.
+- Configures the backend and cron services to use Privacy Filter.
+- Applies the Privacy Filter RabbitMQ sizing described in [Queues](#queues).
+
+Wait for the Privacy Filter pod to become ready before enabling AI Privacy Filter in the Lightrun Management Portal.
+
+> [!IMPORTANT]
+> The Helm setting and the organization setting have different effects. The Helm setting creates the infrastructure and incurs its cost. The organization setting controls whether new Dynamic Logs and Snapshots use that infrastructure. Turning off the organization setting does not stop the pod or remove the GPU node.
 
 ## Queues
 
@@ -85,9 +108,23 @@ deployments:
 
 Other options (`extraEnvs`, probes, security contexts, PDB, affinity, ...) work as for the other components.
 
-### GPU node
+### Default pod resources
 
-Run Privacy Filter on its own GPU node: it runs one container per GPU and uses the whole node. The pod sets `NVIDIA_VISIBLE_DEVICES=all` and `NVIDIA_DRIVER_CAPABILITIES=compute,utility`, so on a node with the NVIDIA container runtime no GPU resource request or `RuntimeClass` is needed. Select the node and tolerate its taint through `nodeSelector` and `tolerations`, for example:
+The default chart requests 2 CPU and 5Gi of memory and limits the container to 3 CPU and 6Gi of memory. It also provides a 2Gi writable temporary volume. These settings do not represent the GPU or node cost.
+
+| Resource | Default |
+|---|---|
+| Replicas | 1 |
+| CPU request / limit | 2 / 3 |
+| Memory request / limit | 5Gi / 6Gi |
+| Temporary storage | 2Gi |
+| GPU nodes | One dedicated node per replica |
+
+### GPU node requirements
+
+Run Privacy Filter on a dedicated GPU node. The pod sets `NVIDIA_VISIBLE_DEVICES=all` and `NVIDIA_DRIVER_CAPABILITIES=compute,utility`, but the default chart values do not request a Kubernetes `nvidia.com/gpu` resource or set a `RuntimeClass`.
+
+Use `nodeSelector` and `tolerations` to prevent the pod from scheduling on a general-purpose CPU node:
 
 ```yaml
 deployments:
@@ -101,7 +138,9 @@ deployments:
         effect: NoSchedule
 ```
 
-The default resources suit a dedicated node as small as AWS `g6f.2xlarge` (8 vCPU, 32 GiB, a quarter of an L4 GPU).
+Verify that the selected node has the NVIDIA driver and container runtime configured before installing the chart. If the node is absent or incompatible, the pod can remain pending or fail its startup probe.
+
+The default resources suit a dedicated node as small as AWS `g6f.2xlarge` (8 vCPU, 32 GiB, and a quarter of an L4 GPU). This is an AWS-specific example rather than a portable minimum; select an equivalent instance based on your Kubernetes platform and region.
 
 > [!IMPORTANT]
 > On a fractional GPU such as `g6f`, set `OPF_GPU_MEMORY_UTILIZATION` to `"0.75"`; the default `0.9` does not fit.
@@ -129,3 +168,33 @@ To process more, add replicas: they consume from the same queue, one GPU node ea
 ## Startup
 
 The pod waits for RabbitMQ (`wait-for-rabbitmq` init container), then loads the model, which is embedded in the image and takes a few minutes. The pod becomes ready once it is consuming from the request queue.
+
+## Verify the deployment
+
+Before enabling the organization setting:
+
+1. Confirm that the Privacy Filter pod is running and ready.
+
+    ```shell
+    kubectl get pods -n <namespace>
+    ```
+
+2. Review the deployment logs and confirm that the model loaded and the service is consuming from RabbitMQ.
+
+    ```shell
+    kubectl logs deployment/<release>-privacy-filter -n <namespace>
+    ```
+
+3. Confirm that the `privacy-filter-requests`, `privacy-filter-responses`, and `privacy-filter-requests.dlq` queues exist.
+4. After enabling the organization setting, test a Dynamic Log and a Snapshot containing test PII. Confirm that detected values appear as `<REDACTED>`.
+
+## Disable Privacy Filter
+
+To avoid rejecting action data while the infrastructure is unavailable:
+
+1. Turn off **AI Privacy Filter** in the Lightrun Management Portal.
+2. Allow pending requests to complete and confirm that the Privacy Filter queues have drained.
+3. Set `general.privacy_filter.enabled` to `false` and upgrade the Helm release.
+4. Remove the dedicated GPU node or its auto-provisioning configuration if no other workload uses it.
+
+Disabling the chart removes the Privacy Filter deployment, stops configuring the backend to publish redaction requests, and returns RabbitMQ to the resources configured under `deployments.rabbitmq`. Existing queues can require separate cleanup, and a statically provisioned GPU node is not removed automatically.
