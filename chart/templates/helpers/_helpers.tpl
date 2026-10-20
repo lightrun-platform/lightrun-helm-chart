@@ -1000,7 +1000,7 @@ Usage: {{ include "lightrun.datadogAnnotations" (dict "serviceName" "lightrun-be
             "openmetrics": {
               "instances": [
                 {
-                  "openmetrics_endpoint": "http://%%host%%:%%port%%/management/prometheus",
+                  "openmetrics_endpoint": "http://%%host%%:%%port_http%%/management/prometheus",
                   "namespace": "lightrun",
                   "metrics": [
           {{- range $index, $metricName := .deployment.appMetrics.includeMetrics }}
