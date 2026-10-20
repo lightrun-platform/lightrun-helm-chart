@@ -1,4 +1,128 @@
 
+<a name="v3.55.0"></a>
+## [v3.55.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.54.0...v3.55.0) - 2026-10-20
+
+
+
+### Versions
+
+| Service                      | Repository                               | Tag                             |
+|------------------------------|------------------------------------------|---------------------------------|
+| artifacts                    | lightruncom/artifacts                    | 1.96.0-release.9c68411b76       |
+| backend                      | lightruncom/server                       | 1.96.0-release.9c68411b76       |
+| crons                        | lightruncom/server                       | 1.96.0-release.9c68411b76       |
+| data_streamer                | lightruncom/data-streamer                | 4.113.1-alpine-3.24.2-r6.lr-0   |
+| frontend                     | lightruncom/webapp                       | 1.96.0-release.9c68411b76       |
+| keycloak                     | lightruncom/keycloak                     | 1.96.0-release.9c68411b76       |
+| mysql                        | mysql                                    | 8.4.10                          |
+| privacy_filter               | lightruncom/privacy-filter               | 1.96.0-release.9c68411b76       |
+| rabbitmq                     | lightruncom/rabbitmq                     | 4.3.6-alpine.lr-7               |
+| redis                        | lightruncom/redis                        | 7.4.11-alpine-3.24.2-r6.lr-0    |
+| router                       | lightruncom/router                       | 1.30.4-r1-alpine-3.24.2-r6.lr-0 |
+| runtime_collector            | lightruncom/runtime-collector            | 1.96.0-release.9c68411b76       |
+| runtime_collector_migrations | lightruncom/runtime-collector-migrations | 1.96.0-release.9c68411b76       |
+
+
+ 
+ 
+
+
+### Changed (2 changes)
+
+- [allow-multiple-runtime-collector-consumers (#344)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/ae116ee)
+ 
+
+- [increase ClickHouse default memory to 4Gi (#332)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/54e21cb)
+ 
+ 
+ 
+
+
+### Documentation (1 change)
+
+- [privacy-filter (#343)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/a731786)
+ 
+ 
+ 
+
+
+### Security (3 changes)
+
+- [bump chart-helper->0.3.0-alpine-3.24.2-r6.lr-0, data-streamer->4.113.1, rabbitmq->4.3.6-alpine.lr-7, redis->7.4.11-alpine-3.24.2-r6.lr-0, router->1.30.4-r1-alpine-3.24.2-r6.lr-0 (#341)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/61ab051)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+
+- [bump chart-helper->0.3.0-alpine-3.24.2-r5.lr-0, data-streamer->4.113.0, rabbitmq->4.3.6-alpine.lr-6, redis->7.4.11-alpine-3.24.2-r5.lr-0, router->1.30.4-r1-alpine-3.24.2-r5.lr-0 (#337)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/d568738)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+
+- [bump chart-helper->0.3.0-alpine-3.24.2-r4.lr-0, data-streamer->4.112.0, rabbitmq->4.3.6-alpine.lr-5, redis->7.4.11-alpine-3.24.2-r4.lr-0, router->1.30.4-r1-alpine-3.24.2-r4.lr-0 (#335)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/13c33c4)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+ 
+ 
+ 
+
+
+### Added (5 changes)
+
+- [opt-in RabbitMQ management statistics (#340)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/3873752)
+ 
+
+- [useJsonLogFormat-to-runtime-collector (#339)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/8ed1461)
+
+
+  Co-authored-by: Tal Levy <tal@LTR132.local>
+  Co-authored-by: Claude Sonnet 5 <noreply@anthropic.com>
+ 
+
+- [privacy-filter-service (#249)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/be1d8c7)
+ 
+
+- [overrideServerExternalHost-and-port (#334)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/0916c3d)
+
+
+  Co-authored-by: Tal Levy <tal@LTR132.local>
+  Co-authored-by: Claude Opus 5.5 <noreply@anthropic.com>
+ 
+
+- [runtime-collector-component (#257)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/5fbb9e7)
+
+
+  Co-authored-by: Tal Levy <tal@LTR132.local>
+  Co-authored-by: Cursor <cursoragent@cursor.com>
+  Co-authored-by: Claude Sonnet 5 <noreply@anthropic.com>
+  Co-authored-by: Dmitrii <dvkovner@gmail.com>
+  Co-authored-by: Michael Yoffe <295954+myoffe@users.noreply.github.com>
+  Co-authored-by: prettydevops <103928496+prettydevops@users.noreply.github.com>
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
+  Co-authored-by: PrettyDevops <devopsdevops@lightrun.com>
+  Co-authored-by: yonik-lr <yonik@lightrun.com>
+ 
+ 
+ 
+
+
+### Fixed (1 change)
+
+- [add startup probe to runtime collector (#330)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/00fc090)
+
+
+  Co-authored-by: Tal Levy <tal@LTR132.local>
+  Co-authored-by: Claude Opus 5.5 <noreply@anthropic.com>
+ 
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.54.0"></a>
 ## [v3.54.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.53.0...v3.54.0) - 2026-10-06
 
@@ -46,9 +170,7 @@
  
  
  
-### Fixed (1 change)
 
-- [retryInterval (#241)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/c872312fc71818aa031ea68ac83df3e8c02cadbf)
  
 
 
