@@ -668,17 +668,17 @@ deployments:
       wait_for_keycloak:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.2-r8.lr-0"
+          tag: "0.3.0-alpine-3.24.3-r0.lr-0"
           pullPolicy: ""
       p12_creator:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.2-r8.lr-0"
+          tag: "0.3.0-alpine-3.24.3-r0.lr-0"
           pullPolicy: ""
       wait_for_rabbitmq:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.2-r8.lr-0"
+          tag: "0.3.0-alpine-3.24.3-r0.lr-0"
           pullPolicy: ""
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
@@ -724,12 +724,12 @@ deployments:
         download_async_profiler:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.2-r8.lr-0"
+            tag: "0.3.0-alpine-3.24.3-r0.lr-0"
             pullPolicy: ""
         persist_async_profiler:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.2-r8.lr-0"
+            tag: "0.3.0-alpine-3.24.3-r0.lr-0"
             pullPolicy: ""
       # Download URL end point for async profiler binary, ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
       downloadUrl: "https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz"
@@ -805,12 +805,12 @@ deployments:
         download_async_profiler:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.2-r8.lr-0"
+            tag: "0.3.0-alpine-3.24.3-r0.lr-0"
             pullPolicy: ""
         persist_async_profiler:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.2-r8.lr-0"
+            tag: "0.3.0-alpine-3.24.3-r0.lr-0"
             pullPolicy: ""
       # Download URL end point for async profiler binary, ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
       downloadUrl: "https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz"
@@ -853,12 +853,12 @@ deployments:
       cluster_cert:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.2-r8.lr-0"
+          tag: "0.3.0-alpine-3.24.3-r0.lr-0"
           pullPolicy: ""
       wait_for_rabbitmq:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.2-r8.lr-0"
+          tag: "0.3.0-alpine-3.24.3-r0.lr-0"
           pullPolicy: ""
     topologySpreadConstraints: []
     # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
@@ -891,12 +891,12 @@ deployments:
         download_async_profiler:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.2-r8.lr-0"
+            tag: "0.3.0-alpine-3.24.3-r0.lr-0"
             pullPolicy: ""
         persist_async_profiler:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.2-r8.lr-0"
+            tag: "0.3.0-alpine-3.24.3-r0.lr-0"
             pullPolicy: ""
       # Download URL end point for async profiler binary, ref: https://github.com/async-profiler/async-profiler/blob/master/CHANGELOG.md
       downloadUrl: "https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz"
@@ -934,7 +934,7 @@ deployments:
       enabled: false
     image:
       repository: lightruncom/redis
-      tag: "7.4.11-alpine-3.24.2-r8.lr-0"
+      tag: "7.4.11-alpine-3.24.3-r0.lr-0"
       pullPolicy: IfNotPresent
     resources:
       cpu: 2000m
@@ -1008,7 +1008,7 @@ deployments:
     useJsonLogFormat: false
     image:
       repository: lightruncom/rabbitmq
-      tag: "4.4.0-alpine.lr-0"
+      tag: "4.4.0-alpine.lr-1"
       pullPolicy: IfNotPresent
     resources:
       cpu: 500m
@@ -1033,7 +1033,7 @@ deployments:
           memory: 128Mi
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.2-r8.lr-0"
+          tag: "0.3.0-alpine-3.24.3-r0.lr-0"
           pullPolicy: ""
     # EmptyDir is used for rabbitmq data when mq.storage is set to 0
     emptyDir:
@@ -1070,7 +1070,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/data-streamer
-      tag: "4.114.0-alpine-3.24.2-r8.lr-0"
+      tag: "4.115.1-alpine-3.24.3-r0.lr-0"
       pullPolicy: IfNotPresent
     resources:
       cpu: 100m
@@ -1122,7 +1122,7 @@ deployments:
       wait_for_rabbitmq:
         image:
           repository: lightruncom/chart-helper
-          tag: "0.3.0-alpine-3.24.2-r8.lr-0"
+          tag: "0.3.0-alpine-3.24.3-r0.lr-0"
           pullPolicy: ""
     resources:
       requests:
@@ -1221,7 +1221,7 @@ deployments:
       maxReplicas: 5
     image:
       repository: lightruncom/router
-      tag: "1.30.4-r1-alpine-3.24.2-r8.lr-0"
+      tag: "1.30.6-r0-alpine-3.24.3-r0.lr-0"
       pullPolicy: IfNotPresent
     podSecurityContext: {}
     containerSecurityContext: {}
@@ -1289,12 +1289,12 @@ deployments:
         wait_for_rabbitmq:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.2-r8.lr-0"
+            tag: "0.3.0-alpine-3.24.3-r0.lr-0"
             pullPolicy: ""
         wait_for_clickhouse:
           image:
             repository: lightruncom/chart-helper
-            tag: "0.3.0-alpine-3.24.2-r8.lr-0"
+            tag: "0.3.0-alpine-3.24.3-r0.lr-0"
             pullPolicy: IfNotPresent
           resources:
             requests:
