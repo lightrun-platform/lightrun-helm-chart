@@ -255,7 +255,7 @@ Shared init containers for backend and crons services
   command: 
     - sh
     - /scripts/wait-for-200.sh
-  resources: {{- include "lightrun.initContainer.resources" .Values.deployments.backend.initContainers.wait_for_keycloak | nindent 4 }}
+  resources: {{- toYaml .Values.deployments.backend.initContainers.wait_for_keycloak.resources | nindent 4 }}
   env:
     - name: URL
       value: {{ include "http.scheme" . }}://{{ include "lightrun-keycloak.name" . }}:9000/auth/health/started {{ if .Values.general.internal_tls.enabled }}--no-check-certificate{{ end }}
@@ -267,7 +267,7 @@ Shared init containers for backend and crons services
   image: "{{ .Values.deployments.backend.initContainers.p12_creator.image.repository }}:{{ .Values.deployments.backend.initContainers.p12_creator.image.tag }}"
   imagePullPolicy: {{ .Values.deployments.backend.initContainers.p12_creator.image.pullPolicy }}
   securityContext: {{ include "lightrun-be.containerSecurityContext" . | indent 4 }}
-  resources: {{- include "lightrun.initContainer.resources" .Values.deployments.backend.initContainers.p12_creator | nindent 4 }}
+  resources: {{- toYaml .Values.deployments.backend.initContainers.p12_creator.resources | nindent 4 }}
   volumeMounts:
   - name: certificates
     mountPath: /tls

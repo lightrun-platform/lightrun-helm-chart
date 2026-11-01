@@ -1336,16 +1336,3 @@ ca.crt
 {{- printf "until wget %s-T 5 -q -O- %s/ping | grep -q Ok; do echo waiting for clickhouse; sleep 2; done" $tlsOptions $endpoint -}}
 {{- end -}}
 
-
-{{- define "lightrun.initContainer.resources" -}}
-{{- if and . (hasKey . "resources") -}}
-{{- toYaml .resources -}}
-{{- else -}}
-limits:
-  memory: "100Mi"
-  cpu: "100m"
-requests:
-  memory: "100Mi"
-  cpu: "100m"
-{{- end -}}
-{{- end -}}

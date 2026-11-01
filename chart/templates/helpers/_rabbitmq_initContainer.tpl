@@ -11,7 +11,7 @@ Create a wait-for-rabbitmq init container
   command:
     - sh
     - /scripts/wait-for-200.sh
-  resources: {{- include "lightrun.initContainer.resources" $imageConfig | nindent 4 }}
+  resources: {{- toYaml $imageConfig.resources | nindent 4 }}
   env:
     - name: MY_POD_NAMESPACE
       valueFrom:
