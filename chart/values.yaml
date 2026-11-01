@@ -702,16 +702,37 @@ deployments:
           repository: lightruncom/chart-helper
           tag: "0.3.0-alpine-3.24.3-r1.lr-0"
           pullPolicy: ""
+        resources:
+          limits:
+            memory: "100Mi"
+            cpu: "100m"
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
       p12_creator:
         image:
           repository: lightruncom/chart-helper
           tag: "0.3.0-alpine-3.24.3-r1.lr-0"
           pullPolicy: ""
+        resources:
+          limits:
+            memory: "100Mi"
+            cpu: "100m"
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
       wait_for_rabbitmq:
         image:
           repository: lightruncom/chart-helper
           tag: "0.3.0-alpine-3.24.3-r1.lr-0"
           pullPolicy: ""
+        resources:
+          limits:
+            memory: "100Mi"
+            cpu: "100m"
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
     podDisruptionBudget: {} # [minAvailable|maxUnavailable] either integer or percentage
     topologySpreadConstraints: []
     # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
@@ -895,6 +916,21 @@ deployments:
           repository: lightruncom/chart-helper
           tag: "0.3.0-alpine-3.24.3-r1.lr-0"
           pullPolicy: ""          
+        resources:
+          limits:
+            memory: "100Mi"
+            cpu: "100m"
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
+      wait_for_mysql:
+        resources:
+          limits:
+            memory: "100Mi"
+            cpu: "100m"
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
     topologySpreadConstraints: []
     # Optional override of general.nodeSelector. If empty, general.nodeSelector is used.
     nodeSelector: {}
@@ -1165,6 +1201,13 @@ deployments:
           repository: lightruncom/chart-helper
           tag: "0.3.0-alpine-3.24.3-r1.lr-0"
           pullPolicy: ""
+        resources:
+          limits:
+            memory: "100Mi"
+            cpu: "100m"
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
     resources:
       requests:
         cpu: "2"
@@ -1335,6 +1378,13 @@ deployments:
             repository: lightruncom/chart-helper
             tag: "0.3.0-alpine-3.24.3-r1.lr-0"
             pullPolicy: ""
+          resources:
+            limits:
+              memory: "100Mi"
+              cpu: "100m"
+            requests:
+              memory: "100Mi"
+              cpu: "100m"
         wait_for_clickhouse:
           image:
             repository: lightruncom/chart-helper

@@ -31,13 +31,7 @@
         image: {{ .Values.deployments.mysql.image.repository }}:{{ .Values.deployments.mysql.image.tag }}
         imagePullPolicy: {{ .Values.deployments.mysql.image.pullPolicy }}
         securityContext: {{- include "mysql.containerSecurityContext" . | indent 12 }}
-        resources:
-          limits:
-            memory: "100Mi"
-            cpu: "100m"
-          requests:
-            memory: "100Mi"
-            cpu: "100m"
+        resources: {{- include "lightrun.initContainer.resources" .Values.deployments.keycloak.initContainers.wait_for_mysql | nindent 10 }}
         command: ["sh", "-c"]
         args: 
           - while ! mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" -h {{ include "mysql.db_endpoint" . }} -e "SELECT 1" {{ if not .Values.general.db_require_secure_transport }}--ssl-mode=DISABLED{{ end }} --connect-timeout 2; do sleep 1; done

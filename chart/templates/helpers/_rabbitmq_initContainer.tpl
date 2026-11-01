@@ -11,13 +11,7 @@ Create a wait-for-rabbitmq init container
   command:
     - sh
     - /scripts/wait-for-200.sh
-  resources:
-    limits:
-      memory: "100Mi"
-      cpu: "100m"
-    requests:
-      memory: "100Mi"
-      cpu: "100m"
+  resources: {{- include "lightrun.initContainer.resources" $imageConfig | nindent 4 }}
   env:
     - name: MY_POD_NAMESPACE
       valueFrom:
