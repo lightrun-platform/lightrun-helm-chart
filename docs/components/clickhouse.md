@@ -12,7 +12,7 @@ There are two modes:
 > [!TIP]
 > We recommend using an **External ClickHouse**. Options are:
 > - Managed [ClickHouse Cloud](https://clickhouse.com/cloud)
-> - A ClickHouse Operator (see [Integrating Lightrun with a ClickHouse Kubernetes Operator](../advanced/clickhouse-operator-integration.md))
+> - A ClickHouse Operator
 > - A ClickHouse Helm chart
 > - Any other managed ClickHouse solution
 >
@@ -91,7 +91,6 @@ deployments:
 > [!IMPORTANT]
 > - When using external ClickHouse, local deployment settings (image, resources, persistence, health probes, etc.) do not apply.
 > - Credentials for external ClickHouse are set under `deployments.runtime_collector.clickhouse.external`, not under `secrets.clickhouse`.
-> - For instructions on installing ClickHouse with a Kubernetes operator, see [Integrating Lightrun with a ClickHouse Kubernetes Operator](../advanced/clickhouse-operator-integration.md).
 
 ---
 #### Local ClickHouse

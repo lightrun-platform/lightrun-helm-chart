@@ -94,7 +94,7 @@ To ensure a smooth and secure production deployment of Lightrun, follow these ke
 > [!TIP]
 > We recommend using an **External ClickHouse**. Options are:
 > - Managed [ClickHouse Cloud](https://clickhouse.com/cloud)
-> - A ClickHouse Operator (see [Integrating Lightrun with a ClickHouse Kubernetes Operator](docs/advanced/clickhouse-operator-integration.md))
+> - A ClickHouse Operator
 > - A ClickHouse Helm chart
 > - Any other managed ClickHouse solution
 >
