@@ -23,7 +23,7 @@ There are two modes:
 
 > [!IMPORTANT]
 > - Supported ClickHouse version: 25.3 or later
-> - Minimum size requirements: 2 vCPU, 8GB memory. Size the disk according to the planned data retention and coordinate it with a Lightrun support engineer.
+> - Recommended size: 2 vCPU, 8GB memory. Size the disk according to the planned data retention and coordinate it with a Lightrun support engineer.
 > - Supported HA configurations: replicated ClickHouse (ClickHouse Cloud or an operator-managed cluster) through `external.cluster`. Local ClickHouse is single-replica only.
 
 ### Configuration Options
