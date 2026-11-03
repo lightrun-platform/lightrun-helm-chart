@@ -16,7 +16,7 @@ There are two modes:
 > - A ClickHouse Helm chart
 > - Any other managed ClickHouse solution
 >
-> Alternatively, you can use the [Local ClickHouse](#local-clickhouse) deployed by this chart, with the understanding that it is a **single replica** and that **you are in charge of its backups and restores**.
+> Alternatively (**not recommended**), you can use the [Local ClickHouse](#local-clickhouse) deployed by this chart, with the understanding that it is a **single replica** and that **you are in charge of its backups and restores**.
 
 > [!NOTE]
 > When using external ClickHouse, ensure that the provided host is reachable from the runtime-collector pod on both the HTTP and the native ports.
