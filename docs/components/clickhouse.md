@@ -19,7 +19,7 @@ There are two modes:
 > Alternatively (**not recommended**), you can use the [Local ClickHouse](#local-clickhouse) deployed by this chart, with the understanding that it is a **single replica** and that **you are in charge of its backups and restores**.
 
 > [!NOTE]
-> When using external ClickHouse, ensure that the provided host is reachable from the runtime-collector pod on both the HTTP and the native ports.
+> When using external ClickHouse, ensure that the provided host is reachable from the runtime-collector pod on both the HTTP/HTTPS and the native ports.
 
 > [!IMPORTANT]
 > - Supported ClickHouse version: 25.3 or later
