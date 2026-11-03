@@ -73,7 +73,6 @@ deployments:
         httpPort: 8443
         nativePort: 9440
         tls: true
-        cluster: "default"
         existingSecret: "clickhouse-credentials"
 ```
 
@@ -102,7 +101,7 @@ When using a local ClickHouse deployment (i.e., `deployments.runtime_collector.c
 - **Single Replica Only**: The local deployment always uses one replica (no PDB or topology spread) and the `Recreate` rollout strategy. Clustered ClickHouse is only supported for external instances.
 - **Backups and Restores Are Your Responsibility**: The chart does not back up local ClickHouse data.
 - All deployment settings (image, resources, persistence, and health probes) apply.
-- Credentials are taken from `secrets.clickhouse.user` and `secrets.clickhouse.password`. See [Managing Secrets](../installation/secrets.md).
+- Credentials are taken from `secrets.clickhouse.user` and `secrets.clickhouse.password`. To use an existing Kubernetes secret instead, set `general.deploy_secrets.enabled: false` and `general.deploy_secrets.existing_secrets.clickhouse` to the secret name. The secret must contain the `CLICKHOUSE_USERNAME` and `CLICKHOUSE_PASSWORD` keys. See [Managing Secrets](../installation/secrets.md).
 
 Configuration is defined under **`deployments.runtime_collector.clickhouse.local`** in the **`values.yaml`** file.
 
