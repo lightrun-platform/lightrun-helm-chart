@@ -98,7 +98,7 @@ To ensure a smooth and secure production deployment of Lightrun, follow these ke
 > - A ClickHouse Helm chart
 > - Any other managed ClickHouse solution
 >
-> Alternatively (**not recommended**), you can use the [Local ClickHouse](docs/components/clickhouse.md#local-clickhouse) deployed by this chart, with the understanding that it is a **single replica** and that **you are in charge of its backups and restores**.
+> [Local ClickHouse](docs/components/clickhouse.md#local-clickhouse) deployment is suitable for development or smaller installations. For production, verify that your resources and persistence settings meet your requirements.
 
 - If Runtime Collector is enabled, determine if ClickHouse will be local or external.
   For more information, see [ClickHouse Setup](docs/components/clickhouse.md).

@@ -45,7 +45,7 @@ Runtime Collector stores its data in ClickHouse, either deployed locally by the 
 > - A ClickHouse Helm chart
 > - Any other managed ClickHouse solution
 >
-> Alternatively (**not recommended**), you can use the [Local ClickHouse](clickhouse.md#local-clickhouse) deployed by this chart, with the understanding that it is a **single replica** and that **you are in charge of its backups and restores**.
+> [Local ClickHouse](clickhouse.md#local-clickhouse) deployment is suitable for development or smaller installations. For production, verify that your resources and persistence settings meet your requirements.
 
 ## Runtime Collector Server (`runtime_collector.server`)
 
