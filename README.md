@@ -19,6 +19,7 @@ The `lightrun` Helm chart provides a reliable and efficient way to deploy and ma
 | [**RabbitMQ**](docs/components/rabbitmq.md)         | [**Optional**] Manages the event message queue, primarily for sending telemetry to Lightrun (local or external). |
 | [**Datastreamer**](docs/components/datastreamer.md) | [**Optional**] Sends audit logs to various SIEM systems.                                                         |
 | [**Runtime Collector**](docs/components/runtime-collector.md) | [**Optional**] Collects runtime intelligence data; uses ClickHouse for storage (local or external). |
+| [**ClickHouse**](docs/components/clickhouse.md) | [**Optional**] Stores Runtime Collector data (can be local or external). |
 | [**Privacy Filter**](docs/components/privacy-filter.md) | [**Optional**] Redacts PII from text; receives requests over RabbitMQ (requires RabbitMQ to be enabled).          |
 
 ## Getting Started
@@ -88,19 +89,33 @@ To ensure a smooth and secure production deployment of Lightrun, follow these ke
 - Determine if RabbitMQ is needed for sending telemetry to Lightrun.
   For more information, see [RabbitMQ](docs/components/rabbitmq.md).
 
-#### **11. [Optional] Network Policy**
+#### **11. [Optional] ClickHouse**
+
+> [!TIP]
+> We recommend using an **External ClickHouse**. Options are:
+> - Managed [ClickHouse Cloud](https://clickhouse.com/cloud)
+> - A ClickHouse Operator
+> - A ClickHouse Helm chart
+> - Any other managed ClickHouse solution
+>
+> [Local ClickHouse](docs/components/clickhouse.md#local-clickhouse) deployment is suitable for development or smaller installations. For production, verify that your resources and persistence settings meet your requirements.
+
+- If Runtime Collector is enabled, determine if ClickHouse will be local or external.
+  For more information, see [ClickHouse Setup](docs/components/clickhouse.md).
+
+#### **12. [Optional] Network Policy**
 
 - Establish network policies to restrict access between services and prevent unauthorized communication.
   For more information, see [Network Policy](docs/advanced/network_policy.md).
 
-#### **12. [Optional} Internal TLS Communication**
+#### **13. [Optional} Internal TLS Communication**
 
 - Decide whether internal TLS is necessary for secure component communication.
   For more information, see [Internal TLS](docs/advanced/internal_tls.md).
 
-#### **13. Choose Your Deployment Option**
+#### **14. Choose Your Deployment Option**
 
-Decide where to run your Kubernetes cluster based on your infrastructure needs. Consider whether you'll deploy all services locally (including RabbitMQ, Redis, and MySQL) or use managed cloud services.
+Decide where to run your Kubernetes cluster based on your infrastructure needs. Consider whether you'll deploy all services locally (including RabbitMQ, Redis, MySQL, and ClickHouse) or use managed cloud services.
 
 ##### **Supported Kubernetes Platforms**
 
