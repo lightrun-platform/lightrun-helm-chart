@@ -58,6 +58,22 @@ deployments:
       useJsonLogFormat: false  # Enables structured JSON logging
 ```
 
+> [!IMPORTANT]
+> Recommended size: 1 vCPU, 4GB memory. The chart default (`500m` CPU, `512Mi` memory) is lower, so set the recommended values under `server.resources`:
+>
+> ```yaml
+> deployments:
+>   runtime_collector:
+>     server:
+>       resources:
+>         requests:
+>           cpu: "1"
+>           memory: 4Gi
+>         limits:
+>           cpu: "1"
+>           memory: 4Gi
+> ```
+
 The pod runs these init containers before the application starts (`wait-for-rabbitmq` only when `general.mq.enabled: true`):
 
 | Init container | Purpose |
