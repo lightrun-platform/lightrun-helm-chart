@@ -29,7 +29,7 @@
 
 
 <a name="v3.56.0"></a>
-## [v3.56.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.55.3...v3.56.0) - 2026-11-04
+## [v3.56.0](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.55.4...v3.56.0) - 2026-11-04
 
 
 
@@ -104,6 +104,46 @@
 
   Co-authored-by: Tal Levy <tal@LTR132.local>
   Co-authored-by: Claude Opus 5.5 <noreply@anthropic.com>
+ 
+ 
+ 
+ 
+
+ 
+
+
+<a name="v3.55.4"></a>
+## [v3.55.4](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.55.3...v3.55.4) - 2026-11-09
+
+
+
+### Versions
+
+| Service                      | Repository                               | Tag                             |
+|------------------------------|------------------------------------------|---------------------------------|
+| artifacts                    | lightruncom/artifacts                    | 1.96.4-release.9fb1e9f540       |
+| backend                      | lightruncom/server                       | 1.96.4-release.9fb1e9f540       |
+| crons                        | lightruncom/server                       | 1.96.4-release.9fb1e9f540       |
+| data_streamer                | lightruncom/data-streamer                | 4.117.0-alpine-3.24.4-r0.lr-0   |
+| frontend                     | lightruncom/webapp                       | 1.96.4-release.9fb1e9f540       |
+| keycloak                     | lightruncom/keycloak                     | 1.96.4-release.9fb1e9f540       |
+| mysql                        | mysql                                    | 8.4.10                          |
+| privacy_filter               | lightruncom/privacy-filter               | 1.96.4-release.9fb1e9f540       |
+| rabbitmq                     | lightruncom/rabbitmq                     | 4.4.0-alpine.lr-5               |
+| redis                        | lightruncom/redis                        | 7.4.12-alpine-3.24.4-r0.lr-0    |
+| router                       | lightruncom/router                       | 1.30.6-r0-alpine-3.24.4-r0.lr-0 |
+| runtime_collector            | lightruncom/runtime-collector            | 1.96.4-release.9fb1e9f540       |
+| runtime_collector_migrations | lightruncom/runtime-collector-migrations | 1.96.4-release.9fb1e9f540       |
+ 
+ 
+
+
+### Security (1 change)
+
+- [bump chart-helper->0.3.0-alpine-3.24.4-r0.lr-0, data-streamer->4.117.0, rabbitmq->4.4.0-alpine.lr-5, redis->7.4.12-alpine-3.24.4-r0.lr-0, router->1.30.6-r0-alpine-3.24.4-r0.lr-0 (#363)](https://github.com/lightrun-platform/lightrun-helm-chart/commit/add9175)
+
+
+  Co-authored-by: cascade-bot <cascade-bot@lightrun.com>
  
  
  
