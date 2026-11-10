@@ -1,0 +1,76 @@
+{{- if eq (include "router.gateway_api.enabled" .) "true" }}
+{{- include "router.gateway_api.validate" . }}
+{{- $gw := dig "router" "gateway_api" dict .Values.general }}
+{{- $create := eq (include "router.gateway_api.gateway.create" .) "true" }}
+{{- $hostnames := $gw.hostnames | default (list .Values.general.lightrun_endpoint) }}
+{{- $redirectParentRefs := dig "http_redirect" "parentRefs" list $gw }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "router.name" . }}
+  {{- with $gw.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $gw.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  parentRefs:
+  {{- if $gw.parentRefs }}
+    {{- toYaml $gw.parentRefs | nindent 4 }}
+  {{- else }}
+    - name: {{ include "router.gateway_api.gateway.name" . }}
+      sectionName: https
+  {{- end }}
+  hostnames:
+    {{- toYaml $hostnames | nindent 4 }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: {{ include "router.name" . }}
+          {{- if eq (include "router.use-tls" .) "true" }}
+          port: {{ .Values.general.router.service.ports.https }}
+          {{- else }}
+          port: {{ .Values.general.router.service.ports.http }}
+          {{- end }}
+      {{- with $gw.timeouts }}
+      timeouts:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- if and (dig "http_redirect" "enabled" true $gw) (or $redirectParentRefs (and $create (empty (dig "gateway" "listeners" list $gw)))) }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "router.name" . }}-http-redirect
+  {{- with $gw.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $gw.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  parentRefs:
+  {{- if $redirectParentRefs }}
+    {{- toYaml $redirectParentRefs | nindent 4 }}
+  {{- else }}
+    - name: {{ include "router.gateway_api.gateway.name" . }}
+      sectionName: http
+  {{- end }}
+  hostnames:
+    {{- toYaml $hostnames | nindent 4 }}
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 301
+{{- end }}
+{{- end }}

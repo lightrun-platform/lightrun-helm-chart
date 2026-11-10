@@ -274,6 +274,81 @@ general:
       annotations: {}
       labels: {}
 
+    ## Kubernetes Gateway API (gateway.networking.k8s.io), an alternative to the Ingress above.
+    ## Requires the Gateway API CRDs and a Gateway API implementation in the cluster.
+    ## Set ingress.enabled: false once traffic moves to the Gateway (both can run side by side during a migration).
+    ## See docs/components/router/gateway_api.md
+    gateway_api:
+      enabled: false
+      ## Fail the install when the Gateway API CRDs are not found in the cluster.
+      ## Set to false when rendering without cluster access (for example `helm template` in CI),
+      ## or pass `--api-versions gateway.networking.k8s.io/v1/HTTPRoute` instead.
+      validate_crds: true
+      ## Gateways the HTTPRoute attaches to. Required unless gateway.create is true.
+      ## example:
+      # parentRefs:
+      #   - name: shared-gateway
+      #     namespace: gateway-system
+      #     sectionName: https
+      parentRefs: []
+      ## Defaults to [general.lightrun_endpoint]
+      hostnames: []
+      ## HTTPRoute rule timeouts (support depends on the implementation), example:
+      # timeouts:
+      #   request: "600s"
+      #   backendRequest: "600s"
+      timeouts: {}
+      annotations: {}
+      labels: {}
+
+      ## Extra HTTPRoute that redirects HTTP to HTTPS.
+      ## Rendered when gateway.create is true with the default listeners, or when parentRefs below are set.
+      http_redirect:
+        enabled: true
+        ## HTTP listener(s) of an existing Gateway, example:
+        # parentRefs:
+        #   - name: shared-gateway
+        #     namespace: gateway-system
+        #     sectionName: http
+        parentRefs: []
+
+      ## Create a Gateway as part of the chart. Leave create: false to use a Gateway managed by the cluster admin.
+      gateway:
+        create: false
+        ## Required when create is true, see `kubectl get gatewayclass`
+        gatewayClassName: ""
+        ## Defaults to an HTTPS listener "https" on port 443 that terminates TLS with the certificate from the `certificate` section,
+        ## plus an HTTP listener "http" on port 80 when http_redirect.enabled is true.
+        ## Setting listeners replaces the defaults, so set parentRefs (and http_redirect.parentRefs) to match the listener names.
+        listeners: []
+        addresses: []
+        infrastructure: {}
+        annotations: {}
+        labels: {}
+
+      ## Only relevant when the router serves HTTPS (general.router.tls.enabled or general.internal_tls.enabled).
+      ## Renders a BackendTLSPolicy so the Gateway connects to the router over TLS.
+      ## Requires the BackendTLSPolicy CRD (Gateway API v1.4+ standard channel, or v1alpha3 from the experimental channel).
+      backend_tls_policy:
+        enabled: true
+        ## Auto-detected from the cluster (v1, then v1alpha3) when empty
+        api_version: ""
+        ## Hostname used for SNI and certificate validation. Defaults to general.lightrun_endpoint
+        hostname: ""
+        ## One of the following is required to validate the router certificate:
+        ## PEM of the CA that signed the router certificate, stored by the chart in a ConfigMap
+        ca_certificate: ""
+        ## Existing ConfigMaps with a ca.crt key, example:
+        # caCertificateRefs:
+        #   - group: ""
+        #     kind: ConfigMap
+        #     name: lightrun-router-ca
+        caCertificateRefs: []
+        ## "System" to trust the Gateway's system CA bundle (publicly trusted certificates)
+        wellKnownCACertificates: ""
+        annotations: {}
+        labels: {}
+
     service:
       enabled: true
       ## Supported types: ClusterIP, LoadBalancer, NodePort, Headless

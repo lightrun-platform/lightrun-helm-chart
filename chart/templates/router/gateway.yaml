@@ -1,0 +1,54 @@
+{{- if eq (include "router.gateway_api.gateway.create" .) "true" }}
+{{- include "router.gateway_api.validate" . }}
+{{- $gw := dig "router" "gateway_api" dict .Values.general }}
+{{- $gateway := dig "gateway" dict $gw }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ include "router.gateway_api.gateway.name" . }}
+  {{- with $gateway.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $gateway.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  gatewayClassName: {{ $gateway.gatewayClassName }}
+  {{- with $gateway.infrastructure }}
+  infrastructure:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $gateway.addresses }}
+  addresses:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  listeners:
+  {{- if $gateway.listeners }}
+    {{- toYaml $gateway.listeners | nindent 4 }}
+  {{- else }}
+    - name: https
+      protocol: HTTPS
+      port: 443
+      hostname: {{ .Values.general.lightrun_endpoint | quote }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: {{ include "secrets.certificate.name" . }}
+      allowedRoutes:
+        namespaces:
+          from: Same
+    {{- if dig "http_redirect" "enabled" true $gw }}
+    - name: http
+      protocol: HTTP
+      port: 80
+      hostname: {{ .Values.general.lightrun_endpoint | quote }}
+      allowedRoutes:
+        namespaces:
+          from: Same
+    {{- end }}
+  {{- end }}
+{{- end }}
