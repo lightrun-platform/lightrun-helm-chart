@@ -69,7 +69,7 @@ To ensure a smooth and secure production deployment of Lightrun, follow these ke
     
 #### **7. Router**
 
-- Decide how external traffic will reach the Lightrun router (Ingress, Service, OpenShift Route).
+- Decide how external traffic will reach the Lightrun router (Ingress, Gateway API, Service, OpenShift Route).
   For more information, see [Router](docs/components/router/index.md).
 
 #### **8. Container Images Registry**

@@ -7,6 +7,7 @@ The Lightrun Router supports multiple deployment options across different cloud 
 - [GCP GKE Ingress Controller](gcp_gke_ingress.md)
 - [GCP GKE Service Controller](gcp_gke_service.md)
 - [Nginx Ingress Controller](nginx_ingress.md)
+- [Kubernetes Gateway API](gateway_api.md) (including migration from Ingress NGINX)
 - [Istio Gateway](istio_gateway.md)
 - [Contour Ingress Controller](contour_ingress.md)
 - [OpenShift HAProxy Router](openshift_haproxy.md)
