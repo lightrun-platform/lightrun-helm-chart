@@ -1,5 +1,5 @@
 apiVersion: v2
 name: lightrun-helm-chart
 description: Unlock real-time code-level observability with Lightrun
-version: 3.55.4
-appVersion: 1.96.4-release.9fb1e9f540
+version: 3.55.5
+appVersion: 1.96.5-release.f3682f6a85
