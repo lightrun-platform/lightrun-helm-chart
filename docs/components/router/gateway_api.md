@@ -130,7 +130,7 @@ With the Ingress NGINX controller, these settings were annotations (`proxy-read-
 
 **Envoy Gateway.** Set `general.router.gateway_api.timeouts.request: "600s"`. Without it, requests running longer than 15s (for example `/mcp`) fail with a 504. Envoy Gateway doesn't limit the body size by default.
 
-**NGINX Gateway Fabric.** NGF ignores `HTTPRoute` timeouts and limits request bodies to 1m. Create these policies in the Lightrun namespace (the route name is `<release>-router`):
+**NGINX Gateway Fabric.** NGF ignores `HTTPRoute` timeouts, limits request bodies to 1m and uses nginx's default proxy buffer size. Create these policies in the Lightrun namespace (the route name is `<release>-router`):
 ```yaml
 apiVersion: gateway.nginx.org/v1alpha1
 kind: ClientSettingsPolicy
@@ -156,11 +156,173 @@ spec:
   timeout:
     read: 600s
     send: 600s
+  buffering:
+    bufferSize: 8k
 ```
+`bufferSize: 8k` matches the `proxy-buffer-size: "8k"` that the chart adds for Ingress NGINX. Without it, large Keycloak response headers can make nginx return 502.
 
 **Istio, OpenShift, AKS (Istio).** Set `timeouts.request: "600s"` if your mesh defines a default route timeout. Istio doesn't limit the body size by default.
 
 **Other implementations.** Check the vendor documentation for the request timeout and the maximum body size. Then apply the equivalent of a 600s timeout and a 50m body limit to the `<release>-router` HTTPRoute.
+
+# Examples by platform
+The chart renders only portable Gateway API resources. Implementation-specific settings, such as the class name, load balancer options and policies, are passed through values or created as separate objects.
+
+All examples set `ingress.enabled: false`; during a migration, keep it `true` until DNS points to the Gateway. `certificate.existing_cert` is the TLS Secret the chart already uses for the Ingress. The examples are marked by how far they were tested:
+* **tested:** installed and verified with this chart
+* **docs-based:** written from the vendor documentation, verify on your cluster
+
+### Vanilla Kubernetes / kubespray with Envoy Gateway (tested)
+Tested with Envoy Gateway v1.10 on Kubernetes 1.34 and on a kubespray v2.32 equivalent: Calico 3.31, Gateway API v1.6.2 standard CRDs.
+```yaml
+general:
+  lightrun_endpoint: lightrun.example.com
+  router:
+    tls:
+      enabled: true
+    ingress:
+      enabled: false
+    gateway_api:
+      enabled: true
+      timeouts:
+        request: "600s"
+      gateway:
+        create: true
+        gatewayClassName: eg
+      backend_tls_policy:
+        ca_certificate: |
+          -----BEGIN CERTIFICATE-----
+          ...CA that signed the Lightrun certificate...
+          -----END CERTIFICATE-----
+certificate:
+  existing_cert: lightrun-tls
+```
+`timeouts.request` is required: Envoy Gateway ends requests after 15s by default. On bare metal (kubespray), the Gateway gets an external address only if a load balancer implementation such as MetalLB is installed.
+
+### Vanilla Kubernetes / kubespray with NGINX Gateway Fabric, shared Gateway (tested)
+Tested with NGF v2.8.1. The cluster admin owns the Gateway `shared` in `gateway-system`. Its listeners allow routes from the Lightrun namespace.
+```yaml
+general:
+  router:
+    tls:
+      enabled: false
+    ingress:
+      enabled: false
+    gateway_api:
+      enabled: true
+      parentRefs:
+        - name: shared
+          namespace: gateway-system
+          sectionName: https
+      http_redirect:
+        parentRefs:
+          - name: shared
+            namespace: gateway-system
+            sectionName: http
+```
+Also create the `ClientSettingsPolicy` and `ProxySettingsPolicy` from [Timeouts and body size](#timeouts-and-body-size).
+
+### OpenShift 4.22+ / 5.x (tested on ROSA 5.0.1)
+See [OpenShift](#openshift) for the tested values and the cluster-admin prerequisite. On OpenShift 4.19–4.21 use `router.tls.enabled: false` and leave out `backend_tls_policy`.
+
+### Amazon EKS
+**With Envoy Gateway or NGF (docs-based).** Use the vanilla examples above. The data plane is exposed through a `LoadBalancer` Service, so the AWS Load Balancer Controller is not required. To request an NLB:
+```yaml
+general:
+  router:
+    gateway_api:
+      gateway:
+        create: true
+        gatewayClassName: eg
+        infrastructure:
+          annotations:
+            service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+```
+
+**With the AWS Load Balancer Controller Gateway API support (ALB, docs-based).** It doesn't support BackendTLSPolicy, so keep the router on plain HTTP. ALB takes its certificate from ACM through the controller's own configuration, not from a Kubernetes Secret. Attach to a Gateway that the cluster admin creates with the controller's GatewayClass (`controllerName: gateway.k8s.aws/alb`):
+```yaml
+general:
+  router:
+    tls:
+      enabled: false
+    ingress:
+      enabled: false
+    gateway_api:
+      enabled: true
+      parentRefs:
+        - name: lightrun-alb
+          namespace: lightrun
+          sectionName: https
+```
+Point the ALB health check at the router's `/health` path, using the controller's configuration resources.
+
+### Google GKE (docs-based)
+GKE's managed Gateway controller is enabled with `--gateway-api=standard`. HTTPS to backends needs `appProtocol: HTTPS` on the Service port, which the chart does not set, so keep the router on plain HTTP:
+```yaml
+general:
+  router:
+    tls:
+      enabled: false
+    ingress:
+      enabled: false
+    gateway_api:
+      enabled: true
+      timeouts:
+        request: "600s"
+      gateway:
+        create: true
+        gatewayClassName: gke-l7-global-external-managed
+        addresses:
+          - type: NamedAddress
+            value: lightrun-static-ip
+certificate:
+  existing_cert: lightrun-tls
+```
+- Use `gke-l7-rilb` for an internal load balancer.
+- Leave out `addresses` to get an ephemeral IP.
+- The load balancer health-checks `/` by default. A `HealthCheckPolicy` (`networking.gke.io/v1`) that targets the router Service with `requestPath: /health` doesn't depend on the frontend.
+
+### Azure AKS with the Istio add-on / managed Gateway API (docs-based)
+```yaml
+general:
+  router:
+    tls:
+      enabled: false
+    ingress:
+      enabled: false
+    gateway_api:
+      enabled: true
+      timeouts:
+        request: "600s"
+      gateway:
+        create: true
+        gatewayClassName: istio
+certificate:
+  existing_cert: lightrun-tls
+```
+- Check the class name with `kubectl get gatewayclass`.
+- From AKS 1.35 (Gateway API v1.4+), you can switch to `router.tls.enabled: true` with `backend_tls_policy`. Also set `subjectAltNames`, as on [OpenShift](#openshift).
+
+### Azure Application Gateway for Containers (docs-based)
+It uses its own BackendTLSPolicy type, so keep the router on plain HTTP:
+```yaml
+general:
+  router:
+    tls:
+      enabled: false
+    ingress:
+      enabled: false
+    gateway_api:
+      enabled: true
+      gateway:
+        create: true
+        gatewayClassName: azure-alb-external
+        annotations:
+          alb.networking.azure.io/alb-namespace: alb-infra
+          alb.networking.azure.io/alb-name: alb-lightrun
+certificate:
+  existing_cert: lightrun-tls
+```
 
 # Network policy
 When `general.networkPolicy.ingress.enabled` is `true`, add the namespace where the Gateway's data-plane pods run to `general.networkPolicy.ingress.namespacesSelector`. Otherwise the Gateway can't reach the router and returns 503. The namespace depends on the implementation:

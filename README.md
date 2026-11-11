@@ -71,6 +71,7 @@ To ensure a smooth and secure production deployment of Lightrun, follow these ke
 
 - Decide how external traffic will reach the Lightrun router (Ingress, Gateway API, Service, OpenShift Route).
   For more information, see [Router](docs/components/router/index.md).
+  For Kubernetes Gateway API (Gateway/HTTPRoute) with examples per platform, see [Gateway API](docs/components/router/gateway_api.md#examples-by-platform).
 
 #### **8. Container Images Registry**
 
