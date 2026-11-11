@@ -298,6 +298,14 @@ general:
       #   request: "600s"
       #   backendRequest: "600s"
       timeouts: {}
+      ## HTTPRoute rule filters, for example header modifiers. Don't add redirect filters here: they apply to all traffic, example:
+      # filters:
+      #   - type: ResponseHeaderModifier
+      #     responseHeaderModifier:
+      #       add:
+      #         - name: Strict-Transport-Security
+      #           value: max-age=31536000
+      filters: []
       annotations: {}
       labels: {}
 

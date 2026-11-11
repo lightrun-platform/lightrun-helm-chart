@@ -38,6 +38,10 @@ spec:
           {{- else }}
           port: {{ .Values.general.router.service.ports.http }}
           {{- end }}
+      {{- with $gw.filters }}
+      filters:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with $gw.timeouts }}
       timeouts:
         {{- toYaml . | nindent 8 }}
