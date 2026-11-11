@@ -343,6 +343,14 @@ general:
 # OpenShift
 `general.openshift: true` keeps its current behaviour. While `general.router.ingress.enabled` is `true`, the chart renders the Ingress, which OpenShift converts to a Route.
 
+Gateway API support by OpenShift version:
+
+| OpenShift | Gateway API | With this chart |
+|---|---|---|
+| 4.14–4.18 | Not shipped by OpenShift | Keep the Ingress/Route. If `gateway_api.enabled` is set, the install fails because the CRDs are missing. |
+| 4.19–4.21 | v1.2.1 / v1.3.0 standard, no BackendTLSPolicy | Topology 1 only (router on plain HTTP). Verified against the v1.2.1 CRDs. |
+| 4.22+ / 5.x | v1.4+ standard, including BackendTLSPolicy | Topology 1 or 2. Tested on ROSA 5.0.1. |
+
 To use the OpenShift Gateway API instead (OpenShift 4.19+):
 1. A cluster-admin creates a `GatewayClass` once, usually named `openshift-default`, with `controllerName: openshift.io/gateway-controller/v1`. The Ingress Operator then deploys its Istio control plane in `openshift-ingress`.
 2. Then use one of these:
