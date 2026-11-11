@@ -346,6 +346,12 @@ general:
         caCertificateRefs: []
         ## "System" to trust the Gateway's system CA bundle (publicly trusted certificates)
         wellKnownCACertificates: ""
+        ## Names the router certificate must contain. Some implementations (for example the Istio based OpenShift Gateway)
+        ## verify the router identity only through this field and use `hostname` for SNI alone, example:
+        # subjectAltNames:
+        #   - type: Hostname
+        #     hostname: lightrun.example.com
+        subjectAltNames: []
         annotations: {}
         labels: {}
 

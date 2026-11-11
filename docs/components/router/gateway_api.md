@@ -40,6 +40,7 @@ All keys are under `general.router.gateway_api`:
 | `backend_tls_policy.ca_certificate` | `""` | PEM of the CA that signed the router certificate. The chart stores it in the ConfigMap `<release>-router-backend-ca`. |
 | `backend_tls_policy.caCertificateRefs` | `[]` | Existing ConfigMaps (key `ca.crt`) to validate the router certificate with. |
 | `backend_tls_policy.wellKnownCACertificates` | `""` | Set to `System` when the certificate is publicly trusted. |
+| `backend_tls_policy.subjectAltNames` | `[]` | Names the router certificate must contain, for example `[{type: Hostname, hostname: lightrun.example.com}]`. Set this on Istio-based gateways, including OpenShift: they check the certificate chain but verify the router's identity only through this field. They use `hostname` for SNI only. |
 
 When the router serves HTTPS, exactly one of `ca_certificate`, `caCertificateRefs` or `wellKnownCACertificates` is required. If you set `ca_certificate` and `caCertificateRefs` together, both are added to the policy.
 
@@ -116,7 +117,7 @@ The `Gateway`, `HTTPRoute` (path match, backendRefs, `RequestRedirect`) and WebS
 | Istio (v1.28+) | `v1` (`v1alpha3` in 1.26/1.27) | supported | none | no limit |
 | kubespray (`gateway_api_enabled`) | CRD present (v1.6.x standard) | depends on the controller you install | depends | depends |
 | OpenShift 4.19–4.21 | **not available** (CRDs locked by the ingress operator) | supported (Istio based) | | |
-| OpenShift 4.22+ | `v1` | supported | | |
+| OpenShift 4.22+ / 5.x (tested on 5.0.1, Gateway API v1.5.1) | `v1`. Set `subjectAltNames`; `hostname` alone is not verified. | supported | | no limit |
 | GKE Gateway controller | `v1`. Also set `appProtocol: HTTPS` on the Service port, which this chart does not set, so prefer topology 1 | supported | 30s (backend service default) | |
 | AWS Load Balancer Controller (Gateway API) | **not supported**, use topology 1 | | | |
 | AKS (managed Gateway API, Istio) | `v1` from Gateway API v1.4 (AKS 1.35+) | supported | | |
@@ -181,9 +182,39 @@ general:
 `general.openshift: true` keeps its current behaviour. While `general.router.ingress.enabled` is `true`, the chart renders the Ingress, which OpenShift converts to a Route.
 
 To use the OpenShift Gateway API instead (OpenShift 4.19+):
-1. Create a `GatewayClass` with `controllerName: openshift.io/gateway-controller/v1`. This requires cluster-admin.
-2. Use it as `gateway.gatewayClassName`, or attach to an existing Gateway in `openshift-ingress`.
+1. A cluster-admin creates a `GatewayClass` once, usually named `openshift-default`, with `controllerName: openshift.io/gateway-controller/v1`. The Ingress Operator then deploys its Istio control plane in `openshift-ingress`.
+2. Then use one of these:
+   * `gateway.create: true` with `gateway.gatewayClassName: openshift-default`. The Gateway and its Envoy proxy pods are created in the Lightrun namespace, together with a `LoadBalancer` Service, which is an ELB on ROSA. You need permission to create Gateways in the namespace.
+   * `parentRefs` pointing to a Gateway that the cluster admin manages, for example in `openshift-ingress`. You only need permission to create `HTTPRoute`s.
 3. On OpenShift 4.19–4.21 the `BackendTLSPolicy` CRD is not available and can't be added. Use [topology 1](#1---gateway-tls--lightrun-router-non-ssl-most-portable) (`general.router.tls.enabled: false`, `general.internal_tls.enabled: false`).
+4. On OpenShift 4.22+ and 5.x you can use topology 2. Set `backend_tls_policy.subjectAltNames` to the router hostname as well: the OpenShift gateway checks the certificate chain, but verifies the hostname only through `subjectAltNames`.
+
+Example tested on ROSA 5.0.1 (topology 2, with the default `*.apps` Let's Encrypt certificate):
+```yaml
+general:
+  openshift: true
+  lightrun_endpoint: lightrun-lightrun.apps.<cluster-domain>
+  router:
+    tls:
+      enabled: true
+    ingress:
+      enabled: false
+    gateway_api:
+      enabled: true
+      timeouts:
+        request: "600s"
+      gateway:
+        create: true
+        gatewayClassName: openshift-default
+      backend_tls_policy:
+        wellKnownCACertificates: System
+        subjectAltNames:
+          - type: Hostname
+            hostname: lightrun-lightrun.apps.<cluster-domain>
+certificate:
+  existing_cert: certificates
+```
+The Gateway gets its own load balancer. The `*.apps` wildcard DNS still points to the default router, so create a DNS record for `general.lightrun_endpoint` that points to the Gateway address. With the default `*.apps` hostname, that is a more specific record in the cluster's DNS zone.
 
 `general.openshift_embeded_hostname` only applies to the Ingress/Route path.
 
@@ -242,6 +273,7 @@ To roll back, set `general.router.ingress.enabled: true` again, or run `helm rol
 # Troubleshooting
 * **The chart fails with "Gateway API CRDs ... are not installed".** Install the CRDs, or see [Rendering without cluster access](#rendering-without-cluster-access).
 * **The chart fails with "the BackendTLSPolicy CRD ... is not installed".** Use topology 1 (`general.router.tls.enabled: false`), install a Gateway API v1.4+ standard bundle, or set `backend_tls_policy.enabled: false` and configure backend TLS with your implementation's own resources, for example an Istio `DestinationRule`.
+* **A wrong `hostname` is still accepted** (Istio, OpenShift). These implementations verify the router's identity only through `backend_tls_policy.subjectAltNames`, so set it.
 * **502/503 from the Gateway with topology 2.** The `BackendTLSPolicy` CA or hostname doesn't match the router certificate. The certificate must include `backend_tls_policy.hostname` (by default `general.lightrun_endpoint`) in its SAN. If the policy is fine, a NetworkPolicy may be blocking the Gateway. See [Network policy](#network-policy).
 * **504 after about 15 seconds** (Envoy Gateway). Set `timeouts.request`.
 * **413 on uploads** (NGINX Gateway Fabric). Add the `ClientSettingsPolicy` above.

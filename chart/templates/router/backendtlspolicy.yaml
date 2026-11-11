@@ -50,4 +50,8 @@ spec:
     {{- else }}
     wellKnownCACertificates: {{ $policy.wellKnownCACertificates | quote }}
     {{- end }}
+    {{- with $policy.subjectAltNames }}
+    subjectAltNames:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
 {{- end }}
