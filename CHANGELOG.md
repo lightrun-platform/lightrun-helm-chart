@@ -1,4 +1,33 @@
 
+<a name="v3.56.2"></a>
+## [v3.56.2](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.56.1...v3.56.2) - 2026-11-11
+
+
+
+### Versions
+
+| Service                      | Repository                               | Tag                             |
+|------------------------------|------------------------------------------|---------------------------------|
+| artifacts                    | lightruncom/artifacts                    | 1.97.2-release.964b9d0116       |
+| backend                      | lightruncom/server                       | 1.97.2-release.964b9d0116       |
+| crons                        | lightruncom/server                       | 1.97.2-release.964b9d0116       |
+| data_streamer                | lightruncom/data-streamer                | 4.115.1-alpine-3.24.3-r1.lr-0   |
+| frontend                     | lightruncom/webapp                       | 1.97.2-release.964b9d0116       |
+| keycloak                     | lightruncom/keycloak                     | 1.97.2-release.964b9d0116       |
+| mysql                        | mysql                                    | 8.4.10                          |
+| privacy_filter               | lightruncom/privacy-filter               | 1.97.2-release.964b9d0116       |
+| rabbitmq                     | lightruncom/rabbitmq                     | 4.4.0-alpine.lr-2               |
+| redis                        | lightruncom/redis                        | 7.4.12-alpine-3.24.3-r1.lr-0    |
+| router                       | lightruncom/router                       | 1.30.6-r0-alpine-3.24.3-r1.lr-0 |
+| runtime_collector            | lightruncom/runtime-collector            | 1.97.2-release.964b9d0116       |
+| runtime_collector_migrations | lightruncom/runtime-collector-migrations | 1.97.2-release.964b9d0116       |
+ 
+ 
+ 
+
+ 
+
+
 <a name="v3.56.1"></a>
 ## [v3.56.1](https://github.com/lightrun-platform/lightrun-helm-chart/compare/v3.56.0...v3.56.1) - 2026-11-09
 
