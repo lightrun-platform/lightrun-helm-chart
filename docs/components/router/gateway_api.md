@@ -119,7 +119,7 @@ The `Gateway`, `HTTPRoute` (path match, backendRefs, `RequestRedirect`) and WebS
 | OpenShift 4.19–4.21 | **not available** (CRDs locked by the ingress operator) | supported (Istio based) | | |
 | OpenShift 4.22+ / 5.x (tested on 5.0.1, Gateway API v1.5.1) | `v1`. Set `subjectAltNames`; `hostname` alone is not verified. | supported | | no limit |
 | GKE Gateway controller | `v1`. Also set `appProtocol: HTTPS` on the Service port, which this chart does not set, so prefer topology 1 | supported | 30s (backend service default) | |
-| AWS Load Balancer Controller (Gateway API) | **not supported**, use topology 1 | | | |
+| AWS Load Balancer Controller (Gateway API, ALB) | **not supported**. Use topology 1, or a `TargetGroupConfiguration` with HTTPS and no validation. | **not supported** (use the ALB idle timeout) | 60s idle timeout | no limit |
 | AKS (managed Gateway API, Istio) | `v1` from Gateway API v1.4 (AKS 1.35+) | supported | | |
 | AKS Application Gateway for Containers | uses its own `alb.networking.azure.io` BackendTLSPolicy, use topology 1 or create that object yourself | | | |
 
@@ -226,20 +226,18 @@ Also create the `ClientSettingsPolicy` and `ProxySettingsPolicy` from [Timeouts 
 See [OpenShift](#openshift) for the tested values and the cluster-admin prerequisite. On OpenShift 4.19–4.21 use `router.tls.enabled: false` and leave out `backend_tls_policy`.
 
 ### Amazon EKS
-**With Envoy Gateway or NGF (docs-based).** Use the vanilla examples above. The data plane is exposed through a `LoadBalancer` Service, so the AWS Load Balancer Controller is not required. To request an NLB:
-```yaml
-general:
-  router:
-    gateway_api:
-      gateway:
-        create: true
-        gatewayClassName: eg
-        infrastructure:
-          annotations:
-            service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
-```
+With the AWS Load Balancer Controller (v2.14+) in Gateway API mode:
+- **ALB Gateway** (`controllerName: gateway.k8s.aws/alb`) serves `HTTPRoute`, so it works with this chart.
+- **NLB Gateway** (`controllerName: gateway.k8s.aws/nlb`) serves only L4 routes (`TCPRoute`, `UDPRoute`, `TLSRoute`). It can't serve the chart's `HTTPRoute`.
 
-**With the AWS Load Balancer Controller Gateway API support (ALB, docs-based).** It doesn't support BackendTLSPolicy, so keep the router on plain HTTP. ALB takes its certificate from ACM through the controller's own configuration, not from a Kubernetes Secret. Attach to a Gateway that the cluster admin creates with the controller's GatewayClass (`controllerName: gateway.k8s.aws/alb`):
+To use an NLB, put it in front of an L7 Gateway implementation such as Envoy Gateway or NGF. Their `LoadBalancer` Service becomes the NLB. Or expose the router Service directly as an NLB without Gateway API (see [AWS Load Balancer Controller](aws_load_balancer_controller.md)).
+
+The controller enables its Gateway API support when it finds the Gateway API CRDs and its own CRDs (`LoadBalancerConfiguration`, `TargetGroupConfiguration`, `ListenerRuleConfiguration`). It only acts on GatewayClasses with its own `controllerName`, so existing Ingresses and Services are not affected.
+
+**ALB Gateway (docs-based).** Some ALB limits shape this setup:
+* ALB can't read the TLS certificate from a Kubernetes Secret (`certificateRefs`), so the HTTPS listener has no `tls` block. The certificate comes from ACM through a `LoadBalancerConfiguration`.
+* `HTTPRoute.timeouts` is not supported. Raise the ALB idle timeout instead.
+* `BackendTLSPolicy` is not supported, so keep the router on plain HTTP.
 ```yaml
 general:
   router:
@@ -249,12 +247,80 @@ general:
       enabled: false
     gateway_api:
       enabled: true
+      gateway:
+        create: true
+        gatewayClassName: aws-alb
+        infrastructure:
+          parametersRef:
+            group: gateway.k8s.aws
+            kind: LoadBalancerConfiguration
+            name: lightrun-alb
+        listeners:
+          - name: https
+            protocol: HTTPS
+            port: 443
+            hostname: lightrun.example.com
+            allowedRoutes:
+              namespaces:
+                from: Same
+          - name: http
+            protocol: HTTP
+            port: 80
+            hostname: lightrun.example.com
+            allowedRoutes:
+              namespaces:
+                from: Same
       parentRefs:
-        - name: lightrun-alb
-          namespace: lightrun
+        - name: lightrun-router
           sectionName: https
+      http_redirect:
+        parentRefs:
+          - name: lightrun-router
+            sectionName: http
 ```
-Point the ALB health check at the router's `/health` path, using the controller's configuration resources.
+Create these in the Lightrun namespace. The GatewayClass `aws-alb` uses `controllerName: gateway.k8s.aws/alb` and is created once by the cluster admin.
+```yaml
+apiVersion: gateway.k8s.aws/v1
+kind: LoadBalancerConfiguration
+metadata:
+  name: lightrun-alb
+spec:
+  scheme: internet-facing
+  listenerConfigurations:
+    - protocolPort: HTTPS:443
+      defaultCertificate: arn:aws:acm:<region>:<account>:certificate/<id>
+  loadBalancerAttributes:
+    - key: idle_timeout.timeout_seconds
+      value: "600"
+---
+apiVersion: gateway.k8s.aws/v1
+kind: TargetGroupConfiguration
+metadata:
+  name: lightrun-router
+spec:
+  targetReference:
+    name: lightrun-router
+  defaultConfiguration:
+    targetType: ip
+    healthCheckConfig:
+      healthCheckPath: /health
+```
+To keep HTTPS between the ALB and the router, set `router.tls.enabled: true`, `gateway_api.backend_tls_policy.enabled: false` and `protocol: HTTPS` in the `TargetGroupConfiguration`. The ALB then encrypts traffic to the router but doesn't validate the router certificate.
+
+**NLB in front of Envoy Gateway or NGF (docs-based).** Use the vanilla examples above, and pass NLB annotations to the generated Service:
+```yaml
+general:
+  router:
+    gateway_api:
+      gateway:
+        create: true
+        gatewayClassName: eg
+        infrastructure:
+          annotations:
+            service.beta.kubernetes.io/aws-load-balancer-type: "external"
+            service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+            service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+```
 
 ### Google GKE (docs-based)
 GKE's managed Gateway controller is enabled with `--gateway-api=standard`. HTTPS to backends needs `appProtocol: HTTPS` on the Service port, which the chart does not set, so keep the router on plain HTTP:
@@ -348,7 +414,7 @@ Gateway API support by OpenShift version:
 | OpenShift | Gateway API | With this chart |
 |---|---|---|
 | 4.14–4.18 | Not shipped by OpenShift | Keep the Ingress/Route. If `gateway_api.enabled` is set, the install fails because the CRDs are missing. |
-| 4.19–4.21 | v1.2.1 / v1.3.0 standard, no BackendTLSPolicy | Topology 1 only (router on plain HTTP). Verified against the v1.2.1 CRDs. |
+| 4.19–4.21 | v1.2.1 / v1.3.0 standard, no BackendTLSPolicy. The CRDs are locked: adding BackendTLSPolicy is forbidden even for cluster-admin. | Topology 1 only (router on plain HTTP). Tested on ROSA 4.20.46. With router TLS on, the install fails with a clear message and the release is not changed. |
 | 4.22+ / 5.x | v1.4+ standard, including BackendTLSPolicy | Topology 1 or 2. Tested on ROSA 5.0.1. |
 
 To use the OpenShift Gateway API instead (OpenShift 4.19+):
