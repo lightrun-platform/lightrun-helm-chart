@@ -176,10 +176,8 @@ All examples set `ingress.enabled: false`. During a migration, keep it `true` un
 | Vanilla Kubernetes / kubespray | Envoy Gateway | end-to-end (BackendTLSPolicy) | tested (kind, kubespray v2.32 defaults) |
 | OpenShift 4.19–4.21 | OpenShift Gateway API (Ingress Operator) | Gateway only | tested (ROSA 4.20.46) |
 | OpenShift 4.22+ / 5.x | OpenShift Gateway API (Ingress Operator) | end-to-end (BackendTLSPolicy) | tested (ROSA 5.0.1) |
-| Amazon EKS | AWS Load Balancer Controller, ALB Gateway | Gateway only | docs-based |
-| Azure AKS | Application Routing Gateway API (Istio-based) | Gateway only | docs-based |
-
-"Docs-based" examples are written from the vendor documentation and not yet tested with this chart. Verify them on your cluster.
+| Amazon EKS | AWS Load Balancer Controller, ALB Gateway | Gateway only, or HTTPS to the router without validation | tested (EKS 1.36, LBC v3.6.2) |
+| Azure AKS | Application Routing Gateway API (Istio-based) | end-to-end (BackendTLSPolicy) | tested (AKS 1.36) |
 
 ### Vanilla Kubernetes / kubespray: Envoy Gateway
 kubespray installs only the Gateway API CRDs (`gateway_api_enabled: true`), so you install a controller yourself, for example:
@@ -275,7 +273,7 @@ certificate:
 * Without permission to create Gateways in the namespace, attach to an admin-managed Gateway with `parentRefs` instead of `gateway.create`.
 
 ### Amazon EKS: AWS Load Balancer Controller (ALB Gateway)
-The AWS Load Balancer Controller (v2.14+) provisions an ALB for each Gateway of a GatewayClass with `controllerName: gateway.k8s.aws/alb`. It enables Gateway API support when it finds the Gateway API CRDs and its own CRDs (`LoadBalancerConfiguration`, `TargetGroupConfiguration`, `ListenerRuleConfiguration`). It only acts on its own GatewayClasses, so existing Ingresses and Services are not affected.
+Tested with EKS 1.36, AWS Load Balancer Controller v3.6.2 and the Gateway API v1.6.0 standard CRDs. The AWS Load Balancer Controller (v2.14+) provisions an ALB for each Gateway of a GatewayClass with `controllerName: gateway.k8s.aws/alb`. It enables Gateway API support when it finds the Gateway API CRDs and its own CRDs (`LoadBalancerConfiguration`, `TargetGroupConfiguration`, `ListenerRuleConfiguration`). It only acts on its own GatewayClasses, so existing Ingresses and Services are not affected.
 
 Some ALB limits shape this setup:
 * ALB can't read the TLS certificate from a Kubernetes Secret (`certificateRefs`), so the HTTPS listener has no `tls` block. The certificate comes from ACM through a `LoadBalancerConfiguration`.
@@ -348,20 +346,22 @@ spec:
     healthCheckConfig:
       healthCheckPath: /health
 ```
-To keep HTTPS between the ALB and the router, set `router.tls.enabled: true`, `gateway_api.backend_tls_policy.enabled: false` and `protocol: HTTPS` in the `TargetGroupConfiguration`. The ALB then encrypts traffic to the router but doesn't validate the router certificate.
+To keep HTTPS between the ALB and the router, set `router.tls.enabled: true`, `gateway_api.backend_tls_policy.enabled: false`, and in the `TargetGroupConfiguration` set `protocol: HTTPS` and `healthCheckConfig.healthCheckProtocol: HTTPS`. The ALB then encrypts traffic to the router but doesn't validate the router certificate.
+* For a load balancer reachable only from your network, set `scheme: internal` in the `LoadBalancerConfiguration`.
+* The ALB adds the port to the redirect target (`Location: https://<host>:443/...`). Browsers handle this normally.
 
 ### Azure AKS: Application Routing Gateway API (Istio-based)
-Microsoft positions this as the successor to the managed NGINX (application routing) add-on. Enable it on the cluster:
+Tested with AKS 1.36, Azure CNI overlay with Cilium. Microsoft positions this as the successor to the managed NGINX (application routing) add-on. While it is in preview, it needs the `aks-preview` Azure CLI extension and the `Microsoft.ContainerService/AppRoutingIstioGatewayAPIPreview` feature registered on the subscription. Enable it on the cluster:
 ```shell
 az aks update -g <resource-group> -n <cluster> --enable-gateway-api --enable-app-routing-istio
 ```
-It provides the GatewayClass `approuting-istio`, and it can't run alongside the Istio add-on.
+It provides the GatewayClass `approuting-istio`, and it can't run alongside the Istio add-on. The managed Gateway API CRDs (v1.5.1 on AKS 1.36) include BackendTLSPolicy v1, so the router can stay on TLS:
 ```yaml
 general:
   lightrun_endpoint: lightrun.example.com
   router:
     tls:
-      enabled: false
+      enabled: true
     ingress:
       enabled: false
     gateway_api:
@@ -371,10 +371,21 @@ general:
       gateway:
         create: true
         gatewayClassName: approuting-istio
+      backend_tls_policy:
+        ca_certificate: |
+          -----BEGIN CERTIFICATE-----
+          ...CA that signed the Lightrun certificate...
+          -----END CERTIFICATE-----
+        subjectAltNames:
+          - type: Hostname
+            hostname: lightrun.example.com
 certificate:
   existing_cert: lightrun-tls
 ```
-* For end-to-end TLS, the cluster needs Gateway API v1.4+ CRDs, which the managed add-on installs from AKS 1.35. Then set `router.tls.enabled: true` with `backend_tls_policy`, including `subjectAltNames` as on OpenShift.
+* `subjectAltNames` is required for the router identity to be checked, as on OpenShift. With a wrong name the gateway returns 503.
+* Use `wellKnownCACertificates: System` instead of `ca_certificate` for publicly trusted certificates.
+* To keep the router on plain HTTP, set `router.tls.enabled: false` and drop `backend_tls_policy`.
+* For an internal Azure load balancer, add `service.beta.kubernetes.io/azure-load-balancer-internal: "true"` under `gateway.infrastructure.annotations`.
 * Microsoft documents that this implementation doesn't support request header or body size limits.
 
 # Network policy
