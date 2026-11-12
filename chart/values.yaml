@@ -333,7 +333,7 @@ general:
       ## Requires the BackendTLSPolicy CRD (Gateway API v1.4+ standard channel, or v1alpha3 from the experimental channel).
       backend_tls_policy:
         enabled: true
-        ## Auto-detected from the cluster (v1, then v1alpha3) when empty
+        ## When empty: v1, or v1alpha3 if the cluster serves only that version
         api_version: ""
         ## Hostname used for SNI and certificate validation. Defaults to general.lightrun_endpoint
         hostname: ""
