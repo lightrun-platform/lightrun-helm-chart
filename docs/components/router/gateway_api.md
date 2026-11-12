@@ -9,7 +9,7 @@ Gateway API support is **disabled by default**. Existing installations don't cha
 The cluster must already provide:
 1. **Gateway API CRDs** (`gateway.networking.k8s.io`), v1.2 or later, from the standard channel.
 2. **A Gateway API implementation** (controller) and its `GatewayClass`, for example Envoy Gateway, NGINX Gateway Fabric, Istio, Cilium, the GKE Gateway controller, or the AWS Load Balancer Controller.
-3. **Only if the router serves HTTPS** (`general.router.tls.enabled` or `general.internal_tls.enabled`): the `BackendTLSPolicy` CRD, `v1` (Gateway API v1.4+), or `v1alpha3` with `backend_tls_policy.api_version` set to it. Some platforms don't provide it.
+3. **Only if the router serves HTTPS** (`general.router.tls.enabled` or `general.internal_tls.enabled`): the `BackendTLSPolicy` CRD: `v1` (Gateway API v1.4+), or `v1alpha3` if you also set `backend_tls_policy.api_version: gateway.networking.k8s.io/v1alpha3`. Some platforms don't provide it.
 4. A DNS record for `general.lightrun_endpoint` that points to the Gateway's external address.
 
 ## Configuration reference
@@ -36,6 +36,7 @@ All keys are under `general.router.gateway_api`:
 | `backend_tls_policy.ca_certificate` | `""` | PEM of the CA that signed the router certificate. The chart stores it in the ConfigMap `<release>-router-backend-ca`. |
 | `backend_tls_policy.caCertificateRefs` | `[]` | Existing ConfigMaps (key `ca.crt`) to validate the router certificate with. |
 | `backend_tls_policy.wellKnownCACertificates` | `false` | Set to `true` to trust the Gateway's system CA bundle, when the certificate is publicly trusted. |
+| `backend_tls_policy.annotations`, `backend_tls_policy.labels` | `{}` | Added to the `BackendTLSPolicy`. Labels are also added to the CA ConfigMap. |
 | `backend_tls_policy.subjectAltNames` | `[]` | Names the router certificate must contain, for example `[{type: Hostname, hostname: lightrun.example.com}]`. Set this on Istio-based gateways, including OpenShift: they check the certificate chain but verify the router's identity only through this field. They send `hostname` when connecting but don't validate the certificate against it. |
 
 When the router serves HTTPS, set either a CA (`ca_certificate`, `caCertificateRefs`, or both, which are combined in the policy) or `wellKnownCACertificates: true`, not both.
@@ -98,17 +99,19 @@ general:
 ```
 `lightrun-router-ca` is a ConfigMap in the Lightrun namespace with the CA that signed the certificate in the `certificate` section, under the key `ca.crt`. For publicly trusted certificates, use `wellKnownCACertificates: true` instead.
 
+On GKE, the Gateway uses HTTPS to the router only when the router Service declares it, so also set `general.router.service.annotations` to `cloud.google.com/app-protocols: '{"https":"HTTPS"}'`.
+
 An existing Gateway must accept routes from the Lightrun namespace through `allowedRoutes.namespaces` on its listeners. Its listener must present the same certificate as the `certificate` section, because IDE plugins and agents pin that certificate. The Lightrun namespace does not need a `ReferenceGrant`, because the `HTTPRoute` and the router Service are in the same namespace.
 
 > [!NOTE]
 > TLS passthrough to the router (`TLSRoute`) is not provided by the chart. To let only the router handle TLS, expose the router Service as `type: LoadBalancer` instead of using a Gateway.
 
 ## Timeouts and body size
-With the Ingress NGINX controller, these settings were annotations (`proxy-read-timeout`, `proxy-body-size`). Gateway API has no portable field for the body size, and timeout support varies. Configure them per implementation:
+With Ingress NGINX, these are set through annotations (`proxy-read-timeout`, `proxy-body-size`). Gateway API has no portable field for the body size, and timeout support varies. Configure them per implementation:
 
 **Envoy Gateway.** Set `general.router.gateway_api.timeouts.request: "600s"`. Without it, requests running longer than 15s (for example `/mcp`) fail with a 504. Envoy Gateway doesn't limit the body size by default.
 
-**NGINX Gateway Fabric.** NGF ignores `HTTPRoute` timeouts, limits request bodies to 1m and uses nginx's default proxy buffer size. Create these policies in the Lightrun namespace (the route name is `<release>-router`):
+**NGINX Gateway Fabric.** NGF ignores `HTTPRoute` timeouts, limits request bodies to 1 MB and uses nginx's default proxy buffer size. Create these policies in the Lightrun namespace (the route name is `<release>-router`; this example uses release `lightrun`):
 ```yaml
 apiVersion: gateway.nginx.org/v1alpha1
 kind: ClientSettingsPolicy
@@ -187,6 +190,7 @@ certificate:
 
 ### OpenShift: OpenShift Gateway API (Ingress Operator)
 Requires the OpenShift GatewayClass, usually named `openshift-default`.
+
 **OpenShift 4.19–4.21** (no BackendTLSPolicy, so the router stays on plain HTTP):
 ```yaml
 general:
@@ -241,11 +245,12 @@ certificate:
 Tested with EKS 1.36, AWS Load Balancer Controller v3.6.2 and the Gateway API v1.6.0 standard CRDs. Requires the AWS Load Balancer Controller with Gateway API support and a GatewayClass with `controllerName: gateway.k8s.aws/alb`, named `aws-alb` here.
 
 Some ALB limits shape this setup:
-* ALB can't read the TLS certificate from a Kubernetes Secret (`certificateRefs`), so the HTTPS listener has no `tls` block. The certificate comes from ACM through a `LoadBalancerConfiguration`, and it must be the Lightrun certificate from the `certificate` section imported into ACM, because IDE plugins and agents pin it. See [Import Certificate To ACM](aws_load_balancer_controller.md#import-certificate-to-aws-certificate-manager-acm).
+* ALB can't read the TLS certificate from a Kubernetes Secret (`certificateRefs`), so the HTTPS listener has no `tls` block. The certificate comes from AWS Certificate Manager (ACM) through a `LoadBalancerConfiguration`, and it must be the Lightrun certificate from the `certificate` section imported into ACM, because IDE plugins and agents pin it. See [Import Certificate To ACM](aws_load_balancer_controller.md#import-certificate-to-aws-certificate-manager-acm).
 * `HTTPRoute.timeouts` is not supported. Raise the ALB idle timeout instead.
 * `BackendTLSPolicy` is not supported, so keep the router on plain HTTP.
 ```yaml
 general:
+  lightrun_endpoint: lightrun.example.com
   router:
     tls:
       enabled: false
@@ -284,6 +289,8 @@ general:
           - name: lightrun-gateway
             sectionName: http
 ```
+This example assumes the release name `lightrun`: the chart names the Gateway `<release>-gateway` and the router Service `<release>-router`, so adjust `parentRefs` and `targetReference.name` below to your release name.
+
 Create these in the Lightrun namespace:
 ```yaml
 apiVersion: gateway.k8s.aws/v1
@@ -311,7 +318,7 @@ spec:
     healthCheckConfig:
       healthCheckPath: /health
 ```
-To keep HTTPS between the ALB and the router, set `router.tls.enabled: true`, `gateway_api.backend_tls_policy.enabled: false`, and in the `TargetGroupConfiguration` set `protocol: HTTPS` and `healthCheckConfig.healthCheckProtocol: HTTPS`. The ALB then encrypts traffic to the router but doesn't validate the router certificate.
+To keep HTTPS between the ALB and the router, set `general.router.tls.enabled: true`, `general.router.gateway_api.backend_tls_policy.enabled: false`, and in the `TargetGroupConfiguration` set `protocol: HTTPS` and `healthCheckConfig.healthCheckProtocol: HTTPS`. The ALB then encrypts traffic to the router but doesn't validate the router certificate.
 * For a load balancer reachable only from your network, set `scheme: internal` in the `LoadBalancerConfiguration`.
 * The ALB adds the port to the redirect target (`Location: https://<host>:443/...`). Browsers handle this normally.
 
@@ -345,12 +352,12 @@ certificate:
 ```
 * `subjectAltNames` is required for the router identity to be checked, as on OpenShift. With a wrong name the gateway returns 503.
 * `lightrun-router-ca` is a ConfigMap in the Lightrun namespace with the CA that signed the Lightrun certificate, under the key `ca.crt`. For publicly trusted certificates, use `wellKnownCACertificates: true` instead.
-* To keep the router on plain HTTP, set `router.tls.enabled: false` and drop `backend_tls_policy`.
+* To keep the router on plain HTTP, set `general.router.tls.enabled: false` and drop `backend_tls_policy`.
 * For an internal Azure load balancer, add `service.beta.kubernetes.io/azure-load-balancer-internal: "true"` under `gateway.infrastructure.annotations`.
 * Microsoft documents that this implementation doesn't support request header or body size limits.
 
 ## Network policy
-When `general.networkPolicy.ingress.enabled` is `true`, add the namespace where the Gateway's data-plane pods run to `general.networkPolicy.ingress.namespacesSelector`. Otherwise the Gateway can't reach the router and returns 503. The namespace depends on the implementation:
+When `general.networkPolicy.enabled` and `general.networkPolicy.ingress.enabled` are `true`, add the namespace where the Gateway's proxy pods run to `general.networkPolicy.ingress.namespacesSelector`. Otherwise the Gateway can't reach the router and returns 503. The namespace depends on the implementation:
 * Envoy Gateway: `envoy-gateway-system`, by default
 * NGINX Gateway Fabric: the Gateway's namespace
 * Istio: the Gateway's namespace
@@ -372,14 +379,14 @@ Gateway API support by OpenShift version:
 
 | OpenShift | Gateway API | With this chart |
 |---|---|---|
-| 4.14–4.18 | Not shipped by OpenShift | Keep the Ingress/Route. If `gateway_api.enabled` is set, the install fails because the CRDs are missing. |
+| 4.14–4.18 | Not shipped by OpenShift | Keep the Ingress/Route. If `gateway_api.enabled` is `true`, the install fails because the CRDs are missing. |
 | 4.19–4.21 | v1.2.1 / v1.3.0 standard, no BackendTLSPolicy | Topology 1 only (router on plain HTTP). Tested on ROSA 4.20.46. With router TLS on, the install fails because the cluster has no BackendTLSPolicy CRD. |
 | 4.22+ / 5.x | v1.4+ standard, including BackendTLSPolicy | Topology 1 or 2. Tested on ROSA 5.0.1. |
 
 To use the OpenShift Gateway API instead (OpenShift 4.19+):
 1. The cluster must have the OpenShift `GatewayClass`, usually named `openshift-default`.
 2. Then use one of these:
-   * `gateway.create: true` with `gateway.gatewayClassName: openshift-default`. The Gateway and its Envoy proxy pods are created in the Lightrun namespace, together with a `LoadBalancer` Service, which is an ELB on ROSA. You need permission to create Gateways in the namespace.
+   * `gateway.create: true` with `gateway.gatewayClassName: openshift-default`. The Gateway and its Envoy proxy pods are created in the Lightrun namespace, together with a `LoadBalancer` Service, which is an AWS Elastic Load Balancer (ELB) on ROSA. You need permission to create Gateways in the namespace.
    * `parentRefs` pointing to a Gateway that the cluster admin manages, for example in `openshift-ingress`. You only need permission to create `HTTPRoute`s.
 3. On OpenShift 4.19–4.21 the `BackendTLSPolicy` CRD is not available. Use [topology 1](#1---gateway-tls--lightrun-router-non-ssl-most-portable) (`general.router.tls.enabled: false`, `general.internal_tls.enabled: false`).
 4. On OpenShift 4.22+ and 5.x you can use topology 2. Set `backend_tls_policy.subjectAltNames` to the router hostname as well: the OpenShift gateway checks the certificate chain, but verifies the hostname only through `subjectAltNames`.
@@ -390,8 +397,8 @@ See [Examples by platform](#openshift-openshift-gateway-api-ingress-operator) fo
 
 ## Troubleshooting
 * **`helm install` or `helm upgrade` fails with `no matches for kind "HTTPRoute"`, `"Gateway"` or `"BackendTLSPolicy"`.** The cluster doesn't meet the [prerequisites](#prerequisites). For `BackendTLSPolicy`, use topology 1 (`general.router.tls.enabled: false`), or set `backend_tls_policy.enabled: false` if your implementation handles backend TLS another way.
-* **A wrong `hostname` is still accepted** (Istio, OpenShift). These implementations verify the router's identity only through `backend_tls_policy.subjectAltNames`, so set it.
-* **502/503 from the Gateway with topology 2.** The `BackendTLSPolicy` CA or hostname doesn't match the router certificate. The certificate must include `backend_tls_policy.hostname` (by default `general.lightrun_endpoint`) in its SAN. If the policy is fine, a NetworkPolicy may be blocking the Gateway. See [Network policy](#network-policy).
+* **The Gateway accepts a router certificate that doesn't match `backend_tls_policy.hostname`** (Istio, OpenShift). These implementations verify the router's identity only through `backend_tls_policy.subjectAltNames`, so set it.
+* **502/503 from the Gateway with topology 2.** The `BackendTLSPolicy` CA or hostname doesn't match the router certificate. The router certificate must list `backend_tls_policy.hostname` (by default `general.lightrun_endpoint`) among its Subject Alternative Names (SANs). If the policy is fine, a NetworkPolicy may be blocking the Gateway. See [Network policy](#network-policy).
 * **504 after about 15 seconds** (Envoy Gateway). Set `timeouts.request`.
 * **413 on uploads** (NGINX Gateway Fabric). Add the `ClientSettingsPolicy` above.
 * **The Gateway stays `Programmed=False`.** The implementation couldn't get an address for it. Check the Gateway status conditions. `gateway.infrastructure` and `gateway.addresses` are passed through if your implementation needs them.

@@ -294,7 +294,7 @@ general:
       #   request: "600s"
       #   backendRequest: "600s"
       timeouts: {}
-      ## HTTPRoute rule filters, for example header modifiers. Don't add redirect filters here: they apply to all traffic, example:
+      ## HTTPRoute rule filters, for example header modifiers. Don't add redirect or rewrite filters here: they apply to all traffic, example:
       # filters:
       #   - type: ResponseHeaderModifier
       #     responseHeaderModifier:
@@ -338,7 +338,7 @@ general:
         enabled: true
         ## For example gateway.networking.k8s.io/v1alpha3 on clusters that serve only the experimental version
         api_version: gateway.networking.k8s.io/v1
-        ## Hostname the Gateway requests from the router over TLS and validates the router certificate against. Defaults to general.lightrun_endpoint
+        ## Hostname the Gateway sends when it opens the TLS connection to the router, and validates the router certificate against. Defaults to general.lightrun_endpoint
         hostname: ""
         ## One of the following is required to validate the router certificate:
         ## PEM of the CA that signed the router certificate, stored by the chart in a ConfigMap, example:
@@ -355,7 +355,7 @@ general:
         caCertificateRefs: []
         ## true to trust the Gateway's system CA bundle (publicly trusted certificates)
         wellKnownCACertificates: false
-        ## Names the router certificate must contain. Some implementations (for example the Istio based OpenShift Gateway)
+        ## Names the router certificate must contain. Some implementations (for example the Istio-based OpenShift Gateway)
         ## verify the router identity only through this field and don't validate the certificate against `hostname`, example:
         # subjectAltNames:
         #   - type: Hostname
