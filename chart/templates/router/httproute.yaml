@@ -15,7 +15,12 @@ metadata:
   {{- end }}
 spec:
   parentRefs:
-    {{- include "router.gateway_api.parentRefs" . | nindent 4 }}
+  {{- if $config.parentRefs }}
+    {{- toYaml $config.parentRefs | nindent 4 }}
+  {{- else }}
+    - name: {{ include "router.gateway_api.gateway.name" . }}
+      sectionName: https
+  {{- end }}
   hostnames:
     {{- toYaml $config.hostnames | nindent 4 }}
   rules:
@@ -25,7 +30,11 @@ spec:
             value: /
       backendRefs:
         - name: {{ include "router.name" . }}
-          port: {{ include "router.gateway_api.backend_port" . }}
+          {{- if eq (include "router.use-tls" .) "true" }}
+          port: {{ .Values.general.router.service.ports.https }}
+          {{- else }}
+          port: {{ .Values.general.router.service.ports.http }}
+          {{- end }}
       {{- with $config.filters }}
       filters:
         {{- toYaml . | nindent 8 }}

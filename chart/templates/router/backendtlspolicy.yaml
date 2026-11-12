@@ -33,7 +33,19 @@ spec:
       name: {{ include "router.name" . }}
   validation:
     hostname: {{ $policy.hostname | quote }}
-    {{- include "router.gateway_api.backend_tls_policy.ca" . | nindent 4 }}
+    {{- if or $policy.ca_certificate $policy.caCertificateRefs }}
+    caCertificateRefs:
+      {{- if $policy.ca_certificate }}
+      - group: ""
+        kind: ConfigMap
+        name: {{ include "router.gateway_api.backend_ca.name" . }}
+      {{- end }}
+      {{- with $policy.caCertificateRefs }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+    {{- else }}
+    wellKnownCACertificates: System
+    {{- end }}
     {{- with $policy.subjectAltNames }}
     subjectAltNames:
       {{- toYaml . | nindent 6 }}

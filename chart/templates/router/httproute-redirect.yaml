@@ -14,7 +14,12 @@ metadata:
   {{- end }}
 spec:
   parentRefs:
-    {{- include "router.gateway_api.http_redirect.parentRefs" . | nindent 4 }}
+  {{- if $config.http_redirect.parentRefs }}
+    {{- toYaml $config.http_redirect.parentRefs | nindent 4 }}
+  {{- else }}
+    - name: {{ include "router.gateway_api.gateway.name" . }}
+      sectionName: http
+  {{- end }}
   hostnames:
     {{- toYaml $config.hostnames | nindent 4 }}
   rules:

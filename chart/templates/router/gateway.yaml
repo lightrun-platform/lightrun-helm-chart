@@ -1,5 +1,6 @@
 {{- if eq (include "router.gateway_api.gateway.create" .) "true" }}
-{{- $gateway := (include "router.gateway_api.config" . | fromYaml).gateway }}
+{{- $config := include "router.gateway_api.config" . | fromYaml }}
+{{- $gateway := $config.gateway }}
 apiVersion: {{ $gateway.api_version }}
 kind: Gateway
 metadata:
@@ -23,5 +24,30 @@ spec:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   listeners:
-    {{- include "router.gateway_api.gateway.listeners" . | nindent 4 }}
+  {{- if $gateway.listeners }}
+    {{- toYaml $gateway.listeners | nindent 4 }}
+  {{- else }}
+    - name: https
+      protocol: HTTPS
+      port: 443
+      hostname: {{ .Values.general.lightrun_endpoint | quote }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: {{ include "secrets.certificate.name" . }}
+      allowedRoutes:
+        namespaces:
+          from: Same
+    {{- if $config.http_redirect.enabled }}
+    - name: http
+      protocol: HTTP
+      port: 80
+      hostname: {{ .Values.general.lightrun_endpoint | quote }}
+      allowedRoutes:
+        namespaces:
+          from: Same
+    {{- end }}
+  {{- end }}
 {{- end }}
