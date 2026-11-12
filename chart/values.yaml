@@ -280,8 +280,6 @@ general:
     ## See docs/components/router/gateway_api.md
     gateway_api:
       enabled: false
-      ## Gateways the HTTPRoute attaches to. Required unless gateway.create is true.
-      ## example:
       # parentRefs:
       #   - name: shared-gateway
       #     namespace: gateway-system
