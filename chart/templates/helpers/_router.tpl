@@ -67,7 +67,7 @@ proxy_ssl_trusted_certificate /ca_cert/ca.crt;
 
 
 {{- define "router.gateway_api.gateway.name" -}}
-{{ include "router.name" . }}
+{{ include "lightrun.fullname" . }}-gateway
 {{- end -}}
 
 
@@ -106,14 +106,6 @@ false
 {{- if and $create (empty (dig "gateway" "gatewayClassName" "" $gw)) -}}
 {{- fail "general.router.gateway_api.gateway.create requires general.router.gateway_api.gateway.gatewayClassName (see: kubectl get gatewayclass)" -}}
 {{- end -}}
-{{- if dig "validate_crds" true $gw -}}
-{{- if not (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1/HTTPRoute") -}}
-{{- fail "general.router.gateway_api.enabled is true but the Gateway API CRDs (gateway.networking.k8s.io/v1 HTTPRoute) are not installed in the cluster. Install the Gateway API CRDs and a Gateway API implementation first. When rendering offline (helm template, GitOps), pass --api-versions gateway.networking.k8s.io/v1/HTTPRoute or set general.router.gateway_api.validate_crds: false" -}}
-{{- end -}}
-{{- if and $create (not (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1/Gateway")) -}}
-{{- fail "general.router.gateway_api.gateway.create is true but the Gateway API CRD gateway.networking.k8s.io/v1 Gateway is not installed in the cluster" -}}
-{{- end -}}
-{{- end -}}
 {{- end -}}
 
 
@@ -135,9 +127,7 @@ false
 gateway.networking.k8s.io/v1
 {{- else if .Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1alpha3/BackendTLSPolicy" -}}
 gateway.networking.k8s.io/v1alpha3
-{{- else if not (dig "validate_crds" true $gw) -}}
-gateway.networking.k8s.io/v1
 {{- else -}}
-{{- fail "The router serves HTTPS (general.router.tls.enabled or general.internal_tls.enabled is true), so the Gateway must connect to it over TLS, but the BackendTLSPolicy CRD (gateway.networking.k8s.io v1 or v1alpha3) is not installed in the cluster. Either install it (Gateway API v1.4+ standard channel, or the experimental channel of older releases), set general.router.tls.enabled: false so the Gateway terminates TLS and talks plain HTTP to the router, or set general.router.gateway_api.backend_tls_policy.enabled: false and configure backend TLS with your implementation's own resources" -}}
+gateway.networking.k8s.io/v1
 {{- end -}}
 {{- end -}}

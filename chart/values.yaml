@@ -280,10 +280,6 @@ general:
     ## See docs/components/router/gateway_api.md
     gateway_api:
       enabled: false
-      ## Fail the install when the Gateway API CRDs are not found in the cluster.
-      ## Set to false when rendering without cluster access (for example `helm template` in CI),
-      ## or pass `--api-versions gateway.networking.k8s.io/v1/HTTPRoute` instead.
-      validate_crds: true
       ## Gateways the HTTPRoute attaches to. Required unless gateway.create is true.
       ## example:
       # parentRefs:
