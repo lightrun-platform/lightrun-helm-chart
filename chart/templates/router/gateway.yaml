@@ -1,7 +1,7 @@
 {{- $gw := .Values.general.router.gateway_api }}
 {{- if and $gw.enabled $gw.gateway.create }}
 {{- $gateway := $gw.gateway }}
-apiVersion: {{ $gateway.api_version }}
+apiVersion: {{ $gateway.api_version | default "gateway.networking.k8s.io/v1" }}
 kind: Gateway
 metadata:
   name: {{ include "router.gateway_api.gateway.name" . }}

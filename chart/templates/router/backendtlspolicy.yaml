@@ -14,7 +14,7 @@ data:
     {{- $policy.ca_certificate | nindent 4 }}
 ---
 {{- end }}
-apiVersion: {{ $policy.api_version }}
+apiVersion: {{ $policy.api_version | default "gateway.networking.k8s.io/v1" }}
 kind: BackendTLSPolicy
 metadata:
   name: {{ include "router.name" . }}

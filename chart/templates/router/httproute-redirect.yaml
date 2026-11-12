@@ -1,6 +1,6 @@
 {{- $gw := .Values.general.router.gateway_api }}
 {{- if eq (include "router.gateway_api.http_redirect.enabled" .) "true" }}
-apiVersion: {{ $gw.api_version }}
+apiVersion: {{ $gw.api_version | default "gateway.networking.k8s.io/v1" }}
 kind: HTTPRoute
 metadata:
   name: {{ include "router.name" . }}-http-redirect
