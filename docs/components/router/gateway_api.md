@@ -91,13 +91,13 @@ general:
             namespace: gateway-system
             sectionName: http
       backend_tls_policy:
-        # PEM of the CA that signed the certificate in the `certificate` section.
-        # Use `wellKnownCACertificates: System` for publicly trusted certificates.
-        ca_certificate: |
-          -----BEGIN CERTIFICATE-----
-          ...
-          -----END CERTIFICATE-----
+        caCertificateRefs:
+          - group: ""
+            kind: ConfigMap
+            name: lightrun-router-ca
 ```
+`lightrun-router-ca` is a ConfigMap in the Lightrun namespace with the CA that signed the certificate in the `certificate` section, under the key `ca.crt`. For publicly trusted certificates, use `wellKnownCACertificates: System` instead.
+
 An existing Gateway must accept routes from the Lightrun namespace through `allowedRoutes.namespaces` on its listeners. Its listener must present the same certificate as the `certificate` section, because IDE plugins and agents pin that certificate. The Lightrun namespace does not need a `ReferenceGrant`, because the `HTTPRoute` and the router Service are in the same namespace.
 
 > [!NOTE]
@@ -146,7 +146,7 @@ spec:
 ## Examples by platform
 Each platform below uses the Gateway API implementation that most clusters on it run. That is the platform's own managed implementation where one exists, and Envoy Gateway on self-managed clusters. The chart renders the same generic resources everywhere; only the values and the platform's own configuration objects differ.
 
-All examples set `ingress.enabled: false`. During a migration, keep it `true` until DNS points to the Gateway (see [Migrating from Ingress NGINX](#migrating-from-ingress-nginx)). `certificate.existing_cert` is the TLS Secret the chart already uses for the Ingress.
+All examples set `ingress.enabled: false`. During a migration, keep it `true` until DNS points to the Gateway. `certificate.existing_cert` is the TLS Secret the chart already uses for the Ingress.
 
 | Platform | Implementation | Router TLS | Status |
 |---|---|---|---|
@@ -174,13 +174,14 @@ general:
         create: true
         gatewayClassName: eg
       backend_tls_policy:
-        ca_certificate: |
-          -----BEGIN CERTIFICATE-----
-          ...CA that signed the Lightrun certificate...
-          -----END CERTIFICATE-----
+        caCertificateRefs:
+          - group: ""
+            kind: ConfigMap
+            name: lightrun-router-ca
 certificate:
   existing_cert: lightrun-tls
 ```
+* `lightrun-router-ca` is a ConfigMap in the Lightrun namespace with the CA that signed the Lightrun certificate, under the key `ca.crt`.
 * `timeouts.request` is required. Envoy Gateway ends requests after 15s by default.
 * With NetworkPolicy enabled, add `envoy-gateway-system` to `general.networkPolicy.ingress.namespacesSelector`.
 
@@ -232,7 +233,7 @@ certificate:
   existing_cert: lightrun-tls
 ```
 * `subjectAltNames` is required for the router identity to be checked. The OpenShift gateway uses `hostname` only for SNI.
-* Use `wellKnownCACertificates: System` for publicly trusted certificates. For a private CA, use `ca_certificate`.
+* Use `wellKnownCACertificates: System` for publicly trusted certificates. For a private CA, use `caCertificateRefs` with a ConfigMap that holds the CA under `ca.crt`.
 * The Gateway gets its own load balancer, so `general.lightrun_endpoint` must resolve to the Gateway address, not to the default router.
 * Without permission to create Gateways in the namespace, attach to an admin-managed Gateway with `parentRefs` instead of `gateway.create`.
 
@@ -332,10 +333,10 @@ general:
         create: true
         gatewayClassName: approuting-istio
       backend_tls_policy:
-        ca_certificate: |
-          -----BEGIN CERTIFICATE-----
-          ...CA that signed the Lightrun certificate...
-          -----END CERTIFICATE-----
+        caCertificateRefs:
+          - group: ""
+            kind: ConfigMap
+            name: lightrun-router-ca
         subjectAltNames:
           - type: Hostname
             hostname: lightrun.example.com
@@ -343,7 +344,7 @@ certificate:
   existing_cert: lightrun-tls
 ```
 * `subjectAltNames` is required for the router identity to be checked, as on OpenShift. With a wrong name the gateway returns 503.
-* Use `wellKnownCACertificates: System` instead of `ca_certificate` for publicly trusted certificates.
+* `lightrun-router-ca` is a ConfigMap in the Lightrun namespace with the CA that signed the Lightrun certificate, under the key `ca.crt`. For publicly trusted certificates, use `wellKnownCACertificates: System` instead.
 * To keep the router on plain HTTP, set `router.tls.enabled: false` and drop `backend_tls_policy`.
 * For an internal Azure load balancer, add `service.beta.kubernetes.io/azure-load-balancer-internal: "true"` under `gateway.infrastructure.annotations`.
 * Microsoft documents that this implementation doesn't support request header or body size limits.
@@ -386,49 +387,6 @@ To use the OpenShift Gateway API instead (OpenShift 4.19+):
 See [Examples by platform](#openshift-openshift-gateway-api-ingress-operator) for tested values for both version ranges.
 
 `general.openshift_embeded_hostname` only applies to the Ingress/Route path.
-
-## Migrating from Ingress NGINX
-The Ingress and the Gateway API resources are controlled by separate flags, so you can migrate with no downtime:
-
-1. **Check the prerequisites.** Confirm the cluster meets the [prerequisites](#prerequisites) and note the `GatewayClass` name (`kubectl get gatewayclass`).
-2. **Map your Ingress annotations.**
-
-   | Ingress NGINX annotation | Gateway API equivalent |
-   |---|---|
-   | `backend-protocol: "HTTPS"` (added automatically when the router serves HTTPS) | `BackendTLSPolicy`, rendered by the chart (`backend_tls_policy.*`), or switch to topology 1 |
-   | `proxy-read-timeout` / `proxy-send-timeout` | `gateway_api.timeouts` or an implementation policy, see [Timeouts and body size](#timeouts-and-body-size) |
-   | `proxy-body-size` | implementation policy (NGF `ClientSettingsPolicy`, Envoy Gateway `BackendTrafficPolicy.requestBuffer`) |
-   | `proxy-buffer-size: "8k"` (added automatically) | not needed. The router sets its own buffers. |
-   | `ssl-redirect` / `force-ssl-redirect` | `http_redirect.enabled` |
-   | `whitelist-source-range` | `general.router.acl.*` (enforced by the router, independent of the controller) |
-   | `ingressClassName` | `gateway.gatewayClassName` or `parentRefs` |
-3. **Enable Gateway API next to the existing Ingress.** Leave `general.router.ingress.enabled: true` for now:
-   ```yaml
-   general:
-     router:
-       gateway_api:
-         enabled: true
-         timeouts:
-           request: "600s"
-         gateway:
-           create: true
-           gatewayClassName: <your-class>
-   ```
-   Run `helm upgrade` with your values file. This adds the Gateway API resources, keeps the Ingress, and doesn't restart the router.
-4. **Verify the new path before you switch DNS.**
-   ```shell
-   kubectl -n <namespace> get gateway,httproute,backendtlspolicy
-   # Accepted=True and Programmed=True on the Gateway, Accepted=True and ResolvedRefs=True on the routes and the policy
-   GW_IP=$(kubectl -n <namespace> get gateway <release>-gateway -o jsonpath='{.status.addresses[0].value}')
-   curl --resolve <lightrun_endpoint>:443:$GW_IP https://<lightrun_endpoint>/
-   ```
-5. **Switch DNS** for `general.lightrun_endpoint` to the Gateway address. Wait for the old record's TTL to expire.
-6. **Remove the Ingress.** Set `general.router.ingress.enabled: false` and run `helm upgrade` again.
-
-To roll back, set `general.router.ingress.enabled: true` again, or run `helm rollback`, and point DNS back to the Ingress controller.
-
-> [!NOTE]
-> If you upgrade with `--reuse-values` from a chart version that has no `gateway_api` section, pass the Gateway API keys with `--set` or `-f`. Missing keys fall back to the defaults listed above.
 
 ## Troubleshooting
 * **`helm install` or `helm upgrade` fails with `no matches for kind "HTTPRoute"`, `"Gateway"` or `"BackendTLSPolicy"`.** The cluster doesn't meet the [prerequisites](#prerequisites). For `BackendTLSPolicy`, use topology 1 (`general.router.tls.enabled: false`), or set `backend_tls_policy.enabled: false` if your implementation handles backend TLS another way.
