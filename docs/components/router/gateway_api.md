@@ -32,11 +32,11 @@ All keys are under `general.router.gateway_api`:
 | `gateway.annotations`, `gateway.labels` | `{}` | Added to the `Gateway`. |
 | `backend_tls_policy.enabled` | `true` | Render a `BackendTLSPolicy` for the router Service when the router serves HTTPS. |
 | `backend_tls_policy.api_version` | `""` | If empty, `gateway.networking.k8s.io/v1`, or `v1alpha3` when the cluster serves only that version. |
-| `backend_tls_policy.hostname` | `""` | SNI and the name the router certificate is validated against. If empty, `general.lightrun_endpoint` is used. |
+| `backend_tls_policy.hostname` | `""` | The hostname the Gateway requests when it opens the TLS connection to the router, and the name the router certificate is validated against. If empty, `general.lightrun_endpoint` is used. |
 | `backend_tls_policy.ca_certificate` | `""` | PEM of the CA that signed the router certificate. The chart stores it in the ConfigMap `<release>-router-backend-ca`. |
 | `backend_tls_policy.caCertificateRefs` | `[]` | Existing ConfigMaps (key `ca.crt`) to validate the router certificate with. |
 | `backend_tls_policy.wellKnownCACertificates` | `""` | Set to `System` when the certificate is publicly trusted. |
-| `backend_tls_policy.subjectAltNames` | `[]` | Names the router certificate must contain, for example `[{type: Hostname, hostname: lightrun.example.com}]`. Set this on Istio-based gateways, including OpenShift: they check the certificate chain but verify the router's identity only through this field. They use `hostname` for SNI only. |
+| `backend_tls_policy.subjectAltNames` | `[]` | Names the router certificate must contain, for example `[{type: Hostname, hostname: lightrun.example.com}]`. Set this on Istio-based gateways, including OpenShift: they check the certificate chain but verify the router's identity only through this field. They send `hostname` when connecting but don't validate the certificate against it. |
 
 When the router serves HTTPS, exactly one of `ca_certificate`, `caCertificateRefs` or `wellKnownCACertificates` is required. If you set `ca_certificate` and `caCertificateRefs` together, both are added to the policy.
 
@@ -232,7 +232,7 @@ general:
 certificate:
   existing_cert: lightrun-tls
 ```
-* `subjectAltNames` is required for the router identity to be checked. The OpenShift gateway uses `hostname` only for SNI.
+* `subjectAltNames` is required for the router identity to be checked. The OpenShift gateway sends `hostname` when connecting to the router but doesn't validate the certificate against it.
 * Use `wellKnownCACertificates: System` for publicly trusted certificates. For a private CA, use `caCertificateRefs` with a ConfigMap that holds the CA under `ca.crt`.
 * The Gateway gets its own load balancer, so `general.lightrun_endpoint` must resolve to the Gateway address, not to the default router.
 * Without permission to create Gateways in the namespace, attach to an admin-managed Gateway with `parentRefs` instead of `gateway.create`.

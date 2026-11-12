@@ -335,7 +335,7 @@ general:
         enabled: true
         ## When empty: v1, or v1alpha3 if the cluster serves only that version
         api_version: ""
-        ## Hostname used for SNI and certificate validation. Defaults to general.lightrun_endpoint
+        ## Hostname the Gateway requests from the router over TLS and validates the router certificate against. Defaults to general.lightrun_endpoint
         hostname: ""
         ## One of the following is required to validate the router certificate:
         ## PEM of the CA that signed the router certificate, stored by the chart in a ConfigMap
@@ -349,7 +349,7 @@ general:
         ## "System" to trust the Gateway's system CA bundle (publicly trusted certificates)
         wellKnownCACertificates: ""
         ## Names the router certificate must contain. Some implementations (for example the Istio based OpenShift Gateway)
-        ## verify the router identity only through this field and use `hostname` for SNI alone, example:
+        ## verify the router identity only through this field and don't validate the certificate against `hostname`, example:
         # subjectAltNames:
         #   - type: Hostname
         #     hostname: lightrun.example.com
