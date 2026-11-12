@@ -1,6 +1,5 @@
 {{- if eq (include "router.gateway_api.backend_tls_policy.enabled" .) "true" }}
 {{- $policy := dig "router" "gateway_api" "backend_tls_policy" dict .Values.general }}
-{{- $apiVersion := include "router.gateway_api.backend_tls_policy.apiVersion" . }}
 {{- if not (or $policy.ca_certificate $policy.caCertificateRefs $policy.wellKnownCACertificates) }}
 {{- fail "general.router.gateway_api.backend_tls_policy needs a way to validate the router certificate: set ca_certificate (PEM of the CA that signed the certificate in the `certificate` section), caCertificateRefs, or wellKnownCACertificates: true" }}
 {{- end }}
@@ -18,7 +17,7 @@ data:
     {{- $policy.ca_certificate | nindent 4 }}
 ---
 {{- end }}
-apiVersion: {{ $apiVersion }}
+apiVersion: {{ $policy.api_version | default "gateway.networking.k8s.io/v1" }}
 kind: BackendTLSPolicy
 metadata:
   name: {{ include "router.name" . }}

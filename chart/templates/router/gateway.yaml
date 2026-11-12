@@ -2,7 +2,7 @@
 {{- include "router.gateway_api.validate" . }}
 {{- $gw := dig "router" "gateway_api" dict .Values.general }}
 {{- $gateway := dig "gateway" dict $gw }}
-apiVersion: gateway.networking.k8s.io/v1
+apiVersion: {{ $gateway.api_version | default "gateway.networking.k8s.io/v1" }}
 kind: Gateway
 metadata:
   name: {{ include "router.gateway_api.gateway.name" . }}

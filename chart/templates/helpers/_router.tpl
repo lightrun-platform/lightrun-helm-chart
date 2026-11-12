@@ -118,16 +118,3 @@ false
 {{- end -}}
 
 
-{{- define "router.gateway_api.backend_tls_policy.apiVersion" -}}
-{{- $gw := dig "router" "gateway_api" dict .Values.general -}}
-{{- $apiVersion := dig "backend_tls_policy" "api_version" "" $gw -}}
-{{- if $apiVersion -}}
-{{ $apiVersion }}
-{{- else if .Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1/BackendTLSPolicy" -}}
-gateway.networking.k8s.io/v1
-{{- else if .Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1alpha3/BackendTLSPolicy" -}}
-gateway.networking.k8s.io/v1alpha3
-{{- else -}}
-gateway.networking.k8s.io/v1
-{{- end -}}
-{{- end -}}

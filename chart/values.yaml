@@ -280,6 +280,8 @@ general:
     ## See docs/components/router/gateway_api.md
     gateway_api:
       enabled: false
+      ## apiVersion of the HTTPRoutes
+      api_version: gateway.networking.k8s.io/v1
       # parentRefs:
       #   - name: shared-gateway
       #     namespace: gateway-system
@@ -317,6 +319,7 @@ general:
       ## Create a Gateway as part of the chart. Leave create: false to use a Gateway managed by the cluster admin.
       gateway:
         create: false
+        api_version: gateway.networking.k8s.io/v1
         ## Required when create is true, see `kubectl get gatewayclass`
         gatewayClassName: ""
         ## Defaults to an HTTPS listener "https" on port 443 that terminates TLS with the certificate from the `certificate` section,
@@ -333,8 +336,8 @@ general:
       ## Requires the BackendTLSPolicy CRD (Gateway API v1.4+ standard channel, or v1alpha3 from the experimental channel).
       backend_tls_policy:
         enabled: true
-        ## When empty: v1, or v1alpha3 if the cluster serves only that version
-        api_version: ""
+        ## For example gateway.networking.k8s.io/v1alpha3 on clusters that serve only the experimental version
+        api_version: gateway.networking.k8s.io/v1
         ## Hostname the Gateway requests from the router over TLS and validates the router certificate against. Defaults to general.lightrun_endpoint
         hostname: ""
         ## One of the following is required to validate the router certificate:

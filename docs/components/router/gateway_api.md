@@ -9,7 +9,7 @@ Gateway API support is **disabled by default**. Existing installations don't cha
 The cluster must already provide:
 1. **Gateway API CRDs** (`gateway.networking.k8s.io`), v1.2 or later, from the standard channel.
 2. **A Gateway API implementation** (controller) and its `GatewayClass`, for example Envoy Gateway, NGINX Gateway Fabric, Istio, Cilium, the GKE Gateway controller, or the AWS Load Balancer Controller.
-3. **Only if the router serves HTTPS** (`general.router.tls.enabled` or `general.internal_tls.enabled`): the `BackendTLSPolicy` CRD, `v1` (Gateway API v1.4+) or `v1alpha3`. Some platforms don't provide it.
+3. **Only if the router serves HTTPS** (`general.router.tls.enabled` or `general.internal_tls.enabled`): the `BackendTLSPolicy` CRD, `v1` (Gateway API v1.4+), or `v1alpha3` with `backend_tls_policy.api_version` set to it. Some platforms don't provide it.
 4. A DNS record for `general.lightrun_endpoint` that points to the Gateway's external address.
 
 ## Configuration reference
@@ -31,7 +31,7 @@ All keys are under `general.router.gateway_api`:
 | `gateway.addresses`, `gateway.infrastructure` | empty | Passed through to the `Gateway` spec, for example to request a static IP or to add annotations to the generated load balancer Service. |
 | `gateway.annotations`, `gateway.labels` | `{}` | Added to the `Gateway`. |
 | `backend_tls_policy.enabled` | `true` | Render a `BackendTLSPolicy` for the router Service when the router serves HTTPS. |
-| `backend_tls_policy.api_version` | `""` | If empty, `gateway.networking.k8s.io/v1`, or `v1alpha3` when the cluster serves only that version. |
+| `api_version`, `gateway.api_version`, `backend_tls_policy.api_version` | `gateway.networking.k8s.io/v1` | apiVersion of the HTTPRoutes, the Gateway and the BackendTLSPolicy. For example, set `backend_tls_policy.api_version: gateway.networking.k8s.io/v1alpha3` on clusters that serve only that version. |
 | `backend_tls_policy.hostname` | `""` | The hostname the Gateway requests when it opens the TLS connection to the router, and the name the router certificate is validated against. If empty, `general.lightrun_endpoint` is used. |
 | `backend_tls_policy.ca_certificate` | `""` | PEM of the CA that signed the router certificate. The chart stores it in the ConfigMap `<release>-router-backend-ca`. |
 | `backend_tls_policy.caCertificateRefs` | `[]` | Existing ConfigMaps (key `ca.crt`) to validate the router certificate with. |
