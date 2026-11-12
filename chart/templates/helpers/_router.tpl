@@ -76,88 +76,10 @@ proxy_ssl_trusted_certificate /ca_cert/ca.crt;
 {{- end -}}
 
 
-{{- define "router.gateway_api.defaults" -}}
-enabled: false
-api_version: gateway.networking.k8s.io/v1
-parentRefs: []
-hostnames: []
-timeouts: {}
-filters: []
-annotations: {}
-labels: {}
-http_redirect:
-  enabled: true
-  parentRefs: []
-gateway:
-  create: false
-  api_version: gateway.networking.k8s.io/v1
-  gatewayClassName: ""
-  listeners: []
-  addresses: []
-  infrastructure: {}
-  annotations: {}
-  labels: {}
-backend_tls_policy:
-  enabled: true
-  api_version: gateway.networking.k8s.io/v1
-  hostname: ""
-  ca_certificate: ""
-  caCertificateRefs: []
-  wellKnownCACertificates: false
-  subjectAltNames: []
-  annotations: {}
-  labels: {}
-{{- end -}}
-
-
-{{- define "router.gateway_api.config" -}}
-{{- $config := dig "router" "gateway_api" dict .Values.general | deepCopy -}}
-{{- range $key, $default := include "router.gateway_api.defaults" . | fromYaml -}}
-{{- if not (hasKey $config $key) -}}
-{{- $_ := set $config $key $default -}}
-{{- else if kindIs "map" $default -}}
-{{- $section := index $config $key -}}
-{{- range $nestedKey, $nestedDefault := $default -}}
-{{- if not (hasKey $section $nestedKey) -}}
-{{- $_ := set $section $nestedKey $nestedDefault -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
-{{- if not $config.hostnames -}}
-{{- $_ := set $config "hostnames" (list .Values.general.lightrun_endpoint) -}}
-{{- end -}}
-{{- if not $config.backend_tls_policy.hostname -}}
-{{- $_ := set $config.backend_tls_policy "hostname" .Values.general.lightrun_endpoint -}}
-{{- end -}}
-{{- toYaml $config -}}
-{{- end -}}
-
-
-{{- define "router.gateway_api.enabled" -}}
-{{- $config := include "router.gateway_api.config" . | fromYaml -}}
-{{- if $config.enabled -}}
-true
-{{- else -}}
-false
-{{- end -}}
-{{- end -}}
-
-
-{{- define "router.gateway_api.gateway.create" -}}
-{{- $config := include "router.gateway_api.config" . | fromYaml -}}
-{{- if and $config.enabled $config.gateway.create -}}
-true
-{{- else -}}
-false
-{{- end -}}
-{{- end -}}
-
-
 {{- define "router.gateway_api.http_redirect.enabled" -}}
-{{- $config := include "router.gateway_api.config" . | fromYaml -}}
-{{- $chartListener := and (eq (include "router.gateway_api.gateway.create" .) "true") (empty $config.gateway.listeners) -}}
-{{- if and $config.enabled $config.http_redirect.enabled (or $config.http_redirect.parentRefs $chartListener) -}}
+{{- $gw := .Values.general.router.gateway_api -}}
+{{- $chartListener := and $gw.gateway.create (empty $gw.gateway.listeners) -}}
+{{- if and $gw.enabled $gw.http_redirect.enabled (or $gw.http_redirect.parentRefs $chartListener) -}}
 true
 {{- else -}}
 false
@@ -166,8 +88,8 @@ false
 
 
 {{- define "router.gateway_api.backend_tls_policy.enabled" -}}
-{{- $config := include "router.gateway_api.config" . | fromYaml -}}
-{{- if and $config.enabled (eq (include "router.use-tls" .) "true") $config.backend_tls_policy.enabled -}}
+{{- $gw := .Values.general.router.gateway_api -}}
+{{- if and $gw.enabled (eq (include "router.use-tls" .) "true") $gw.backend_tls_policy.enabled -}}
 true
 {{- else -}}
 false
@@ -176,16 +98,15 @@ false
 
 
 {{- define "router.gateway_api.validate" -}}
-{{- $config := include "router.gateway_api.config" . | fromYaml -}}
-{{- $create := eq (include "router.gateway_api.gateway.create" .) "true" -}}
-{{- $policy := $config.backend_tls_policy -}}
+{{- $gw := .Values.general.router.gateway_api -}}
+{{- $policy := $gw.backend_tls_policy -}}
 {{- if not .Values.general.router.service.enabled -}}
 {{- fail "general.router.gateway_api.enabled requires general.router.service.enabled: the HTTPRoute sends traffic to the router Service" -}}
 {{- end -}}
-{{- if and (not $create) (empty $config.parentRefs) -}}
+{{- if and (not $gw.gateway.create) (empty $gw.parentRefs) -}}
 {{- fail "general.router.gateway_api.enabled requires general.router.gateway_api.parentRefs (the existing Gateway to attach the HTTPRoute to) or general.router.gateway_api.gateway.create: true" -}}
 {{- end -}}
-{{- if and $create (empty $config.gateway.gatewayClassName) -}}
+{{- if and $gw.gateway.create (empty $gw.gateway.gatewayClassName) -}}
 {{- fail "general.router.gateway_api.gateway.create requires general.router.gateway_api.gateway.gatewayClassName (see: kubectl get gatewayclass)" -}}
 {{- end -}}
 {{- if and (eq (include "router.gateway_api.backend_tls_policy.enabled" .) "true") (not (or $policy.ca_certificate $policy.caCertificateRefs $policy.wellKnownCACertificates)) -}}

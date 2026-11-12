@@ -1,27 +1,27 @@
+{{- $gw := .Values.general.router.gateway_api }}
 {{- if eq (include "router.gateway_api.http_redirect.enabled" .) "true" }}
-{{- $config := include "router.gateway_api.config" . | fromYaml }}
-apiVersion: {{ $config.api_version }}
+apiVersion: {{ $gw.api_version }}
 kind: HTTPRoute
 metadata:
   name: {{ include "router.name" . }}-http-redirect
-  {{- with $config.labels }}
+  {{- with $gw.labels }}
   labels:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with $config.annotations }}
+  {{- with $gw.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
   parentRefs:
-  {{- if $config.http_redirect.parentRefs }}
-    {{- toYaml $config.http_redirect.parentRefs | nindent 4 }}
+  {{- if $gw.http_redirect.parentRefs }}
+    {{- toYaml $gw.http_redirect.parentRefs | nindent 4 }}
   {{- else }}
     - name: {{ include "router.gateway_api.gateway.name" . }}
       sectionName: http
   {{- end }}
   hostnames:
-    {{- toYaml $config.hostnames | nindent 4 }}
+    {{- toYaml ($gw.hostnames | default (list .Values.general.lightrun_endpoint)) | nindent 4 }}
   rules:
     - filters:
         - type: RequestRedirect

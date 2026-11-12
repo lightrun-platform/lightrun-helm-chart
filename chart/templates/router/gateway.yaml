@@ -1,6 +1,6 @@
-{{- if eq (include "router.gateway_api.gateway.create" .) "true" }}
-{{- $config := include "router.gateway_api.config" . | fromYaml }}
-{{- $gateway := $config.gateway }}
+{{- $gw := .Values.general.router.gateway_api }}
+{{- if and $gw.enabled $gw.gateway.create }}
+{{- $gateway := $gw.gateway }}
 apiVersion: {{ $gateway.api_version }}
 kind: Gateway
 metadata:
@@ -40,7 +40,7 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
-    {{- if $config.http_redirect.enabled }}
+    {{- if $gw.http_redirect.enabled }}
     - name: http
       protocol: HTTP
       port: 80

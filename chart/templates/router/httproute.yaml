@@ -1,28 +1,28 @@
-{{- if eq (include "router.gateway_api.enabled" .) "true" }}
+{{- $gw := .Values.general.router.gateway_api }}
+{{- if $gw.enabled }}
 {{- include "router.gateway_api.validate" . }}
-{{- $config := include "router.gateway_api.config" . | fromYaml }}
-apiVersion: {{ $config.api_version }}
+apiVersion: {{ $gw.api_version }}
 kind: HTTPRoute
 metadata:
   name: {{ include "router.name" . }}
-  {{- with $config.labels }}
+  {{- with $gw.labels }}
   labels:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with $config.annotations }}
+  {{- with $gw.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
   parentRefs:
-  {{- if $config.parentRefs }}
-    {{- toYaml $config.parentRefs | nindent 4 }}
+  {{- if $gw.parentRefs }}
+    {{- toYaml $gw.parentRefs | nindent 4 }}
   {{- else }}
     - name: {{ include "router.gateway_api.gateway.name" . }}
       sectionName: https
   {{- end }}
   hostnames:
-    {{- toYaml $config.hostnames | nindent 4 }}
+    {{- toYaml ($gw.hostnames | default (list .Values.general.lightrun_endpoint)) | nindent 4 }}
   rules:
     - matches:
         - path:
@@ -35,11 +35,11 @@ spec:
           {{- else }}
           port: {{ .Values.general.router.service.ports.http }}
           {{- end }}
-      {{- with $config.filters }}
+      {{- with $gw.filters }}
       filters:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with $config.timeouts }}
+      {{- with $gw.timeouts }}
       timeouts:
         {{- toYaml . | nindent 8 }}
       {{- end }}
