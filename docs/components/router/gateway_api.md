@@ -1,22 +1,20 @@
+# Kubernetes Gateway API
 This section configures the **Lightrun Router** with the **[Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/)**, the successor to the Ingress API.
 
 The chart renders an `HTTPRoute` that sends all traffic for `general.lightrun_endpoint` to the Lightrun Router Service. The route can attach to a Gateway that your cluster admin already runs, or to a `Gateway` that the chart creates. When the router serves HTTPS, the chart also renders a `BackendTLSPolicy` so that the Gateway connects to the router over TLS and validates its certificate.
 
 Gateway API support is **disabled by default**. Existing installations don't change until you set `general.router.gateway_api.enabled: true`.
 
-# Prerequisites
+## Prerequisites
+The cluster must already provide:
 1. **Gateway API CRDs** (`gateway.networking.k8s.io`), v1.2 or later, from the standard channel.
-   * The CRDs are often preinstalled. kubespray installs them with `gateway_api_enabled: true` (v1.6.x standard channel in kubespray v2.32). They are also installed by OpenShift 4.19+, the AKS managed Gateway API add-on, and GKE.
-   * To install them manually: `kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/<version>/standard-install.yaml`
-2. **A Gateway API implementation** (controller) and its `GatewayClass`, for example Envoy Gateway, NGINX Gateway Fabric, Istio, Cilium, the GKE Gateway controller, or the AWS Load Balancer Controller. kubespray installs only the CRDs, not a controller.
-3. **Only if the router serves HTTPS** (`general.router.tls.enabled` or `general.internal_tls.enabled`): the `BackendTLSPolicy` CRD.
-   * It is in the standard channel from Gateway API **v1.4** as `v1`. Older releases ship it as `v1alpha3`, in the experimental channel only.
-   * Some platforms don't ship it. See the [portability table](#portability).
+2. **A Gateway API implementation** (controller) and its `GatewayClass`, for example Envoy Gateway, NGINX Gateway Fabric, Istio, Cilium, the GKE Gateway controller, or the AWS Load Balancer Controller.
+3. **Only if the router serves HTTPS** (`general.router.tls.enabled` or `general.internal_tls.enabled`): the `BackendTLSPolicy` CRD, `v1` (Gateway API v1.4+) or `v1alpha3`. Some platforms don't provide it. See the [portability table](#portability).
 4. A DNS record for `general.lightrun_endpoint` that points to the Gateway's external address.
 
 The chart checks `.Capabilities.APIVersions` and fails with an explicit message when the required CRDs are missing. See [Rendering without cluster access](#rendering-without-cluster-access) for `helm template` and GitOps pipelines.
 
-# Configuration reference
+## Configuration reference
 All keys are under `general.router.gateway_api`:
 
 | Key | Default | Description |
@@ -47,7 +45,7 @@ When the router serves HTTPS, exactly one of `ca_certificate`, `caCertificateRef
 
 The `HTTPRoute` points to the router Service on port `general.router.service.ports.https` when the router serves HTTPS. Otherwise it uses `general.router.service.ports.http`. `general.router.service.enabled` must stay `true`.
 
-# Choose a TLS topology
+## Choose a TLS topology
 ##### 1 - Gateway TLS <> Lightrun Router Non-SSL (most portable)
 >The Gateway terminates TLS on port 443 and forwards plain HTTP to the router on port 8080. It needs no BackendTLSPolicy and works with every implementation, including OpenShift 4.19–4.21 and the AWS Load Balancer Controller.
 
@@ -108,7 +106,7 @@ An existing Gateway must accept routes from the Lightrun namespace through `allo
 > [!NOTE]
 > TLS passthrough to the router (`TLSRoute`) is not provided by the chart. It is only in the experimental channel on most platforms.
 
-# Portability
+## Portability
 The `Gateway`, `HTTPRoute` (path match, backendRefs, `RequestRedirect`) and WebSocket upgrades are core Gateway API features and work in every conformant implementation. These parts vary by platform:
 
 | Platform / implementation | BackendTLSPolicy (topology 2) | `HTTPRoute` timeouts | Default request timeout | Default max request body |
@@ -116,17 +114,16 @@ The `Gateway`, `HTTPRoute` (path match, backendRefs, `RequestRedirect`) and WebS
 | Envoy Gateway (v1.6+) | `v1` | supported | **15s** (Envoy default) | no limit |
 | NGINX Gateway Fabric (v2.x) | `v1` (one CA ref) | **ignored** (route reports `UnsupportedField`) | 60s (nginx default) | **1m** |
 | Istio (v1.28+) | `v1` (`v1alpha3` in 1.26/1.27) | supported | none | no limit |
-| kubespray (`gateway_api_enabled`) | CRD present (v1.6.x standard) | depends on the controller you install | depends | depends |
-| OpenShift 4.19–4.21 | **not available** (CRDs locked by the ingress operator) | supported (Istio based) | | |
+| OpenShift 4.19–4.21 | **not available** | supported (Istio based) | | |
 | OpenShift 4.22+ / 5.x (tested on 5.0.1, Gateway API v1.5.1) | `v1`. Set `subjectAltNames`; `hostname` alone is not verified. | supported | | no limit |
 | GKE Gateway controller | `v1`. Also set `appProtocol: HTTPS` on the Service port, which this chart does not set, so prefer topology 1 | supported | 30s (backend service default) | |
 | AWS Load Balancer Controller (Gateway API, ALB) | **not supported**. Use topology 1, or a `TargetGroupConfiguration` with HTTPS and no validation. | **not supported** (use the ALB idle timeout) | 60s idle timeout | no limit |
 | AKS (Application Routing Gateway API / Istio add-on) | `v1` from Gateway API v1.4 (AKS 1.35+) | supported | | no limit |
-| AKS Application Gateway for Containers | uses its own `alb.networking.azure.io` BackendTLSPolicy, use topology 1 or create that object yourself | | | |
+| AKS Application Gateway for Containers | uses its own `alb.networking.azure.io` BackendTLSPolicy, use topology 1 | | | |
 
 The router itself accepts request bodies of up to 50m. It applies its own upstream timeouts: the nginx default of 60s, and `general.router.mcp_endpoint.timeout_seconds` (600s) for `/mcp`. The Gateway must not be stricter than the router.
 
-# Timeouts and body size
+## Timeouts and body size
 With the Ingress NGINX controller, these settings were annotations (`proxy-read-timeout`, `proxy-body-size`). Gateway API has no portable field for the body size, and timeout support varies. Configure them per implementation:
 
 **Envoy Gateway.** Set `general.router.gateway_api.timeouts.request: "600s"`. Without it, requests running longer than 15s (for example `/mcp`) fail with a 504. Envoy Gateway doesn't limit the body size by default.
@@ -166,7 +163,7 @@ spec:
 
 **Other implementations.** Check the vendor documentation for the request timeout and the maximum body size. Then apply the equivalent of a 600s timeout and a 50m body limit to the `<release>-router` HTTPRoute.
 
-# Examples by platform
+## Examples by platform
 Each platform below uses the Gateway API implementation that most clusters on it run. That is the platform's own managed implementation where one exists, and Envoy Gateway on self-managed clusters. The chart renders the same generic resources everywhere; only the values and the platform's own configuration objects differ.
 
 All examples set `ingress.enabled: false`. During a migration, keep it `true` until DNS points to the Gateway (see [Migrating from Ingress NGINX](#migrating-from-ingress-nginx)). `certificate.existing_cert` is the TLS Secret the chart already uses for the Ingress.
@@ -180,11 +177,7 @@ All examples set `ingress.enabled: false`. During a migration, keep it `true` un
 | Azure AKS | Application Routing Gateway API (Istio-based) | end-to-end (BackendTLSPolicy) | tested (AKS 1.36) |
 
 ### Vanilla Kubernetes / kubespray: Envoy Gateway
-kubespray installs only the Gateway API CRDs (`gateway_api_enabled: true`), so you install a controller yourself, for example:
-```shell
-helm install eg oci://docker.io/envoyproxy/gateway-helm -n envoy-gateway-system --create-namespace --set crds.enabled=false
-```
-Leave out `--set crds.enabled=false` if the cluster doesn't have the Gateway API CRDs yet. Then create a GatewayClass `eg` with `controllerName: gateway.envoyproxy.io/gatewayclass-controller`.
+Requires Envoy Gateway and its GatewayClass, named `eg` here.
 ```yaml
 general:
   lightrun_endpoint: lightrun.example.com
@@ -209,19 +202,10 @@ certificate:
   existing_cert: lightrun-tls
 ```
 * `timeouts.request` is required. Envoy Gateway ends requests after 15s by default.
-* On bare metal, the Gateway gets an external address only if a load balancer implementation such as MetalLB is installed.
 * With NetworkPolicy enabled, add `envoy-gateway-system` to `general.networkPolicy.ingress.namespacesSelector`.
 
 ### OpenShift: OpenShift Gateway API (Ingress Operator)
-A cluster-admin creates the GatewayClass once:
-```yaml
-apiVersion: gateway.networking.k8s.io/v1
-kind: GatewayClass
-metadata:
-  name: openshift-default
-spec:
-  controllerName: openshift.io/gateway-controller/v1
-```
+Requires the OpenShift GatewayClass, usually named `openshift-default`.
 **OpenShift 4.19–4.21** (no BackendTLSPolicy, so the router stays on plain HTTP):
 ```yaml
 general:
@@ -269,11 +253,11 @@ certificate:
 ```
 * `subjectAltNames` is required for the router identity to be checked. The OpenShift gateway uses `hostname` only for SNI.
 * Use `wellKnownCACertificates: System` for publicly trusted certificates. For a private CA, use `ca_certificate`.
-* The Gateway gets its own load balancer, and the `*.apps` wildcard DNS still points to the default router. Create a DNS record for `general.lightrun_endpoint` that points to the Gateway address.
+* The Gateway gets its own load balancer, so `general.lightrun_endpoint` must resolve to the Gateway address, not to the default router.
 * Without permission to create Gateways in the namespace, attach to an admin-managed Gateway with `parentRefs` instead of `gateway.create`.
 
 ### Amazon EKS: AWS Load Balancer Controller (ALB Gateway)
-Tested with EKS 1.36, AWS Load Balancer Controller v3.6.2 and the Gateway API v1.6.0 standard CRDs. The AWS Load Balancer Controller (v2.14+) provisions an ALB for each Gateway of a GatewayClass with `controllerName: gateway.k8s.aws/alb`. It enables Gateway API support when it finds the Gateway API CRDs and its own CRDs (`LoadBalancerConfiguration`, `TargetGroupConfiguration`, `ListenerRuleConfiguration`). It only acts on its own GatewayClasses, so existing Ingresses and Services are not affected.
+Tested with EKS 1.36, AWS Load Balancer Controller v3.6.2 and the Gateway API v1.6.0 standard CRDs. Requires the AWS Load Balancer Controller with Gateway API support and a GatewayClass with `controllerName: gateway.k8s.aws/alb`, named `aws-alb` here.
 
 Some ALB limits shape this setup:
 * ALB can't read the TLS certificate from a Kubernetes Secret (`certificateRefs`), so the HTTPS listener has no `tls` block. The certificate comes from ACM through a `LoadBalancerConfiguration`.
@@ -319,7 +303,7 @@ general:
           - name: lightrun-router
             sectionName: http
 ```
-Create these in the Lightrun namespace. The GatewayClass `aws-alb` uses `controllerName: gateway.k8s.aws/alb` and is created once by the cluster admin.
+Create these in the Lightrun namespace:
 ```yaml
 apiVersion: gateway.k8s.aws/v1
 kind: LoadBalancerConfiguration
@@ -351,11 +335,7 @@ To keep HTTPS between the ALB and the router, set `router.tls.enabled: true`, `g
 * The ALB adds the port to the redirect target (`Location: https://<host>:443/...`). Browsers handle this normally.
 
 ### Azure AKS: Application Routing Gateway API (Istio-based)
-Tested with AKS 1.36, Azure CNI overlay with Cilium. Microsoft positions this as the successor to the managed NGINX (application routing) add-on. While it is in preview, it needs the `aks-preview` Azure CLI extension and the `Microsoft.ContainerService/AppRoutingIstioGatewayAPIPreview` feature registered on the subscription. Enable it on the cluster:
-```shell
-az aks update -g <resource-group> -n <cluster> --enable-gateway-api --enable-app-routing-istio
-```
-It provides the GatewayClass `approuting-istio`, and it can't run alongside the Istio add-on. The managed Gateway API CRDs (v1.5.1 on AKS 1.36) include BackendTLSPolicy v1, so the router can stay on TLS:
+Tested with AKS 1.36. Requires the Application Routing Gateway API add-on, which provides the GatewayClass `approuting-istio`. Its Gateway API CRDs (v1.5.1 on AKS 1.36) include BackendTLSPolicy v1, so the router can stay on TLS:
 ```yaml
 general:
   lightrun_endpoint: lightrun.example.com
@@ -388,7 +368,7 @@ certificate:
 * For an internal Azure load balancer, add `service.beta.kubernetes.io/azure-load-balancer-internal: "true"` under `gateway.infrastructure.annotations`.
 * Microsoft documents that this implementation doesn't support request header or body size limits.
 
-# Network policy
+## Network policy
 When `general.networkPolicy.ingress.enabled` is `true`, add the namespace where the Gateway's data-plane pods run to `general.networkPolicy.ingress.namespacesSelector`. Otherwise the Gateway can't reach the router and returns 503. The namespace depends on the implementation:
 * Envoy Gateway: `envoy-gateway-system`, by default
 * NGINX Gateway Fabric: the Gateway's namespace
@@ -404,7 +384,7 @@ general:
       namespacesSelector: ["envoy-gateway-system"]
 ```
 
-# OpenShift
+## OpenShift
 `general.openshift: true` keeps its current behaviour. While `general.router.ingress.enabled` is `true`, the chart renders the Ingress, which OpenShift converts to a Route.
 
 Gateway API support by OpenShift version:
@@ -412,22 +392,22 @@ Gateway API support by OpenShift version:
 | OpenShift | Gateway API | With this chart |
 |---|---|---|
 | 4.14–4.18 | Not shipped by OpenShift | Keep the Ingress/Route. If `gateway_api.enabled` is set, the install fails because the CRDs are missing. |
-| 4.19–4.21 | v1.2.1 / v1.3.0 standard, no BackendTLSPolicy. The CRDs are locked: adding BackendTLSPolicy is forbidden even for cluster-admin. | Topology 1 only (router on plain HTTP). Tested on ROSA 4.20.46. With router TLS on, the install fails with a clear message and the release is not changed. |
+| 4.19–4.21 | v1.2.1 / v1.3.0 standard, no BackendTLSPolicy | Topology 1 only (router on plain HTTP). Tested on ROSA 4.20.46. With router TLS on, the install fails with a clear message and the release is not changed. |
 | 4.22+ / 5.x | v1.4+ standard, including BackendTLSPolicy | Topology 1 or 2. Tested on ROSA 5.0.1. |
 
 To use the OpenShift Gateway API instead (OpenShift 4.19+):
-1. A cluster-admin creates a `GatewayClass` once, usually named `openshift-default`, with `controllerName: openshift.io/gateway-controller/v1`. The Ingress Operator then deploys its Istio control plane in `openshift-ingress`.
+1. The cluster must have the OpenShift `GatewayClass`, usually named `openshift-default`.
 2. Then use one of these:
    * `gateway.create: true` with `gateway.gatewayClassName: openshift-default`. The Gateway and its Envoy proxy pods are created in the Lightrun namespace, together with a `LoadBalancer` Service, which is an ELB on ROSA. You need permission to create Gateways in the namespace.
    * `parentRefs` pointing to a Gateway that the cluster admin manages, for example in `openshift-ingress`. You only need permission to create `HTTPRoute`s.
-3. On OpenShift 4.19–4.21 the `BackendTLSPolicy` CRD is not available and can't be added. Use [topology 1](#1---gateway-tls--lightrun-router-non-ssl-most-portable) (`general.router.tls.enabled: false`, `general.internal_tls.enabled: false`).
+3. On OpenShift 4.19–4.21 the `BackendTLSPolicy` CRD is not available. Use [topology 1](#1---gateway-tls--lightrun-router-non-ssl-most-portable) (`general.router.tls.enabled: false`, `general.internal_tls.enabled: false`).
 4. On OpenShift 4.22+ and 5.x you can use topology 2. Set `backend_tls_policy.subjectAltNames` to the router hostname as well: the OpenShift gateway checks the certificate chain, but verifies the hostname only through `subjectAltNames`.
 
 See [Examples by platform](#openshift-openshift-gateway-api-ingress-operator) for tested values for both version ranges.
 
 `general.openshift_embeded_hostname` only applies to the Ingress/Route path.
 
-# Rendering without cluster access
+## Rendering without cluster access
 `helm template` and some GitOps tools render without cluster access, so the CRD check can't see what the cluster has. Use one of these options:
 * Pass the API versions explicitly, for example:
   `helm template ... --api-versions gateway.networking.k8s.io/v1/HTTPRoute --api-versions gateway.networking.k8s.io/v1/Gateway --api-versions gateway.networking.k8s.io/v1/BackendTLSPolicy`
@@ -435,10 +415,10 @@ See [Examples by platform](#openshift-openshift-gateway-api-ingress-operator) fo
 
 Argo CD passes the cluster's API versions to Helm, so it needs neither option.
 
-# Migrating from Ingress NGINX
+## Migrating from Ingress NGINX
 The Ingress and the Gateway API resources are controlled by separate flags, so you can migrate with no downtime:
 
-1. **Install the prerequisites.** Make sure the Gateway API CRDs and a controller are installed, and note the `GatewayClass` name (`kubectl get gatewayclass`).
+1. **Check the prerequisites.** Confirm the cluster meets the [prerequisites](#prerequisites) and note the `GatewayClass` name (`kubectl get gatewayclass`).
 2. **Map your Ingress annotations.**
 
    | Ingress NGINX annotation | Gateway API equivalent |
@@ -472,18 +452,17 @@ The Ingress and the Gateway API resources are controlled by separate flags, so y
    ```
 5. **Switch DNS** for `general.lightrun_endpoint` to the Gateway address. Wait for the old record's TTL to expire.
 6. **Remove the Ingress.** Set `general.router.ingress.enabled: false` and run `helm upgrade` again.
-7. **Uninstall Ingress NGINX** once no other application uses it.
 
 To roll back, set `general.router.ingress.enabled: true` again, or run `helm rollback`, and point DNS back to the Ingress controller.
 
 > [!NOTE]
 > If you upgrade with `--reuse-values` from a chart version that has no `gateway_api` section, pass the Gateway API keys with `--set` or `-f`. Missing keys fall back to the defaults listed above.
 
-# Troubleshooting
-* **The chart fails with "Gateway API CRDs ... are not installed".** Install the CRDs, or see [Rendering without cluster access](#rendering-without-cluster-access).
-* **The chart fails with "the BackendTLSPolicy CRD ... is not installed".** Use topology 1 (`general.router.tls.enabled: false`), install a Gateway API v1.4+ standard bundle, or set `backend_tls_policy.enabled: false` and configure backend TLS with your implementation's own resources, for example an Istio `DestinationRule`.
+## Troubleshooting
+* **The chart fails with "Gateway API CRDs ... are not installed".** The cluster doesn't meet the [prerequisites](#prerequisites). When rendering without cluster access, see [Rendering without cluster access](#rendering-without-cluster-access).
+* **The chart fails with "the BackendTLSPolicy CRD ... is not installed".** Use topology 1 (`general.router.tls.enabled: false`), or set `backend_tls_policy.enabled: false` if your implementation handles backend TLS another way.
 * **A wrong `hostname` is still accepted** (Istio, OpenShift). These implementations verify the router's identity only through `backend_tls_policy.subjectAltNames`, so set it.
 * **502/503 from the Gateway with topology 2.** The `BackendTLSPolicy` CA or hostname doesn't match the router certificate. The certificate must include `backend_tls_policy.hostname` (by default `general.lightrun_endpoint`) in its SAN. If the policy is fine, a NetworkPolicy may be blocking the Gateway. See [Network policy](#network-policy).
 * **504 after about 15 seconds** (Envoy Gateway). Set `timeouts.request`.
 * **413 on uploads** (NGINX Gateway Fabric). Add the `ClientSettingsPolicy` above.
-* **The Gateway stays `Programmed=False`.** The implementation couldn't get an address from its load balancer, for example on bare metal without MetalLB. Configure `gateway.infrastructure` or `gateway.addresses`, or use a NodePort per your implementation's documentation.
+* **The Gateway stays `Programmed=False`.** The implementation couldn't get an address for it. Check the Gateway status conditions. `gateway.infrastructure` and `gateway.addresses` are passed through if your implementation needs them.
