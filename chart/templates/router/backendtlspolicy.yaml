@@ -1,8 +1,5 @@
 {{- if eq (include "router.gateway_api.backend_tls_policy.enabled" .) "true" }}
-{{- $policy := dig "router" "gateway_api" "backend_tls_policy" dict .Values.general }}
-{{- if not (or $policy.ca_certificate $policy.caCertificateRefs $policy.wellKnownCACertificates) }}
-{{- fail "general.router.gateway_api.backend_tls_policy needs a way to validate the router certificate: set ca_certificate (PEM of the CA that signed the certificate in the `certificate` section), caCertificateRefs, or wellKnownCACertificates: true" }}
-{{- end }}
+{{- $policy := (include "router.gateway_api.config" . | fromYaml).backend_tls_policy }}
 {{- if $policy.ca_certificate }}
 apiVersion: v1
 kind: ConfigMap
@@ -17,7 +14,7 @@ data:
     {{- $policy.ca_certificate | nindent 4 }}
 ---
 {{- end }}
-apiVersion: {{ $policy.api_version | default "gateway.networking.k8s.io/v1" }}
+apiVersion: {{ $policy.api_version }}
 kind: BackendTLSPolicy
 metadata:
   name: {{ include "router.name" . }}
@@ -35,20 +32,8 @@ spec:
       kind: Service
       name: {{ include "router.name" . }}
   validation:
-    hostname: {{ $policy.hostname | default .Values.general.lightrun_endpoint | quote }}
-    {{- if or $policy.ca_certificate $policy.caCertificateRefs }}
-    caCertificateRefs:
-      {{- if $policy.ca_certificate }}
-      - group: ""
-        kind: ConfigMap
-        name: {{ include "router.gateway_api.backend_ca.name" . }}
-      {{- end }}
-      {{- with $policy.caCertificateRefs }}
-      {{- toYaml . | nindent 6 }}
-      {{- end }}
-    {{- else }}
-    wellKnownCACertificates: System
-    {{- end }}
+    hostname: {{ $policy.hostname | quote }}
+    {{- include "router.gateway_api.backend_tls_policy.ca" . | nindent 4 }}
     {{- with $policy.subjectAltNames }}
     subjectAltNames:
       {{- toYaml . | nindent 6 }}

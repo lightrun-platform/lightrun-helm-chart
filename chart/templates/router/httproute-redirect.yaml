@@ -1,0 +1,26 @@
+{{- if eq (include "router.gateway_api.http_redirect.enabled" .) "true" }}
+{{- $config := include "router.gateway_api.config" . | fromYaml }}
+apiVersion: {{ $config.api_version }}
+kind: HTTPRoute
+metadata:
+  name: {{ include "router.name" . }}-http-redirect
+  {{- with $config.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $config.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- include "router.gateway_api.http_redirect.parentRefs" . | nindent 4 }}
+  hostnames:
+    {{- toYaml $config.hostnames | nindent 4 }}
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 301
+{{- end }}
