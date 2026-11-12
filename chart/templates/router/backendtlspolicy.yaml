@@ -43,7 +43,7 @@ spec:
       {{- with $policy.caCertificateRefs }}
       {{- toYaml . | nindent 6 }}
       {{- end }}
-    {{- else }}
+    {{- else if $policy.wellKnownCACertificates }}
     wellKnownCACertificates: System
     {{- end }}
     {{- with $policy.subjectAltNames }}

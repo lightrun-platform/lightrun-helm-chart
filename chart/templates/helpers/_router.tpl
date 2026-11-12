@@ -112,4 +112,7 @@ false
 {{- if and (eq (include "router.gateway_api.backend_tls_policy.enabled" .) "true") (not (or $policy.ca_certificate $policy.caCertificateRefs $policy.wellKnownCACertificates)) -}}
 {{- fail "general.router.gateway_api.backend_tls_policy needs a way to validate the router certificate: set ca_certificate (PEM of the CA that signed the certificate in the `certificate` section), caCertificateRefs, or wellKnownCACertificates: true" -}}
 {{- end -}}
+{{- if and $policy.wellKnownCACertificates (or $policy.ca_certificate $policy.caCertificateRefs) -}}
+{{- fail "general.router.gateway_api.backend_tls_policy: wellKnownCACertificates: true can't be combined with ca_certificate or caCertificateRefs, the BackendTLSPolicy accepts only one of them" -}}
+{{- end -}}
 {{- end -}}

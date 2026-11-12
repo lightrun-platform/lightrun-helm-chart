@@ -38,7 +38,7 @@ All keys are under `general.router.gateway_api`:
 | `backend_tls_policy.wellKnownCACertificates` | `false` | Set to `true` to trust the Gateway's system CA bundle, when the certificate is publicly trusted. |
 | `backend_tls_policy.subjectAltNames` | `[]` | Names the router certificate must contain, for example `[{type: Hostname, hostname: lightrun.example.com}]`. Set this on Istio-based gateways, including OpenShift: they check the certificate chain but verify the router's identity only through this field. They send `hostname` when connecting but don't validate the certificate against it. |
 
-When the router serves HTTPS, exactly one of `ca_certificate`, `caCertificateRefs` or `wellKnownCACertificates: true` is required. If you set `ca_certificate` and `caCertificateRefs` together, both are added to the policy.
+When the router serves HTTPS, set either a CA (`ca_certificate`, `caCertificateRefs`, or both, which are combined in the policy) or `wellKnownCACertificates: true`, not both.
 
 The `HTTPRoute` points to the router Service on port `general.router.service.ports.https` when the router serves HTTPS. Otherwise it uses `general.router.service.ports.http`. `general.router.service.enabled` must stay `true`.
 
