@@ -35,10 +35,10 @@ All keys are under `general.router.gateway_api`:
 | `backend_tls_policy.hostname` | `""` | The hostname the Gateway requests when it opens the TLS connection to the router, and the name the router certificate is validated against. If empty, `general.lightrun_endpoint` is used. |
 | `backend_tls_policy.ca_certificate` | `""` | PEM of the CA that signed the router certificate. The chart stores it in the ConfigMap `<release>-router-backend-ca`. |
 | `backend_tls_policy.caCertificateRefs` | `[]` | Existing ConfigMaps (key `ca.crt`) to validate the router certificate with. |
-| `backend_tls_policy.wellKnownCACertificates` | `""` | Set to `System` when the certificate is publicly trusted. |
+| `backend_tls_policy.wellKnownCACertificates` | `false` | Set to `true` to trust the Gateway's system CA bundle, when the certificate is publicly trusted. |
 | `backend_tls_policy.subjectAltNames` | `[]` | Names the router certificate must contain, for example `[{type: Hostname, hostname: lightrun.example.com}]`. Set this on Istio-based gateways, including OpenShift: they check the certificate chain but verify the router's identity only through this field. They send `hostname` when connecting but don't validate the certificate against it. |
 
-When the router serves HTTPS, exactly one of `ca_certificate`, `caCertificateRefs` or `wellKnownCACertificates` is required. If you set `ca_certificate` and `caCertificateRefs` together, both are added to the policy.
+When the router serves HTTPS, exactly one of `ca_certificate`, `caCertificateRefs` or `wellKnownCACertificates: true` is required. If you set `ca_certificate` and `caCertificateRefs` together, both are added to the policy.
 
 The `HTTPRoute` points to the router Service on port `general.router.service.ports.https` when the router serves HTTPS. Otherwise it uses `general.router.service.ports.http`. `general.router.service.enabled` must stay `true`.
 
@@ -96,7 +96,7 @@ general:
             kind: ConfigMap
             name: lightrun-router-ca
 ```
-`lightrun-router-ca` is a ConfigMap in the Lightrun namespace with the CA that signed the certificate in the `certificate` section, under the key `ca.crt`. For publicly trusted certificates, use `wellKnownCACertificates: System` instead.
+`lightrun-router-ca` is a ConfigMap in the Lightrun namespace with the CA that signed the certificate in the `certificate` section, under the key `ca.crt`. For publicly trusted certificates, use `wellKnownCACertificates: true` instead.
 
 An existing Gateway must accept routes from the Lightrun namespace through `allowedRoutes.namespaces` on its listeners. Its listener must present the same certificate as the `certificate` section, because IDE plugins and agents pin that certificate. The Lightrun namespace does not need a `ReferenceGrant`, because the `HTTPRoute` and the router Service are in the same namespace.
 
@@ -225,7 +225,7 @@ general:
         create: true
         gatewayClassName: openshift-default
       backend_tls_policy:
-        wellKnownCACertificates: System
+        wellKnownCACertificates: true
         subjectAltNames:
           - type: Hostname
             hostname: lightrun.apps.<cluster-domain>
@@ -233,7 +233,7 @@ certificate:
   existing_cert: lightrun-tls
 ```
 * `subjectAltNames` is required for the router identity to be checked. The OpenShift gateway sends `hostname` when connecting to the router but doesn't validate the certificate against it.
-* Use `wellKnownCACertificates: System` for publicly trusted certificates. For a private CA, use `caCertificateRefs` with a ConfigMap that holds the CA under `ca.crt`.
+* Use `wellKnownCACertificates: true` for publicly trusted certificates. For a private CA, use `caCertificateRefs` with a ConfigMap that holds the CA under `ca.crt`.
 * The Gateway gets its own load balancer, so `general.lightrun_endpoint` must resolve to the Gateway address, not to the default router.
 * Without permission to create Gateways in the namespace, attach to an admin-managed Gateway with `parentRefs` instead of `gateway.create`.
 
@@ -344,7 +344,7 @@ certificate:
   existing_cert: lightrun-tls
 ```
 * `subjectAltNames` is required for the router identity to be checked, as on OpenShift. With a wrong name the gateway returns 503.
-* `lightrun-router-ca` is a ConfigMap in the Lightrun namespace with the CA that signed the Lightrun certificate, under the key `ca.crt`. For publicly trusted certificates, use `wellKnownCACertificates: System` instead.
+* `lightrun-router-ca` is a ConfigMap in the Lightrun namespace with the CA that signed the Lightrun certificate, under the key `ca.crt`. For publicly trusted certificates, use `wellKnownCACertificates: true` instead.
 * To keep the router on plain HTTP, set `router.tls.enabled: false` and drop `backend_tls_policy`.
 * For an internal Azure load balancer, add `service.beta.kubernetes.io/azure-load-balancer-internal: "true"` under `gateway.infrastructure.annotations`.
 * Microsoft documents that this implementation doesn't support request header or body size limits.
