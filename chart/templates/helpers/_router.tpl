@@ -64,3 +64,55 @@ proxy_ssl_trusted_certificate /ca_cert/ca.crt;
 {{- $localSecurityContext | toYaml -}}
 {{- end -}}
 {{- end -}}
+
+
+{{- define "router.gateway_api.gateway.name" -}}
+{{ include "lightrun.fullname" . }}-gateway
+{{- end -}}
+
+
+{{- define "router.gateway_api.backend_ca.name" -}}
+{{ include "router.name" . }}-backend-ca
+{{- end -}}
+
+
+{{- define "router.gateway_api.http_redirect.enabled" -}}
+{{- $gw := .Values.general.router.gateway_api -}}
+{{- $chartListener := and $gw.gateway.create (empty $gw.gateway.listeners) -}}
+{{- if and $gw.enabled $gw.http_redirect.enabled (or $gw.http_redirect.parentRefs $chartListener) -}}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- end -}}
+
+
+{{- define "router.gateway_api.backend_tls_policy.enabled" -}}
+{{- $gw := .Values.general.router.gateway_api -}}
+{{- if and $gw.enabled (eq (include "router.use-tls" .) "true") $gw.backend_tls_policy.enabled -}}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- end -}}
+
+
+{{- define "router.gateway_api.validate" -}}
+{{- $gw := .Values.general.router.gateway_api -}}
+{{- $policy := $gw.backend_tls_policy -}}
+{{- if not .Values.general.router.service.enabled -}}
+{{- fail "general.router.gateway_api.enabled requires general.router.service.enabled: the HTTPRoute sends traffic to the router Service" -}}
+{{- end -}}
+{{- if and (not $gw.gateway.create) (empty $gw.parentRefs) -}}
+{{- fail "general.router.gateway_api.enabled requires general.router.gateway_api.parentRefs (the existing Gateway to attach the HTTPRoute to) or general.router.gateway_api.gateway.create: true" -}}
+{{- end -}}
+{{- if and $gw.gateway.create (empty $gw.gateway.gatewayClassName) -}}
+{{- fail "general.router.gateway_api.gateway.create requires general.router.gateway_api.gateway.gatewayClassName (see: kubectl get gatewayclass)" -}}
+{{- end -}}
+{{- if and (eq (include "router.gateway_api.backend_tls_policy.enabled" .) "true") (not (or $policy.ca_certificate $policy.caCertificateRefs $policy.wellKnownCACertificates)) -}}
+{{- fail "general.router.gateway_api.backend_tls_policy needs a way to validate the router certificate: set ca_certificate (PEM of the CA that signed the certificate in the `certificate` section), caCertificateRefs, or wellKnownCACertificates: true" -}}
+{{- end -}}
+{{- if and $policy.wellKnownCACertificates (or $policy.ca_certificate $policy.caCertificateRefs) -}}
+{{- fail "general.router.gateway_api.backend_tls_policy: wellKnownCACertificates: true can't be combined with ca_certificate or caCertificateRefs, the BackendTLSPolicy accepts only one of them" -}}
+{{- end -}}
+{{- end -}}

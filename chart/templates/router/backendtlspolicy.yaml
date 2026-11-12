@@ -1,0 +1,53 @@
+{{- if eq (include "router.gateway_api.backend_tls_policy.enabled" .) "true" }}
+{{- $policy := .Values.general.router.gateway_api.backend_tls_policy }}
+{{- if $policy.ca_certificate }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "router.gateway_api.backend_ca.name" . }}
+  {{- with $policy.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+data:
+  ca.crt: |
+    {{- $policy.ca_certificate | nindent 4 }}
+---
+{{- end }}
+apiVersion: {{ $policy.api_version | default "gateway.networking.k8s.io/v1" }}
+kind: BackendTLSPolicy
+metadata:
+  name: {{ include "router.name" . }}
+  {{- with $policy.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $policy.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: {{ include "router.name" . }}
+  validation:
+    hostname: {{ $policy.hostname | default .Values.general.lightrun_endpoint | quote }}
+    {{- if or $policy.ca_certificate $policy.caCertificateRefs }}
+    caCertificateRefs:
+      {{- if $policy.ca_certificate }}
+      - group: ""
+        kind: ConfigMap
+        name: {{ include "router.gateway_api.backend_ca.name" . }}
+      {{- end }}
+      {{- with $policy.caCertificateRefs }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+    {{- else if $policy.wellKnownCACertificates }}
+    wellKnownCACertificates: System
+    {{- end }}
+    {{- with $policy.subjectAltNames }}
+    subjectAltNames:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+{{- end }}
