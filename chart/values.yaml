@@ -338,7 +338,11 @@ general:
         ## Hostname the Gateway requests from the router over TLS and validates the router certificate against. Defaults to general.lightrun_endpoint
         hostname: ""
         ## One of the following is required to validate the router certificate:
-        ## PEM of the CA that signed the router certificate, stored by the chart in a ConfigMap
+        ## PEM of the CA that signed the router certificate, stored by the chart in a ConfigMap, example:
+        # ca_certificate: |
+        #   -----BEGIN CERTIFICATE-----
+        #   MIIDazCCAlOgAwIBAgIU...
+        #   -----END CERTIFICATE-----
         ca_certificate: ""
         ## Existing ConfigMaps with a ca.crt key, example:
         # caCertificateRefs:
