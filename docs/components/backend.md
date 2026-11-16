@@ -55,24 +55,25 @@ backend:
 
 #### Langfuse MCP
 
-All Langfuse settings are grouped under the top-level `langfuse` section in `values.yaml`:
+All Langfuse settings are grouped under `general.langfuse` in `values.yaml`:
 
 ```yaml
-langfuse:
-  mcp:
-    enabled: false
-    otlp_endpoint: "https://us.cloud.langfuse.com/api/public/otel/v1/traces"
-    public_key: ""
-    secret_key: ""
+general:
+  langfuse:
+    mcp:
+      enabled: false
+      otlp_endpoint: "https://us.cloud.langfuse.com/api/public/otel/v1/traces"
+      public_key: ""
+      secret_key: ""
 ```
 
-Set `langfuse.mcp.enabled: true` to add the Langfuse environment variables to the backend Deployment. Credentials are referenced from the backend Secret. When disabled, the chart omits these environment entries and credentials from chart-managed secrets.
+Set `general.langfuse.mcp.enabled: true` to add the Langfuse environment variables to the backend Deployment. Credentials are referenced from the backend Secret. When disabled, the chart omits these environment entries and credentials from chart-managed secrets.
 
 When enabled, the endpoint must be nonempty and is passed directly as `LANGFUSE_MCP_OTLP_ENDPOINT`, including when secrets are managed externally. Set it to a different URL to override the default. Helm validation rejects missing or whitespace-only endpoints.
 
 Crons has no explicit Langfuse environment entries. Both deployments still load the shared backend Secret through `envFrom`, so any credentials present there are inherited regardless of this flag.
 
-Configure credentials under `langfuse.mcp.public_key` and `langfuse.mcp.secret_key`; see [Managing Secrets](../installation/secrets.md).
+Configure credentials under `general.langfuse.mcp.public_key` and `general.langfuse.mcp.secret_key`; see [Managing Secrets](../installation/secrets.md).
 
 #### Extra Environment Variables
 ```yaml

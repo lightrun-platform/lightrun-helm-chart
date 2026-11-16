@@ -162,9 +162,9 @@ spec:
                 name: {{ include "secrets.backend.name" . }}
           env:
           {{- include "lightrun-backend-crons.environmentVariables" . | nindent 12 }}
-            {{- if .Values.langfuse.mcp.enabled }}
+            {{- if .Values.general.langfuse.mcp.enabled }}
             - name: LANGFUSE_MCP_OTLP_ENDPOINT
-              value: {{ .Values.langfuse.mcp.otlp_endpoint | quote }}
+              value: {{ .Values.general.langfuse.mcp.otlp_endpoint | quote }}
             - name: LANGFUSE_MCP_PUBLIC_KEY
               valueFrom:
                 secretKeyRef:
