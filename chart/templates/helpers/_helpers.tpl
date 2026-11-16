@@ -474,6 +474,17 @@ of redaction requests). An empty storage means no emptyDir size limit.
 {{- end -}}
 {{- end -}}
 
+{{- define "langfuse.mcp.validate" -}}
+{{- if and .Values.langfuse.mcp.enabled (include "secrets.deploy_secrets" .) -}}
+{{- if empty (.Values.langfuse.mcp.public_key | trim) -}}
+{{- fail "langfuse.mcp.enabled requires langfuse.mcp.public_key when the chart manages secrets" -}}
+{{- end -}}
+{{- if empty (.Values.langfuse.mcp.secret_key | trim) -}}
+{{- fail "langfuse.mcp.enabled requires langfuse.mcp.secret_key when the chart manages secrets" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "secrets.certificate.name" -}}
 {{- if .Values.certificate.existing_cert -}}
 {{ .Values.certificate.existing_cert }}

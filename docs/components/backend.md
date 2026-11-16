@@ -60,12 +60,15 @@ All Langfuse settings are grouped under the top-level `langfuse` section in `val
 ```yaml
 langfuse:
   mcp:
+    enabled: false
     otlp_endpoint: "https://us.cloud.langfuse.com/api/public/otel/v1/traces"
     public_key: ""
     secret_key: ""
 ```
 
-The endpoint is passed directly as `LANGFUSE_MCP_OTLP_ENDPOINT`, including when secrets are managed externally. Set it to a different URL to override the default. An empty value omits the environment variable and uses the backend's default.
+Set `langfuse.mcp.enabled: true` to enable tracing. By default, credentials are omitted from chart-managed secrets and overridden with empty values in the containers, so credentials in an external backend secret cannot enable tracing accidentally.
+
+When enabled, the endpoint is passed directly as `LANGFUSE_MCP_OTLP_ENDPOINT`, including when secrets are managed externally. Set it to a different URL to override the default. An empty value omits the environment variable and uses the backend's default.
 
 Configure credentials under `langfuse.mcp.public_key` and `langfuse.mcp.secret_key`; see [Managing Secrets](../installation/secrets.md).
 

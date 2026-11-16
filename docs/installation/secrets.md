@@ -134,7 +134,8 @@ Some secrets are used for integrating with external services.
 ```
 > **Optional fields**: If left empty, these values **will not** be included in the Kubernetes secret.
 
-Langfuse MCP credentials are passed through the backend secret.
+Langfuse MCP credentials are passed through the backend secret only when `langfuse.mcp.enabled: true`. The default is `false`; disabled containers override these credentials with empty values, including credentials from externally managed secrets.
+When enabled with chart-managed secrets, Helm validation requires both `langfuse.mcp.public_key` and `langfuse.mcp.secret_key` to contain non-whitespace values. Rendering fails if either is missing. With externally managed secrets, the chart does not validate their contents; supply both keys in the existing backend secret.
 When managing secrets externally (`general.deploy_secrets.enabled: false`), add the corresponding keys to your existing backend secret:
 
 | Secret Key | Value Source |

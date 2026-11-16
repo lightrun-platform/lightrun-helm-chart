@@ -619,9 +619,10 @@ serviceAccount:
 ################
 langfuse:
   mcp:
+    enabled: false # Explicitly enable Langfuse MCP tracing, including with externally managed secrets
     otlp_endpoint: "https://us.cloud.langfuse.com/api/public/otel/v1/traces"
-    public_key: "" # Optional | Stored in the backend Kubernetes Secret when set
-    secret_key: "" # Optional | Stored in the backend Kubernetes Secret when set
+    public_key: "" # Required when enabled and the chart manages secrets
+    secret_key: "" # Required when enabled and the chart manages secrets
 
 ################
 ## Secrets

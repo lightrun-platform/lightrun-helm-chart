@@ -8,6 +8,13 @@
 Shared environment variables for backend and crons services
 */}}
 {{- define "lightrun-backend-crons.environmentVariables" -}}
+{{- if not .Values.langfuse.mcp.enabled }}
+# Override credentials from envFrom, including externally managed backend secrets.
+- name: LANGFUSE_MCP_PUBLIC_KEY
+  value: ""
+- name: LANGFUSE_MCP_SECRET_KEY
+  value: ""
+{{- end }}
 {{- if and .Values.general.system_config.content .Values.general.system_config.signature }}
 - name: LIGHTRUN_SYSTEM_CONFIG_JSON_FILE_PATH
   value: "/opt/lightrun/system_config.json"
