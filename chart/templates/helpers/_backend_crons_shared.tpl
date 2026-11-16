@@ -135,7 +135,7 @@ Shared environment variables for backend and crons services
 - name: ARTIFACTS_VERSION_RESOLUTION_MODE
   value: "{{ .Values.deployments.backend.artifacts.resolution_mode }}"
 - name: LIGHTRUN_ARTIFACTS_URL
-  value: "{{ include "http.scheme" . }}://{{ include "artifacts.name" . }}:8080"
+  value: "{{ include "http.scheme" . }}://{{ include "artifacts.name" . }}:8080"              
 {{- if .Values.general.mq.enabled }}
 - name: SPRING_RABBITMQ_HOST
   value: {{ include "lightrun-mq.endpoint" . }}
@@ -181,14 +181,14 @@ Shared volumes for backend and crons services
     name: {{ include "lightrun.fullname" . }}-system-config
 {{- end }}
 - name: encryption-keys
-  secret:
+  secret: 
     secretName: {{ include "secrets.backend.name" . }}
     optional: true
-    items:
+    items: 
       # Only select items that start with encryption-key-
       {{- include "encryption.key.items" . | nindent 6 }}
 
-{{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name  }}
+{{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name  }}  
 - name: ca-cert
   secret:
     secretName: {{ .Values.general.internal_tls.certificates.existing_ca_secret_name }}
@@ -252,7 +252,7 @@ Shared init containers for backend and crons services
   image: "{{ .Values.deployments.backend.initContainers.wait_for_keycloak.image.repository }}:{{ .Values.deployments.backend.initContainers.wait_for_keycloak.image.tag }}"
   imagePullPolicy: {{ .Values.deployments.backend.initContainers.wait_for_keycloak.image.pullPolicy }}
   securityContext: {{ include "lightrun-be.containerSecurityContext" . | indent 4 }}
-  command:
+  command: 
     - sh
     - /scripts/wait-for-200.sh
   resources:
@@ -314,7 +314,7 @@ Shared init containers for backend and crons services
   command: ['sh', '-c', 'cp /tls/tls.crt /p12/crt.pem && cp /tls/tls.key /p12/key.pem && openssl pkcs12 -export -out /p12/lightrun.p12 -inkey /p12/key.pem -in /p12/crt.pem -passin pass:$KEYSTORE_PASSWORD -passout pass:$KEYSTORE_PASSWORD']
 {{- end }}
 
-{{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name }}
+{{- if and .Values.general.internal_tls.enabled .Values.general.internal_tls.certificates.existing_ca_secret_name }}  
 - name: root-ca-creator
   image: "{{ .Values.deployments.backend.image.repository }}:{{ .Values.deployments.backend.image.tag }}"
   securityContext: {{ include "lightrun-be.containerSecurityContext" . | indent 4 }}
