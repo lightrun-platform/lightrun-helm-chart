@@ -66,9 +66,11 @@ langfuse:
     secret_key: ""
 ```
 
-Set `langfuse.mcp.enabled: true` to enable tracing. By default, credentials are omitted from chart-managed secrets and overridden with empty values in the containers, so credentials in an external backend secret cannot enable tracing accidentally.
+Set `langfuse.mcp.enabled: true` to add the Langfuse environment variables to the backend Deployment. Credentials are referenced from the backend Secret. When disabled, the chart omits these environment entries and credentials from chart-managed secrets.
 
-When enabled, the endpoint is passed directly as `LANGFUSE_MCP_OTLP_ENDPOINT`, including when secrets are managed externally. Set it to a different URL to override the default. An empty value omits the environment variable and uses the backend's default.
+When enabled, the endpoint must be nonempty and is passed directly as `LANGFUSE_MCP_OTLP_ENDPOINT`, including when secrets are managed externally. Set it to a different URL to override the default. Helm validation rejects missing or whitespace-only endpoints.
+
+Crons has no explicit Langfuse environment entries. Both deployments still load the shared backend Secret through `envFrom`, so any credentials present there are inherited regardless of this flag.
 
 Configure credentials under `langfuse.mcp.public_key` and `langfuse.mcp.secret_key`; see [Managing Secrets](../installation/secrets.md).
 

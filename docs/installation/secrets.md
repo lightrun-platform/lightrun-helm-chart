@@ -134,16 +134,14 @@ Some secrets are used for integrating with external services.
 ```
 > **Optional fields**: If left empty, these values **will not** be included in the Kubernetes secret.
 
-Langfuse MCP credentials are passed through the backend secret only when `langfuse.mcp.enabled: true`. The default is `false`; disabled containers override these credentials with empty values, including credentials from externally managed secrets.
-When enabled with chart-managed secrets, Helm validation requires both `langfuse.mcp.public_key` and `langfuse.mcp.secret_key` to contain non-whitespace values. Rendering fails if either is missing. With externally managed secrets, the chart does not validate their contents; supply both keys in the existing backend secret.
-When managing secrets externally (`general.deploy_secrets.enabled: false`), add the corresponding keys to your existing backend secret:
+Langfuse MCP requires both credentials when `langfuse.mcp.enabled: true`. For externally managed secrets, add these keys to the backend secret:
 
 | Secret Key | Value Source |
 |------------|--------------|
 | `LANGFUSE_MCP_PUBLIC_KEY` | `langfuse.mcp.public_key` |
 | `LANGFUSE_MCP_SECRET_KEY` | `langfuse.mcp.secret_key` |
 
-The endpoint is configured separately through `langfuse.mcp.otlp_endpoint` and passed directly to the backend container. See [Langfuse MCP configuration](../components/backend.md#langfuse-mcp).
+See [Langfuse MCP configuration](../components/backend.md#langfuse-mcp) for the endpoint and enable flag.
 
 ### **Container Image Registry Credentials**
 
