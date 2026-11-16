@@ -1028,8 +1028,8 @@ Usage: {{ include "lightrun.datadogAnnotations" (dict "serviceName" "lightrun-be
 {{ include "lightrun.fullname" . }}-runtime-collector
 {{- end -}}
 
-{{- define "runtime_collector.headless.name" -}}
-{{ printf "%s-headless" (include "runtime_collector.name" . | trunc 54 | trimSuffix "-") }}
+{{- define "runtime_collector.podDiscovery.name" -}}
+{{ printf "%s-pod-discovery" (include "runtime_collector.name" . | trunc 49 | trimSuffix "-") }}
 {{- end -}}
 
 {{- define "runtime_collector.clickhouse.name" -}}
