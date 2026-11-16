@@ -167,6 +167,8 @@ spec:
             {{- if .Values.deployments.runtime_collector.enabled }}
             - name: RUNTIME_COLLECTOR_GRPC_TARGET
               value: "{{ include "runtime_collector.name" . }}:{{ .Values.deployments.runtime_collector.server.service.port }}"
+            - name: RUNTIME_COLLECTOR_GRPC_PORT
+              value: {{ .Values.deployments.runtime_collector.server.service.port | quote }}
             - name: RUNTIME_COLLECTOR_POD_DISCOVERY_HOST
               value: "{{ include "runtime_collector.podDiscovery.name" . }}.{{ .Release.Namespace }}.svc"
             - name: RUNTIME_COLLECTOR_GRPC_SECRET
