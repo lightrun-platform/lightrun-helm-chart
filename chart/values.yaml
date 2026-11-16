@@ -258,7 +258,6 @@ general:
       # example for nginx-ingress: "nginx.ingress.kubernetes.io/proxy-body-size": "10m"
       annotations: {}
       labels: {}
-
     ## Kubernetes Gateway API (gateway.networking.k8s.io), an alternative to the Ingress above.
     ## Requires the Gateway API CRDs and a Gateway API implementation in the cluster.
     ## Set ingress.enabled: false once traffic moves to the Gateway (both can run side by side during a migration).
@@ -289,7 +288,6 @@ general:
       filters: []
       annotations: {}
       labels: {}
-
       ## Extra HTTPRoute that redirects HTTP to HTTPS.
       ## Rendered when gateway.create is true with the default listeners, or when parentRefs below are set.
       http_redirect:
@@ -300,7 +298,6 @@ general:
         #     namespace: gateway-system
         #     sectionName: http
         parentRefs: []
-
       ## Create a Gateway as part of the chart. Leave create: false to use a Gateway managed by the cluster admin.
       gateway:
         create: false
@@ -315,7 +312,6 @@ general:
         infrastructure: {}
         annotations: {}
         labels: {}
-
       ## Only relevant when the router serves HTTPS (general.router.tls.enabled or general.internal_tls.enabled).
       ## Renders a BackendTLSPolicy so the Gateway connects to the router over TLS.
       ## Requires the BackendTLSPolicy CRD (Gateway API v1.4+ standard channel, or v1alpha3 from the experimental channel).
@@ -348,7 +344,6 @@ general:
         subjectAltNames: []
         annotations: {}
         labels: {}
-
     service:
       enabled: true
       ## Supported types: ClusterIP, LoadBalancer, NodePort, Headless
