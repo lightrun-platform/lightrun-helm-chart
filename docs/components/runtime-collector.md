@@ -85,6 +85,12 @@ The pod runs these init containers before the application starts (`wait-for-rabb
 > [!NOTE]
 > `server.rollout_strategy` defaults to `Recreate`, not `RollingUpdate`: `migrate-clickhouse` can run schema migrations that break the previous server version, so the old and new pods must never run concurrently.
 
+## Pod discovery
+
+When Runtime Collector is enabled, the chart also creates a headless Service with a `-headless` suffix. It selects the same pods as the ordinary Collector Service and exposes the same gRPC port. The backend receives its namespace-qualified DNS name through `RUNTIME_COLLECTOR_DISCOVERY_HOST`; the port remains in `RUNTIME_COLLECTOR_GRPC_TARGET`.
+
+The headless Service sets `publishNotReadyAddresses: true` so clients can attempt connections to unready pods, including when ClickHouse health fails. DNS can be stale, and a published address does not guarantee a reachable gRPC listener or a complete inventory of deployed pods. Direct pod connections must verify the existing Collector service certificate identity, rather than the pod IP or headless Service name.
+
 ## Internal TLS
 
 When `general.internal_tls.enabled` is `true`, runtime-collector and local ClickHouse use TLS for internal communication like any other chart component — no extra opt-in is required. See [Internal TLS](../advanced/internal_tls.md) for the general mechanism (certificate sources, verification).
