@@ -1,0 +1,46 @@
+{{- $gw := .Values.general.router.gateway_api }}
+{{- if $gw.enabled }}
+{{- include "router.gateway_api.validate" . }}
+apiVersion: {{ $gw.api_version | default "gateway.networking.k8s.io/v1" }}
+kind: HTTPRoute
+metadata:
+  name: {{ include "router.name" . }}
+  {{- with $gw.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $gw.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  parentRefs:
+  {{- if $gw.parentRefs }}
+    {{- toYaml $gw.parentRefs | nindent 4 }}
+  {{- else }}
+    - name: {{ include "router.gateway_api.gateway.name" . }}
+      sectionName: https
+  {{- end }}
+  hostnames:
+    {{- toYaml ($gw.hostnames | default (list .Values.general.lightrun_endpoint)) | nindent 4 }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: {{ include "router.name" . }}
+          {{- if eq (include "router.use-tls" .) "true" }}
+          port: {{ .Values.general.router.service.ports.https }}
+          {{- else }}
+          port: {{ .Values.general.router.service.ports.http }}
+          {{- end }}
+      {{- with $gw.filters }}
+      filters:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $gw.timeouts }}
+      timeouts:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
