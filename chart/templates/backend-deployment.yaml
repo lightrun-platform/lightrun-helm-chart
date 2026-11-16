@@ -162,6 +162,10 @@ spec:
                 name: {{ include "secrets.backend.name" . }}
           env:
           {{- include "lightrun-backend-crons.environmentVariables" . | nindent 12 }}
+            {{- if .Values.langfuse.mcp.otlp_endpoint }}
+            - name: LANGFUSE_MCP_OTLP_ENDPOINT
+              value: {{ .Values.langfuse.mcp.otlp_endpoint | quote }}
+            {{- end }}
             - name: RUNTIME_COLLECTOR_ENABLED
               value: {{ .Values.deployments.runtime_collector.enabled | quote }}
             {{- if .Values.deployments.runtime_collector.enabled }}

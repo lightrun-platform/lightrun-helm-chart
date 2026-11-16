@@ -53,6 +53,22 @@ backend:
   annotations: {}  # Deprecated in favor of podAnnotations
 ```
 
+#### Langfuse MCP
+
+All Langfuse settings are grouped under the top-level `langfuse` section in `values.yaml`:
+
+```yaml
+langfuse:
+  mcp:
+    otlp_endpoint: "https://us.cloud.langfuse.com/api/public/otel/v1/traces"
+    public_key: ""
+    secret_key: ""
+```
+
+The endpoint is passed directly as `LANGFUSE_MCP_OTLP_ENDPOINT`, including when secrets are managed externally. Set it to a different URL to override the default. An empty value omits the environment variable and uses the backend's default.
+
+Configure credentials under `langfuse.mcp.public_key` and `langfuse.mcp.secret_key`; see [Managing Secrets](../installation/secrets.md).
+
 #### Extra Environment Variables
 ```yaml
 extraEnvs: []
