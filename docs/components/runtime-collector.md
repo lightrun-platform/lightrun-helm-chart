@@ -85,6 +85,14 @@ The pod runs these init containers before the application starts (`wait-for-rabb
 > [!NOTE]
 > `server.rollout_strategy` defaults to `Recreate`, not `RollingUpdate`: `migrate-clickhouse` can run schema migrations that break the previous server version, so the old and new pods must never run concurrently.
 
+## Pod discovery
+
+The pod-discovery Service supports collecting logs from individual Collector instances for System Diagnostics. The ordinary Collector Service routes a connection to one pod; its DNS name does not expose the individual pod addresses. The pod-discovery Service is a Kubernetes headless Service: it publishes those addresses through DNS so the backend can discover them and request logs from each target, without runtime Kubernetes API access. A single gRPC channel using that DNS name does not broadcast to all pods; the backend must contact each discovered address explicitly. The Server discovery client and log collection RPC are separate application changes; this chart change only provides the Service and connection settings.
+
+When Runtime Collector is enabled, the chart also creates this Service with a `-pod-discovery` suffix. It selects the same pods as the ordinary Collector Service and exposes the same gRPC port. The backend receives its namespace-qualified DNS name through `RUNTIME_COLLECTOR_POD_DISCOVERY_HOST` and the port through `RUNTIME_COLLECTOR_GRPC_PORT`. Both the standalone port and the existing `RUNTIME_COLLECTOR_GRPC_TARGET` use `deployments.runtime_collector.server.service.port`, so there is no separate chart value to configure.
+
+The pod-discovery Service sets `publishNotReadyAddresses: true` so clients can attempt connections to unready pods, including when ClickHouse health fails. DNS can be stale, and a published address does not guarantee a reachable gRPC listener or a complete inventory of deployed pods. Direct pod connections must verify the existing Collector service certificate identity, rather than the pod IP or pod-discovery Service name.
+
 ## Internal TLS
 
 When `general.internal_tls.enabled` is `true`, runtime-collector and local ClickHouse use TLS for internal communication like any other chart component — no extra opt-in is required. See [Internal TLS](../advanced/internal_tls.md) for the general mechanism (certificate sources, verification).
