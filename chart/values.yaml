@@ -673,7 +673,7 @@ deployments:
     replicas: 1
     image:
       repository: lightruncom/webapp
-      tag: "1.96.5-release.f3682f6a85"
+      tag: "1.96.6-release.6e4dc90738"
       pullPolicy: IfNotPresent
     resources:
       cpu: 100m
@@ -716,7 +716,7 @@ deployments:
     rollout_strategy: "Recreate"
     image:
       repository: lightruncom/server
-      tag: "1.96.5-release.f3682f6a85"
+      tag: "1.96.6-release.6e4dc90738"
       pullPolicy: IfNotPresent
     resources:
       cpu: 3000m
@@ -831,7 +831,7 @@ deployments:
   crons:
     image:
       repository: "lightruncom/server"
-      tag: "1.96.5-release.f3682f6a85"
+      tag: "1.96.6-release.6e4dc90738"
       pullPolicy: IfNotPresent
     resources:
       cpu: 1000m
@@ -917,7 +917,7 @@ deployments:
     replicas: 1
     image:
       repository: lightruncom/keycloak
-      tag: "1.96.5-release.f3682f6a85"
+      tag: "1.96.6-release.6e4dc90738"
       pullPolicy: IfNotPresent
     resources:
       cpu: 1000m
@@ -1196,7 +1196,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/privacy-filter
-      tag: "1.96.5-release.f3682f6a85"
+      tag: "1.96.6-release.6e4dc90738"
       pullPolicy: IfNotPresent
     rabbitmq:
       # Unacknowledged requests a pod holds at once; the service's own budgets
@@ -1262,7 +1262,7 @@ deployments:
     rollout_strategy: "RollingUpdate"
     image:
       repository: lightruncom/artifacts
-      tag: "1.96.5-release.f3682f6a85"
+      tag: "1.96.6-release.6e4dc90738"
       pullPolicy: IfNotPresent
     resources:
       cpu: 500m
@@ -1354,7 +1354,7 @@ deployments:
       rollout_strategy: Recreate
       image:
         repository: lightruncom/runtime-collector
-        tag: "1.96.5-release.f3682f6a85"
+        tag: "1.96.6-release.6e4dc90738"
         pullPolicy: IfNotPresent
       service:
         type: ClusterIP
