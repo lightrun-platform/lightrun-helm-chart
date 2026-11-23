@@ -47,7 +47,7 @@ secrets:
 ### Key Configuration Details:
 
 - **License** and **Dockerhub Credentials** are supplied by Lightrun.
-- **MySQL**, **Redis** and **RabbitMQ** are deployed locally.
+- **MySQL** and **Redis** are deployed locally.
     
 - **Datastreamer**, **Runtime Collector** (including its migrations and ClickHouse) and **Privacy Filter** services are disabled.
     
