@@ -49,13 +49,13 @@ secrets:
 - **License** and **Dockerhub Credentials** are supplied by Lightrun.
 - **MySQL** and **Redis** are deployed locally.
     
-- **RabbitMQ** and **Datastreamer** services are disabled.
+- **Datastreamer**, **Runtime Collector** (including its migrations and ClickHouse) and **Privacy Filter** services are disabled.
     
 - **Secrets** are managed within the Helm chart.
     
 - **Internal TLS** and **network policies** are disabled.
     
-- **Docker images** are pulled from the Lightrun private repository on DockerHub (`lightruncom`).
+- **Docker images** are pulled from the Lightrun private repository on DockerHub (`lightruncom`), except for **MySQL**, which uses the official `mysql` image.
     
 - **Router** is exposed without SSL, relying on an ingress controller (such as Nginx) for SSL termination.
     
