@@ -49,7 +49,7 @@ secrets:
 - **License** and **Dockerhub Credentials** are supplied by Lightrun.
 - **MySQL**, **Redis** and **RabbitMQ** are deployed locally.
     
-- **Datastreamer** service is disabled.
+- **Datastreamer**, **Runtime Collector** (including its migrations and ClickHouse) and **Privacy Filter** services are disabled.
     
 - **Secrets** are managed within the Helm chart.
     
