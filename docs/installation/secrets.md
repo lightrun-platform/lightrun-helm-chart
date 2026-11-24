@@ -134,6 +134,15 @@ Some secrets are used for integrating with external services.
 ```
 > **Optional fields**: If left empty, these values **will not** be included in the Kubernetes secret.
 
+Langfuse MCP requires both credentials when `general.langfuse.mcp.enabled: true`. For externally managed secrets, add these keys to the backend secret:
+
+| Secret Key | Value Source |
+|------------|--------------|
+| `LANGFUSE_MCP_PUBLIC_KEY` | `general.langfuse.mcp.public_key` |
+| `LANGFUSE_MCP_SECRET_KEY` | `general.langfuse.mcp.secret_key` |
+
+See [Langfuse MCP configuration](../components/backend.md#langfuse-mcp) for the endpoint and enable flag.
+
 ### **Container Image Registry Credentials**
 
 ```yaml
